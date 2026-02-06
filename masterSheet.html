@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crepúsculo dos Reinos — Painel do Mestre</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080810;--sf:#0e0e1a;--cd:#131320;--bd:#252540;--bl:#353555;--ac:#c9a96e;--ag:#c9a96e55;--ad:#8a6a3e;--tx:#ddd8cc;--td:#6a6680;--tm:#4a4660;--dn:#b83030;--sc:#3a7a4c;--mn:#3a6aaa;--warn:#e6a832}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:'Crimson Text',Georgia,serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+input::placeholder,textarea::placeholder{color:var(--tm)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.hdr{padding:18px 20px 6px;text-align:center;position:relative}
+.hdr::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--ad),transparent)}
+.hdr h1{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:var(--ac);letter-spacing:.08em;text-shadow:0 0 30px var(--ag)}
+.hdr .sub{font-size:10px;color:var(--td);font-family:'Cinzel',serif;letter-spacing:.2em;text-transform:uppercase;margin-top:2px}
+.tabs{display:flex;justify-content:center;padding:8px 4px 0;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tb{padding:7px 14px;background:0;color:var(--td);border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Cinzel',serif;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;transition:.25s}
+.tb:hover{color:var(--tx)}.tb.on{color:var(--ac);border-bottom-color:var(--ac)}
+.ct{max-width:780px;margin:0 auto;padding:12px 12px 70px}
+.tp{display:none;animation:fadeUp .3s}.tp.on{display:block}
+.st{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--ac);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.sub-label{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--td);letter-spacing:.1em;text-transform:uppercase;margin:10px 0 5px;padding-bottom:3px;border-bottom:1px solid var(--bd)}
+input[type="text"],input[type="number"],textarea,select{padding:6px 9px;background:var(--cd);border:1px solid var(--bd);color:var(--tx);border-radius:4px;font-family:'Crimson Text',serif;font-size:13px;outline:none;width:100%}
+input:focus,textarea:focus,select:focus{border-color:var(--ad)}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236a6680'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.fd{margin-bottom:10px}.fl{display:block;font-family:'Cinzel',serif;font-size:8px;font-weight:600;color:var(--td);letter-spacing:.18em;text-transform:uppercase;margin-bottom:3px}
+.bt{padding:6px 14px;border:none;border-radius:4px;cursor:pointer;font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;transition:.2s}
+.bt:hover{filter:brightness(1.15)}
+.bp{background:var(--ac);color:var(--bg)}.bo{background:0;border:1px solid var(--bd);color:var(--td)}.bo:hover{border-color:var(--ad);color:var(--ac)}
+.bs{background:var(--sc);color:var(--tx)}.bsm{padding:4px 9px;font-size:8px}
+.bdn{background:var(--dn);color:var(--tx)}.bwn{background:var(--warn);color:var(--bg)}
+.f{display:flex}.fw{flex-wrap:wrap}.f1{flex:1}
+.ai{align-items:center}.jc{justify-content:center}.jsb{justify-content:space-between}
+.g4{gap:4px}.g6{gap:6px}.g8{gap:8px}.g10{gap:10px}.g12{gap:12px}
+.crd{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:12px;margin-bottom:8px}
+.sb{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:7px 10px;text-align:center;min-width:58px}
+.sbl{font-size:8px;color:var(--td);text-transform:uppercase;letter-spacing:.12em;font-family:'Cinzel',serif;margin-bottom:2px}
+.sbv{font-size:18px;font-weight:700;font-family:'Cinzel',serif;color:var(--ac)}
+.nc{display:inline-flex;align-items:center;gap:3px}
+.nb{width:21px;height:21px;background:var(--sf);border:1px solid var(--bd);color:var(--td);cursor:pointer;border-radius:3px;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.15s;font-family:sans-serif}
+.nb:hover{border-color:var(--ad);color:var(--ac)}
+.nv{min-width:22px;text-align:center;font-weight:700;font-size:14px;font-family:'Cinzel',serif}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.tag{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-family:'Cinzel',serif;font-weight:600;border:1px solid var(--bd);white-space:nowrap}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:8px 20px;background:var(--ac);color:var(--bg);font-family:'Cinzel',serif;font-size:11px;font-weight:700;border-radius:4px;z-index:10000;animation:fadeUp .3s;max-width:90%;text-align:center}
+.npc{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:10px;margin-bottom:6px;transition:.2s}
+.npc:hover{border-color:var(--bl)}
+.npc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.npc-name{font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:var(--ac)}
+.npc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(55px,1fr));gap:6px}
+.npc-stat{text-align:center;background:var(--sf);border-radius:3px;padding:4px 2px}
+.npc-stat .lbl{font-size:7px;color:var(--td);text-transform:uppercase;letter-spacing:.1em;font-family:'Cinzel',serif}
+.npc-stat .val{font-size:14px;font-weight:700;font-family:'Cinzel',serif}
+.ref-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px}
+.ref-table th{background:var(--sf);color:var(--ac);font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 8px;text-align:left;border:1px solid var(--bd);position:sticky;top:0;z-index:2}
+.ref-table td{padding:5px 8px;border:1px solid var(--bd);color:var(--tx);vertical-align:top}
+.ref-table tr:nth-child(even) td{background:rgba(201,169,110,.02)}
+.ref-table .cat{background:var(--cd);color:var(--ac);font-family:'Cinzel',serif;font-weight:700;font-size:10px;letter-spacing:.06em;border-bottom:1px solid var(--ad)}
+.cheap{color:var(--sc)}.exp{color:var(--dn)}
+.cont-card{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:12px;margin-bottom:8px;border-left:3px solid var(--ac)}
+.cont-name{font-family:'Cinzel',serif;font-size:14px;font-weight:700;margin-bottom:4px}
+.cont-desc{font-size:11px;color:var(--td);margin-bottom:8px;line-height:1.4}
+.arka-bar{height:8px;background:var(--sf);border-radius:4px;overflow:hidden;margin:4px 0}
+.arka-fill{height:100%;border-radius:4px;transition:width .3s}
+.exp-head{cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--sf);border:1px solid var(--bd);border-radius:5px;margin-bottom:1px;transition:.2s}
+.exp-head:hover{border-color:var(--bl)}
+.exp-head .title{font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--ac);letter-spacing:.08em;text-transform:uppercase}
+.exp-head .arrow{color:var(--td);font-size:10px;transition:transform .2s}
+.exp-body{display:none;padding:10px;background:var(--cd);border:1px solid var(--bd);border-top:0;border-radius:0 0 5px 5px;margin-bottom:8px}
+.exp-body.open{display:block;animation:fadeUp .2s}
+.region-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:.06em;border:1px solid var(--bd);cursor:pointer;transition:.2s;user-select:none}
+.region-badge:hover{border-color:var(--bl)}.region-badge.on{border-color:var(--ac);color:var(--ac);background:rgba(201,169,110,.08)}
+.econ-note{font-size:10px;color:var(--td);padding:6px 8px;background:var(--sf);border-radius:4px;margin-bottom:8px;line-height:1.5;border-left:2px solid var(--ad)}
+.coin{color:var(--ac);font-weight:700}.coin-s{color:#b8b8b8;font-weight:700}.coin-c{color:#cd7f32;font-weight:700}
+.search-box{position:relative;margin-bottom:10px}
+.search-box input{padding-left:28px}
+.search-box::before{content:'🔍';position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="hdr"><h1>⚔ Painel do Mestre</h1><div class="sub">Crepúsculo dos Reinos</div></div>
+<div class="tabs" id="tabs"></div>
+<div class="ct">
+  <div class="tp on" id="t-economia"></div>
+  <div class="tp" id="t-encontros"></div>
+  <div class="tp" id="t-referencia"></div>
+  <div class="tp" id="t-arka"></div>
+</div>
+<script>
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function rD(n){var m=n.match(/(\d+)d(\d+)/);if(!m)return{t:0,r:[]};var c=+m[1],s=+m[2],t=0,r=[];for(var i=0;i<c;i++){var x=Math.floor(Math.random()*s)+1;r.push(x);t+=x}return{t,r}}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
+function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),2500)}
+function toggle(id){var b=$('body-'+id);if(!b)return;b.classList.toggle('open');var a=$('arrow-'+id);if(a)a.textContent=b.classList.contains('open')?'▾':'▸'}
+
+var TABS=[{id:'economia',l:'Economia'},{id:'encontros',l:'Encontros'},{id:'referencia',l:'Referência'},{id:'arka',l:'Arka'}];
+$('tabs').innerHTML=TABS.map(t=>'<button class="tb'+(t.id==='economia'?' on':'')+'" data-t="'+t.id+'">'+t.l+'</button>').join('');
+$('tabs').querySelectorAll('.tb').forEach(b=>{b.onclick=()=>{$('tabs').querySelectorAll('.tb').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.tp').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('t-'+b.dataset.t).classList.add('on')}});
+
+// ═══ REGIÕES ═══
+var REGIONS={
+  'Padrão':{mult:1.0,color:'var(--ac)',desc:'Preço base sem ajuste regional.',moeda:'Coroas de Ouro (CO)',icon:'⚖'},
+  'Reino Stark':{mult:0.9,color:'#a8c8e8',desc:'Militar e austero. Armas/armaduras baratas, luxo e magia caros.',moeda:'Coroas de Ferro',icon:'🏔'},
+  'Aquamarine':{mult:0.85,color:'#4fc3f7',desc:'Porto comercial. Peixe e especiarias abundantes. Itens de terra caros.',moeda:'Pérolas de Marella',icon:'🌊'},
+  'O Império':{mult:1.0,color:'#ffd54f',desc:'Preços tabelados pelo Estado. Estável, taxa imperial de 10%.',moeda:'Áureos Imperiais',icon:'🦅'},
+  'Tempesto':{mult:1.15,color:'#ef5350',desc:'Economia de guerra. Armas premium, cavalos baratos.',moeda:'Marcas de Drakenhold',icon:'⚡'},
+  'Eryndoril':{mult:1.1,color:'#66bb6a',desc:'Elfos sem metal pesado. Natural barato, metal caro.',moeda:'Folhas de Prata',icon:'🌿'},
+  'Nytherion':{mult:1.3,color:'#ab47bc',desc:'Oligarquia rica. Tudo caro. Itens mágicos abundantes.',moeda:'Cristais Arcanos',icon:'🔮'},
+  'Forja-Fria':{mult:0.8,color:'#90a4ae',desc:'Mestres ferreiros. Metal baratíssimo. Comida importada cara.',moeda:'Lingotes-Selo',icon:'⚒'},
+  'Forja-Bonita':{mult:1.05,color:'#ffb74d',desc:'Artesanato fino. Itens decorativos baratos.',moeda:'Gemas-Coroa',icon:'💎'},
+  'Forja-Quente':{mult:1.2,color:'#ff7043',desc:'Armas de pólvora exclusivas. Minérios abundantes, comida escassa.',moeda:'Fagulhas de Magma',icon:'🔥'},
+  'Reino dos Anjos':{mult:1.25,color:'#fff176',desc:'Isolados nos picos. Itens sagrados exclusivos. Acesso difícil.',moeda:'Halos de Luz',icon:'✦'},
+  'Demônios':{mult:0.7,color:'#e53935',desc:'Tribal, escambo. Barato mas estoque imprevisível.',moeda:'Dentes / Escambo',icon:'🦴'},
+  'Sylvanos':{mult:0.6,color:'#2e7d32',desc:'Druidas sem moeda. Trocas naturais. Sem metal.',moeda:'Oferendas',icon:'🍃'},
+  'Kemonomimi':{mult:0.75,color:'#8d6e63',desc:'Nômades. Peles baratas, manufaturados raros e caros.',moeda:'Peles / Escambo',icon:'🐾'},
+  'Vestigar':{mult:2.0,color:'#a855f7',desc:'Proibido. Só contrabandistas. Tudo absurdamente caro.',moeda:'Fragmentos de Arka',icon:'💀'}
+};
+var RCAT={
+  'Reino Stark':{'Armas Marciais':.8,'Armaduras Pesadas':.8,'Armaduras Médias':.85,'Itens Mágicos':1.5,'Comida & Bebida':1.1},
+  'Aquamarine':{'Comida & Bebida':.7,'Montarias':1.3,'Equipamento':.9,'Serviços':.8},
+  'O Império':{'Serviços':1.1,'Equipamento':.95},
+  'Tempesto':{'Armas Marciais':1.2,'Montarias':.8,'Armaduras Pesadas':1.1,'Itens Mágicos':1.4},
+  'Eryndoril':{'Armas Simples':.7,'Armaduras Leves':.7,'Armaduras Pesadas':1.8,'Armas Marciais':1.3,'Comida & Bebida':.6},
+  'Nytherion':{'Itens Mágicos':.8,'Serviços':1.3,'Armas Marciais':1.2,'Comida & Bebida':1.3},
+  'Forja-Fria':{'Armas Marciais':.6,'Armas Simples':.6,'Armaduras Pesadas':.5,'Armaduras Médias':.6,'Comida & Bebida':1.4,'Itens Mágicos':1.3},
+  'Forja-Bonita':{'Equipamento':.8,'Itens Mágicos':.9,'Armas Marciais':1.1},
+  'Forja-Quente':{'Armas de Pólvora':.6,'Comida & Bebida':1.4,'Itens Mágicos':1.2},
+  'Reino dos Anjos':{'Itens Mágicos':.9,'Comida & Bebida':1.3,'Serviços':.8},
+  'Demônios':{'Armas Simples':.5,'Armaduras Leves':.5,'Itens Mágicos':1.8,'Comida & Bebida':.6,'Equipamento':1.5},
+  'Sylvanos':{'Itens Mágicos':1.5,'Armas Simples':.3,'Armaduras Leves':.3,'Equipamento':.5,'Comida & Bebida':.3,'Serviços':.4},
+  'Kemonomimi':{'Equipamento':.6,'Armas Simples':.7,'Armaduras Leves':.6,'Armas Marciais':1.5,'Armaduras Pesadas':2.0,'Itens Mágicos':1.6},
+  'Vestigar':{'Itens Mágicos':.7}
+};
+
+// ═══ ITENS (em FC) ═══
+var ITEMS=[
+{cat:'Armas Simples',name:'Adaga',price:200,notes:'1d4 perf. Leve, arremesso 6m.'},
+{cat:'Armas Simples',name:'Bastão',price:20,notes:'1d6 conc. Versátil (1d8).'},
+{cat:'Armas Simples',name:'Clava',price:10,notes:'1d4 conc. Leve.'},
+{cat:'Armas Simples',name:'Lança curta',price:100,notes:'1d6 perf. Arremesso, versátil.'},
+{cat:'Armas Simples',name:'Arco curto',price:250,notes:'1d6 perf. Alcance 24m.'},
+{cat:'Armas Simples',name:'Funda',price:10,notes:'1d4 conc. Alcance 24m.'},
+{cat:'Armas Simples',name:'Zarabatana',price:100,notes:'1 perf. 7m. Popular entre Kemonomimi.'},
+{cat:'Armas Marciais',name:'Espada longa',price:1500,notes:'1d8 cort. Versátil (1d10). Padrão Stark/Tempesto.'},
+{cat:'Armas Marciais',name:'Espada curta',price:1000,notes:'1d6 perf. Leve, acuidade.'},
+{cat:'Armas Marciais',name:'Machado de guerra',price:1000,notes:'1d8 cort. Versátil. Favorito Stark.'},
+{cat:'Armas Marciais',name:'Machado duplo',price:3000,notes:'1d10 cort. Pesado, duas mãos.'},
+{cat:'Armas Marciais',name:'Alabarda',price:2000,notes:'1d10 cort. Pesado, alcance 3m.'},
+{cat:'Armas Marciais',name:'Lança longa',price:1000,notes:'1d10 perf. Pesado, alcance 3m.'},
+{cat:'Armas Marciais',name:'Mangual',price:1000,notes:'1d8 conc.'},
+{cat:'Armas Marciais',name:'Martelo de guerra',price:1500,notes:'1d8 conc. Versátil. Ícone dos anões.'},
+{cat:'Armas Marciais',name:'Espada larga',price:5000,notes:'2d6 cort. Pesado, duas mãos. Arma nobre.'},
+{cat:'Armas Marciais',name:'Arco longo',price:5000,notes:'1d8 perf. 50m. Assinatura de Eryndoril.'},
+{cat:'Armas Marciais',name:'Besta pesada',price:5000,notes:'1d10 perf. 30m. Recarga.'},
+{cat:'Armas Marciais',name:'Tridente',price:500,notes:'1d6 perf. Arremesso. Arma de Aquamarine.'},
+{cat:'Armas Marciais',name:'Chicote',price:200,notes:'1d4 cort. Alcance 3m, acuidade.'},
+{cat:'Armas de Pólvora',name:'Mosquete anão',price:15000,notes:'2d8 perf. 40m. Recarga 2t. Exclusivo Forja-Quente.'},
+{cat:'Armas de Pólvora',name:'Pistola de mão',price:10000,notes:'1d10 perf. 12m. Recarga 1t.'},
+{cat:'Armas de Pólvora',name:'Canhão portátil',price:25000,notes:'3d10 conc. 60m. Recarga 3t. Pesadíssimo.'},
+{cat:'Armas de Pólvora',name:'Granada incendiária (×10)',price:5000,notes:'2d6 fogo. Área 3m. Uso único cada.'},
+{cat:'Armas de Pólvora',name:'Munição (20 tiros)',price:1000,notes:'Pólvora + projéteis. Sensível a água.'},
+{cat:'Armaduras Leves',name:'Acolchoado',price:500,notes:'CA 11+DEX. Desv. furtividade.'},
+{cat:'Armaduras Leves',name:'Couro',price:1000,notes:'CA 11+DEX.'},
+{cat:'Armaduras Leves',name:'Couro batido',price:4500,notes:'CA 12+DEX (máx 2).'},
+{cat:'Armaduras Médias',name:'Cota de malha',price:5000,notes:'CA 13+DEX (máx 2). Desv. furtividade.'},
+{cat:'Armaduras Médias',name:'Peitoral de aço',price:40000,notes:'CA 14+DEX (máx 2).'},
+{cat:'Armaduras Médias',name:'Meia-placa',price:75000,notes:'CA 15+DEX (máx 2). Desv. furtividade.'},
+{cat:'Armaduras Pesadas',name:'Cota de anéis',price:3000,notes:'CA 14. Desv. furt. FOR 13.'},
+{cat:'Armaduras Pesadas',name:'Cota de talas',price:20000,notes:'CA 15. Desv. furt. FOR 13.'},
+{cat:'Armaduras Pesadas',name:'Placas completas',price:150000,notes:'CA 18. Desv. furt. FOR 15. Encomenda.'},
+{cat:'Armaduras Pesadas',name:'Escudo',price:1000,notes:'+2 CA. Uma mão.'},
+{cat:'Estalagem (por noite)',name:'Dormitório',price:7,notes:'6-10 pessoas. Básico.'},
+{cat:'Estalagem (por noite)',name:'Quarto simples',price:50,notes:'Cama, balde, vela. Tranca.'},
+{cat:'Estalagem (por noite)',name:'Quarto confortável',price:200,notes:'Cama dupla, lareira, banho.'},
+{cat:'Estalagem (por noite)',name:'Suíte nobre',price:1000,notes:'2 cômodos, banho quente, refeição, criado.'},
+{cat:'Estalagem (por noite)',name:'Estábulo (animal)',price:50,notes:'Feno, água, abrigo.'},
+{cat:'Comida & Bebida',name:'Refeição simples',price:10,notes:'Pão, sopa, água.'},
+{cat:'Comida & Bebida',name:'Refeição boa',price:30,notes:'Carne, legumes, cerveja.'},
+{cat:'Comida & Bebida',name:'Banquete (por pessoa)',price:200,notes:'Vários pratos, vinho.'},
+{cat:'Comida & Bebida',name:'Caneca de cerveja',price:4,notes:'Cerveja local.'},
+{cat:'Comida & Bebida',name:'Garrafa de vinho',price:20,notes:'Tinto/branco regional.'},
+{cat:'Comida & Bebida',name:'Vinho élfico (Eryndoril)',price:1000,notes:'Raro fora de Xendarion.'},
+{cat:'Comida & Bebida',name:'Rum de Aquamarine',price:30,notes:'Forte, apimentado.'},
+{cat:'Comida & Bebida',name:'Cerveja anã (Forja-Fria)',price:15,notes:'Escura. Humanos: cuidado.'},
+{cat:'Comida & Bebida',name:'Rações de viagem (1 dia)',price:50,notes:'Carne seca, biscoitos, frutas.'},
+{cat:'Comida & Bebida',name:'Peixe fresco',price:5,notes:'Abundante na costa. ×3 interior.'},
+{cat:'Comida & Bebida',name:'Água purificada',price:2,notes:'Grátis em rios, 2 FC em cidades.'},
+{cat:'Serviços',name:'Curandeiro (leve)',price:100,notes:'Herbalismo. Cura 1d6 HP.'},
+{cat:'Serviços',name:'Curandeiro (grave)',price:500,notes:'Cirurgia/ervas raras. 2d8 HP.'},
+{cat:'Serviços',name:'Cura mágica',price:2000,notes:'Raro. Templos/Anjos. Cura total leve.'},
+{cat:'Serviços',name:'Remoção de maldição',price:10000,notes:'Raríssimo. Nytherion ou Anjos.'},
+{cat:'Serviços',name:'Ferreiro (reparo simples)',price:50,notes:'Amolar, consertar. 1 dia.'},
+{cat:'Serviços',name:'Ferreiro (reparo complexo)',price:500,notes:'Armadura/arma quebrada. 3-5 dias.'},
+{cat:'Serviços',name:'Ferreiro (encomenda)',price:5000,notes:'Sob medida. 1-4 semanas. Qualidade +1.'},
+{cat:'Serviços',name:'Carroça (por dia)',price:100,notes:'2-4 pessoas + carga. 30km/dia.'},
+{cat:'Serviços',name:'Barco costeiro',price:200,notes:'Por pessoa. Aquamarine. 1-3 dias.'},
+{cat:'Serviços',name:'Navio oceânico',price:1000,notes:'Entre continentes. 1-3 semanas.'},
+{cat:'Serviços',name:'Mensageiro local',price:20,notes:'Mesma cidade. 1 dia.'},
+{cat:'Serviços',name:'Mensageiro entre reinos',price:500,notes:'Pombo/cavalo. 3-14 dias.'},
+{cat:'Serviços',name:'Guia local (por dia)',price:200,notes:'Caminhos, perigos, contatos.'},
+{cat:'Serviços',name:'Mercenário (por dia)',price:300,notes:'Guerreiro nv.2-3. Leal enquanto pago.'},
+{cat:'Serviços',name:'Identificar item mágico',price:2000,notes:'Mago/estudioso. 1 dia. Nytherion.'},
+{cat:'Serviços',name:'Banho público',price:5,notes:'Água quente (fria em Stark).'},
+{cat:'Equipamento',name:'Mochila',price:200,notes:'30 itens de carga.'},
+{cat:'Equipamento',name:'Corda cânhamo (15m)',price:100,notes:'Suporta 150kg.'},
+{cat:'Equipamento',name:'Corda de seda (15m)',price:1000,notes:'200kg. Leve. Élfica.'},
+{cat:'Equipamento',name:'Tochas (×5)',price:10,notes:'1h cada. 6m iluminação.'},
+{cat:'Equipamento',name:'Lanterna a óleo',price:500,notes:'6h. 10m iluminação.'},
+{cat:'Equipamento',name:'Óleo (frasco)',price:10,notes:'1h lanterna ou 1d4 fogo.'},
+{cat:'Equipamento',name:'Kit de cura',price:500,notes:'10 usos. Estabiliza ou 1d4.'},
+{cat:'Equipamento',name:'Kit de escalada',price:2500,notes:'+2 escalada.'},
+{cat:'Equipamento',name:'Ferramentas arrombamento',price:2500,notes:'+2 fechaduras. Ilegal.'},
+{cat:'Equipamento',name:'Luneta',price:10000,notes:'Visão ×3. Rara.'},
+{cat:'Equipamento',name:'Tenda (2p)',price:200,notes:'Proteção chuva/vento.'},
+{cat:'Equipamento',name:'Tenda (4p)',price:500,notes:'Espaçosa.'},
+{cat:'Equipamento',name:'Saco de dormir',price:100,notes:'Isolamento básico.'},
+{cat:'Equipamento',name:'Mapa regional',price:500,notes:'Precisão variável. Vestigar: ×10.'},
+{cat:'Equipamento',name:'Algemas',price:200,notes:'CD 20 escapar.'},
+{cat:'Montarias',name:'Cavalo de montaria',price:7500,notes:'60m/turno. Dócil.'},
+{cat:'Montarias',name:'Cavalo de guerra',price:40000,notes:'60m. Combate. Obrigatório Tempesto.'},
+{cat:'Montarias',name:'Pônei / Mula',price:3000,notes:'40m. Carga pesada.'},
+{cat:'Montarias',name:'Camelo',price:5000,notes:'50m. Zaratheon.'},
+{cat:'Montarias',name:'Sela de montaria',price:1000,notes:'Sela de guerra: 2000 FC.'},
+{cat:'Montarias',name:'Besta exótica',price:20000,notes:'Lagarto Zaratheon / Bode Elyndra.'},
+{cat:'Itens Mágicos',name:'Poção de cura (1d8+2)',price:5000,notes:'Ação. Comum.'},
+{cat:'Itens Mágicos',name:'Poção cura maior (2d8+4)',price:15000,notes:'Rara.'},
+{cat:'Itens Mágicos',name:'Poção recuperação MP (2d6)',price:8000,notes:'Rara. Cristais de Arka.'},
+{cat:'Itens Mágicos',name:'Pergaminho (Básica)',price:10000,notes:'Aprende s/ treino. Uso único.'},
+{cat:'Itens Mágicos',name:'Pergaminho (Intermediária)',price:30000,notes:'INT CD 14 ou falha.'},
+{cat:'Itens Mágicos',name:'Cristal de Arka',price:20000,notes:'Enchantment. 1 uso. Vestigar.'},
+{cat:'Itens Mágicos',name:'Amuleto proteção (+1 CA)',price:50000,notes:'Sintonização. Raro.'},
+{cat:'Itens Mágicos',name:'Arma encantada (+1)',price:100000,notes:'Encomenda Forja-Fria/Nytherion. Meses.'},
+{cat:'Itens Mágicos',name:'Pedra comunicação (par)',price:25000,notes:'Até 100km. Nytherion.'},
+{cat:'Itens Mágicos',name:'Antídoto universal',price:5000,notes:'Veneno mundano. 1 uso.'},
+{cat:'Itens Mágicos',name:'Incenso meditação',price:1000,notes:'1h: +25% MP extra. 1 uso.'},
+{cat:'Itens Mágicos',name:'Ervas Sylvanos',price:500,notes:'Cura 1d4. Natural.'},
+];
+
+var curRegion='Padrão',searchTerm='';
+
+function getPrice(item){var r=REGIONS[curRegion],mult=r.mult,cm=RCAT[curRegion];if(cm)Object.keys(cm).forEach(k=>{if(item.cat.indexOf(k)!==-1)mult*=cm[k]});return Math.max(1,Math.round(item.price*mult))}
+function fmtPrice(fc){if(fc>=100){var co=Math.floor(fc/100),rem=fc%100,lp=Math.floor(rem/10),f=rem%10,s='<span class="coin">'+co+' CO</span>';if(lp>0)s+=', <span class="coin-s">'+lp+' LP</span>';if(f>0)s+=', <span class="coin-c">'+f+' FC</span>';return s}if(fc>=10){var lp=Math.floor(fc/10),f=fc%10,s='<span class="coin-s">'+lp+' LP</span>';if(f>0)s+=', <span class="coin-c">'+f+' FC</span>';return s}return '<span class="coin-c">'+fc+' FC</span>'}
+function priceChange(b,a){if(b===a)return '';var p=Math.round(((a-b)/b)*100);return p<0?' <span class="cheap">('+p+'%)</span>':' <span class="exp">(+'+p+'%)</span>'}
+
+function bEcon(){
+  var h='<div class="st">Economia de Velarion</div>';
+  h+='<div class="econ-note"><b>Moeda:</b> 1 <span class="coin">Coroa de Ouro (CO)</span> = 10 <span class="coin-s">Lâminas de Prata (LP)</span> = 100 <span class="coin-c">Fagulhas de Cobre (FC)</span>. Reinos tribais usam escambo.</div>';
+  h+='<div class="sub-label">Região</div><div class="f fw g4" style="margin-bottom:8px" id="regBtns"></div><div id="regInfo"></div>';
+  h+='<div class="search-box"><input type="text" id="itemSearch" placeholder="     Buscar item..." oninput="searchTerm=this.value.toLowerCase();rET()"></div>';
+  h+='<div style="max-height:60vh;overflow-y:auto;border:1px solid var(--bd);border-radius:5px"><table class="ref-table" id="eT"></table></div>';
+  $('t-economia').innerHTML=h;rRB();rET();
+}
+function rRB(){
+  var h='';Object.keys(REGIONS).forEach(k=>{var r=REGIONS[k];h+='<span class="region-badge'+(k===curRegion?' on':'')+'" style="'+(k===curRegion?'color:'+r.color+';border-color:'+r.color:'')+'" onclick="setR(\''+k+'\')">'+r.icon+' '+k+'</span>'});
+  $('regBtns').innerHTML=h;
+  var r=REGIONS[curRegion],ml=r.mult===1.0?'Base (×1.0)':r.mult<1.0?'Barato (×'+r.mult+')':'Caro (×'+r.mult+')',mc=r.mult<1.0?'var(--sc)':r.mult>1.0?'var(--dn)':'var(--ac)';
+  $('regInfo').innerHTML='<div class="crd" style="border-left:3px solid '+r.color+';margin-bottom:8px"><div class="f ai jsb"><span style="font-family:Cinzel,serif;font-weight:700;color:'+r.color+'">'+r.icon+' '+curRegion+'</span><span style="font-size:10px;color:'+mc+';font-weight:700;font-family:Cinzel,serif">'+ml+'</span></div><div style="font-size:11px;color:var(--td);margin-top:4px">'+r.desc+'</div><div style="font-size:10px;color:var(--tm);margin-top:3px">Moeda: <b>'+r.moeda+'</b></div></div>';
+}
+function setR(k){curRegion=k;rRB();rET()}
+function rET(){
+  var fl=searchTerm?ITEMS.filter(i=>i.name.toLowerCase().indexOf(searchTerm)!==-1||i.cat.toLowerCase().indexOf(searchTerm)!==-1||i.notes.toLowerCase().indexOf(searchTerm)!==-1):ITEMS;
+  var h='<tr><th>Item</th><th style="width:110px">Preço</th><th>Notas</th></tr>',lc='';
+  fl.forEach(i=>{if(i.cat!==lc){lc=i.cat;h+='<tr><td class="cat" colspan="3">'+esc(i.cat)+'</td></tr>'}var a=getPrice(i);h+='<tr><td><b>'+esc(i.name)+'</b></td><td>'+fmtPrice(a)+priceChange(i.price,a)+'</td><td style="font-size:11px;color:var(--td)">'+esc(i.notes)+'</td></tr>'});
+  $('eT').innerHTML=h;
+}
+
+// ═══ ENCONTROS ═══
+var ROLES={mob:{c:'var(--tm)',l:'Mob'},tank:{c:'var(--sc)',l:'Tank'},dps:{c:'var(--dn)',l:'DPS'},caster:{c:'var(--mn)',l:'Caster'},support:{c:'#9b59b6',l:'Suporte'},elite:{c:'var(--warn)',l:'Elite'},boss:{c:'#ff4444',l:'Boss'}};
+var encounter=[],nxId=1;
+var TPLS=[
+{name:"Soldado Stark",lv:3,hp:28,mp:8,ac:15,aura:"—",role:"tank",org:"Reino Stark",atk:"+5",dmg:"1d10+3",notes:"Espada larga, armadura pesada."},
+{name:"Marinheiro Aquamarine",lv:2,hp:18,mp:14,ac:12,aura:"Água",role:"dps",org:"Aquamarine",atk:"+3",dmg:"1d8+1",notes:"Tridente. Devoto de Marella."},
+{name:"Legionário Imperial",lv:4,hp:34,mp:12,ac:16,aura:"—",role:"tank",org:"O Império",atk:"+6",dmg:"1d8+4",notes:"Lança + escudo."},
+{name:"Cavaleiro Drakenhold",lv:5,hp:42,mp:10,ac:17,aura:"—",role:"tank",org:"Tempesto",atk:"+7",dmg:"2d6+4",notes:"Armadura pesada, montaria."},
+{name:"Guardião dos Dragões",lv:7,hp:55,mp:15,ac:18,aura:"Elemental",role:"elite",org:"Tempesto",atk:"+9",dmg:"2d8+5",notes:"Elite Tempesto."},
+{name:"Explorador Élfico",lv:3,hp:20,mp:22,ac:14,aura:"Naturae",role:"dps",org:"Eryndoril",atk:"+5",dmg:"1d8+3",notes:"Arco longo, camuflagem."},
+{name:"Mago de Nytherion",lv:5,hp:22,mp:40,ac:11,aura:"Ilusória",role:"caster",org:"Nytherion",atk:"+3",dmg:"3d8",notes:"Ilusões e encantamentos."},
+{name:"Mestre Forja-Fria",lv:4,hp:38,mp:10,ac:16,aura:"Terra",role:"tank",org:"Forja-Fria",atk:"+6",dmg:"1d12+4",notes:"Martelo, imune a venenos."},
+{name:"Artilheiro Forja-Quente",lv:4,hp:30,mp:8,ac:14,aura:"Fogo",role:"dps",org:"Forja-Quente",atk:"+6",dmg:"2d8+2",notes:"Mosquete, granadas."},
+{name:"Cavaleiro de Wyvern",lv:8,hp:50,mp:28,ac:17,aura:"Luz",role:"elite",org:"Anjos",atk:"+10",dmg:"2d10+5",notes:"Wyvern. Domínio aéreo."},
+{name:"Anjo Sentinela",lv:5,hp:35,mp:30,ac:16,aura:"Luz",role:"support",org:"Anjos",atk:"+6",dmg:"2d6+3",notes:"Escudo celestial."},
+{name:"Berserker Demoníaco",lv:5,hp:45,mp:18,ac:13,aura:"Fogo",role:"dps",org:"Demônios",atk:"+8",dmg:"2d8+5",notes:"Fúria tribal. +4 fogo."},
+{name:"Senhor da Guerra",lv:9,hp:72,mp:30,ac:16,aura:"Fogo/Trevas",role:"boss",org:"Demônios",atk:"+11",dmg:"3d8+6",notes:"Líder tribal. Expansão."},
+{name:"Druida Sylvaniano",lv:4,hp:24,mp:28,ac:13,aura:"Naturae",role:"caster",org:"Sylvanos",atk:"+4",dmg:"2d6+2",notes:"Magia natural."},
+{name:"Xamã Kemonomimi",lv:3,hp:22,mp:20,ac:12,aura:"Espiritual",role:"support",org:"Kemonomimi",atk:"+4",dmg:"1d8+2",notes:"Cura, rastreamento."},
+{name:"Caçador Kemonomimi",lv:3,hp:26,mp:12,ac:14,aura:"—",role:"dps",org:"Kemonomimi",atk:"+6",dmg:"1d8+3",notes:"Arco, armadilhas."},
+{name:"Criatura Selvagem",lv:2,hp:20,mp:0,ac:12,aura:"—",role:"mob",org:"Selvagem",atk:"+4",dmg:"1d8+2",notes:"Lobo, urso, etc."},
+{name:"Aberração da Arka",lv:6,hp:48,mp:25,ac:14,aura:"Caótica",role:"elite",org:"Vestigar",atk:"+8",dmg:"2d10+4",notes:"Distorcida pela Ruptura."},
+{name:"Golem de Ruína",lv:8,hp:80,mp:0,ac:18,aura:"—",role:"boss",org:"Vestigar",atk:"+10",dmg:"3d10+6",notes:"Guardião. Resist. magia."},
+];
+
+function nC(n,acts){var rc=ROLES[n.role]||ROLES.mob;return '<div class="npc" style="border-left:3px solid '+rc.c+'"><div class="npc-head"><span class="npc-name">'+esc(n.name)+'</span><div class="f g4 fw"><span class="tag" style="color:'+rc.c+';border-color:'+rc.c+'">'+rc.l+'</span>'+(n.aura&&n.aura!=='—'?'<span class="tag" style="color:var(--mn);border-color:var(--mn)">'+esc(n.aura)+'</span>':'')+'<span class="tag">Nv.'+n.lv+'</span><span class="tag">'+esc(n.org)+'</span></div></div><div class="npc-stats"><div class="npc-stat"><div class="lbl">HP</div><div class="val" style="color:var(--dn)">'+n.hp+'</div></div><div class="npc-stat"><div class="lbl">MP</div><div class="val" style="color:var(--mn)">'+n.mp+'</div></div><div class="npc-stat"><div class="lbl">CA</div><div class="val">'+n.ac+'</div></div><div class="npc-stat"><div class="lbl">ATK</div><div class="val">'+esc(n.atk)+'</div></div><div class="npc-stat"><div class="lbl">DMG</div><div class="val" style="font-size:11px">'+esc(n.dmg)+'</div></div></div><div style="font-size:10px;color:var(--td);margin-top:4px">'+esc(n.notes)+'</div><div class="f g4 fw" style="margin-top:6px">'+acts+'</div></div>'}
+
+function bEnc(){
+  var h='<div class="st">Encontro Atual</div>';
+  h+='<div class="exp-head" onclick="toggle(\'man\')"><span class="title">+ Adicionar Manual</span><span class="arrow" id="arrow-man">▸</span></div><div class="exp-body" id="body-man">';
+  h+='<div class="pg" style="margin-bottom:6px"><div class="fd"><label class="fl">Nome</label><input type="text" id="mNm" placeholder="Nome"></div><div class="fd"><label class="fl">Nível</label><input type="number" id="mLv" value="3" min="1" max="20"></div></div>';
+  h+='<div class="pg" style="margin-bottom:6px"><div class="fd"><label class="fl">HP</label><input type="number" id="mHP" value="25"></div><div class="fd"><label class="fl">MP</label><input type="number" id="mMP" value="15"></div></div>';
+  h+='<div class="pg" style="margin-bottom:6px"><div class="fd"><label class="fl">CA</label><input type="number" id="mAC" value="13"></div><div class="fd"><label class="fl">Aura</label><input type="text" id="mAu" placeholder="Fogo, —"></div></div>';
+  h+='<div class="pg" style="margin-bottom:6px"><div class="fd"><label class="fl">Ataque</label><input type="text" id="mAt" value="+5"></div><div class="fd"><label class="fl">Dano</label><input type="text" id="mDm" value="1d8+3"></div></div>';
+  h+='<div class="pg" style="margin-bottom:6px"><div class="fd"><label class="fl">Função</label><select id="mRl">';Object.keys(ROLES).forEach(r=>{h+='<option value="'+r+'">'+ROLES[r].l+'</option>'});h+='</select></div><div class="fd"><label class="fl">Origem</label><input type="text" id="mOr" placeholder="Tempesto"></div></div>';
+  h+='<div class="fd"><label class="fl">Notas</label><input type="text" id="mNo" placeholder="Equipamento..."></div><button class="bt bp" onclick="addM()">+ Adicionar</button></div>';
+  h+='<div class="exp-head" onclick="toggle(\'tpl\')"><span class="title">Templates Prontos</span><span class="arrow" id="arrow-tpl">▸</span></div><div class="exp-body" id="body-tpl"><div class="fd"><label class="fl">Filtrar</label><select id="tpF" onchange="rTpl()"><option value="all">Todos</option>';
+  var orgs=[];TPLS.forEach(t=>{if(orgs.indexOf(t.org)===-1)orgs.push(t.org)});orgs.forEach(o=>{h+='<option value="'+o+'">'+o+'</option>'});
+  h+='</select></div><div id="tpL" style="max-height:280px;overflow-y:auto"></div></div>';
+  h+='<div class="sub-label">XP</div><div class="crd"><div class="f ai g8 fw jc"><div class="f ai g4"><span class="fl" style="margin:0">Jogadores</span><div class="nc"><button class="nb" onclick="adjP(-1)">−</button><span class="nv" id="xPa">4</span><button class="nb" onclick="adjP(1)">+</button></div></div><div class="sb"><div class="sbl">Total</div><div class="sbv" id="xpT" style="font-size:14px">0</div></div><div class="sb"><div class="sbl">/ Jogador</div><div class="sbv" id="xpP" style="font-size:14px">0</div></div></div></div>';
+  h+='<div class="sub-label">NPCs <span id="encCt" style="color:var(--ac)">(0)</span></div><div class="f g6" style="margin-bottom:8px"><button class="bt bo bsm" onclick="clrE()">Limpar</button></div><div id="encL"></div>';
+  $('t-encontros').innerHTML=h;rTpl();rE();
+}
+function rTpl(){var f=$('tpF')?$('tpF').value:'all';$('tpL').innerHTML=TPLS.filter(t=>f==='all'||t.org===f).map((t,i)=>{var rc=ROLES[t.role]||ROLES.mob;return '<div class="npc" style="border-left:3px solid '+rc.c+';padding:8px"><div class="f ai jsb" style="margin-bottom:3px"><span class="npc-name" style="font-size:11px">'+esc(t.name)+'</span><div class="f g4"><span class="tag" style="font-size:8px;color:'+rc.c+';border-color:'+rc.c+'">'+rc.l+'</span><span class="tag" style="font-size:8px">Nv.'+t.lv+'</span></div></div><div style="font-size:10px;color:var(--td)">HP:'+t.hp+' MP:'+t.mp+' CA:'+t.ac+' ATK:'+t.atk+' DMG:'+t.dmg+'</div><button class="bt bp bsm" style="margin-top:4px" onclick="addT('+TPLS.indexOf(t)+')">+ Encontro</button></div>'}).join('')}
+function addT(i){var t=TPLS[i];encounter.push({id:nxId++,...t});rE();toast(t.name+' +')}
+function addM(){var nm=$('mNm').value.trim()||'NPC #'+nxId;encounter.push({id:nxId++,name:nm,lv:+$('mLv').value||1,hp:+$('mHP').value||25,mp:+$('mMP').value||0,ac:+$('mAC').value||13,aura:$('mAu').value||'—',role:$('mRl').value,org:$('mOr').value||'—',atk:$('mAt').value||'+0',dmg:$('mDm').value||'1d6',notes:$('mNo').value||''});rE();toast(nm+' +')}
+function rmE(id){encounter=encounter.filter(x=>x.id!==id);rE()}
+function dupE(id){var n=encounter.find(x=>x.id===id);if(!n)return;encounter.push({...JSON.parse(JSON.stringify(n)),id:nxId++,name:n.name+' (2)'});rE()}
+function rE(){$('encCt').textContent='('+encounter.length+')';if(!encounter.length){$('encL').innerHTML='<div style="color:var(--tm);font-size:11px;padding:15px;text-align:center;font-style:italic">Vazio. Use templates ou adicione manualmente.</div>';cX();return}$('encL').innerHTML=encounter.map(n=>nC(n,'<button class="bt bo bsm" onclick="dupE('+n.id+')">⧉ Duplicar</button><button class="bt bsm bdn" onclick="rmE('+n.id+')">✕</button>')).join('');cX()}
+function clrE(){encounter=[];rE();toast('Limpo')}
+function adjP(d){$('xPa').textContent=clamp(+$('xPa').textContent+d,1,12);cX()}
+function cX(){var p=+$('xPa').textContent||4,t=0;encounter.forEach(n=>t+=n.lv*10);$('xpT').textContent=t;$('xpP').textContent=Math.floor(t/p)}
+
+// ═══ REFERÊNCIA ═══
+function bRef(){
+  var h='<div class="st">Referência Rápida</div>';
+  h+='<div class="exp-head" onclick="toggle(\'cd\')"><span class="title">Tabelas de CD</span><span class="arrow" id="arrow-cd">▸</span></div><div class="exp-body" id="body-cd"><table class="ref-table"><tr><th>Tipo</th><th>CD</th><th>Exemplo</th></tr><tr><td>Muito Fácil</td><td>5</td><td>Identificar aura óbvia</td></tr><tr><td>Fácil</td><td>10</td><td>Treino básico</td></tr><tr><td>Médio</td><td>14</td><td>Treino intermediário</td></tr><tr><td>Difícil</td><td>18</td><td>Treino avançado</td></tr><tr><td>Muito Difícil</td><td>22</td><td>Técnica Máxima</td></tr><tr><td>Impossível</td><td>25+</td><td>Expansão, artefato</td></tr></table></div>';
+  h+='<div class="exp-head" onclick="toggle(\'tec\')"><span class="title">Técnicas Genéricas</span><span class="arrow" id="arrow-tec">▸</span></div><div class="exp-body" id="body-tec"><table class="ref-table"><tr><th>Técnica</th><th>Custo</th><th>Efeito</th><th>Alcance</th></tr><tr><td><b>Projetar</b></td><td>6-30 MP</td><td>1d8 a 5d8</td><td>10-50m</td></tr><tr><td><b>Manifestar</b></td><td>5-45 MP</td><td>Cria objetos</td><td>Toque-15m</td></tr><tr><td><b>Proteger</b></td><td>% ataque</td><td>Total/Parcial/Reflexivo</td><td>Reação</td></tr><tr><td><b>Expansão</b></td><td>50% MP</td><td>+150% dmg</td><td>DOM×2m</td></tr></table></div>';
+  h+='<div class="exp-head" onclick="toggle(\'fort\')"><span class="title">Fortalecimentos</span><span class="arrow" id="arrow-fort">▸</span></div><div class="exp-body" id="body-fort"><table class="ref-table"><tr><th>Elemento</th><th>Bônus</th><th>Custo</th></tr><tr><td>Sinais de Mão</td><td>+25%</td><td>Ação bônus</td></tr><tr><td>Encantamento</td><td>+20%</td><td>Ação bônus</td></tr><tr><td>Carga (1/2/3t)</td><td>+50/100/200%</td><td>Vel ½</td></tr><tr><td>Consumíveis</td><td>+30%</td><td>Item</td></tr><tr><td>Conjunto</td><td>+75/50/25%</td><td>Comp/Neutra/Oposta</td></tr><tr><td>Votos</td><td>+100%</td><td>Pacto</td></tr><tr><td>Dança</td><td>+75%</td><td>Mov + bônus</td></tr><tr><td>Limites</td><td>+100/200/300%</td><td>Dia/Sem/Mês</td></tr></table></div>';
+  h+='<div class="exp-head" onclick="toggle(\'flux\')"><span class="title">Fluxo de Aura</span><span class="arrow" id="arrow-flux">▸</span></div><div class="exp-body" id="body-flux"><table class="ref-table"><tr><th>Regra</th><th>Detalhe</th></tr><tr><td>Gatilho</td><td>Acertar técnica de aura</td></tr><tr><td>Continuação</td><td>Mesma aura: +1 Desequilíbrio</td></tr><tr><td>Bônus</td><td>−1 MP OU +1 atk/dmg</td></tr><tr><td>Penalidade</td><td>−1 Defesa/ponto</td></tr><tr><td>Limite</td><td>Máx = mod DOM</td></tr><tr><td>Falha</td><td>Perde tudo, custo ×2</td></tr></table></div>';
+  h+='<div class="exp-head" onclick="toggle(\'exh\')"><span class="title">Exaustão de Aura</span><span class="arrow" id="arrow-exh">▸</span></div><div class="exp-body" id="body-exh"><table class="ref-table"><tr><th>Nv</th><th>Efeito</th></tr><tr><td>1</td><td>Desv. DOM treino</td></tr><tr><td>2</td><td>Desv. DOM+CON</td></tr><tr><td>3</td><td>Vel −50%, desv. DEX/INT/SAB</td></tr><tr><td>4</td><td>CON CD 15 ou perde ação</td></tr><tr><td>5</td><td>Inconsciente</td></tr></table></div>';
+  h+='<div class="exp-head" onclick="toggle(\'cond\')"><span class="title">Condições</span><span class="arrow" id="arrow-cond">▸</span></div><div class="exp-body" id="body-cond"><table class="ref-table"><tr><th>Condição</th><th>Efeito</th><th>Duração</th></tr><tr><td>Queimadura</td><td>1d4/t</td><td>1d4t</td></tr><tr><td>Encharcado</td><td>−2 mov</td><td>1d4t</td></tr><tr><td>Enraizado</td><td>Imóvel</td><td>Conc/1d4t</td></tr><tr><td>Atordoado</td><td>Perde ação</td><td>1t</td></tr><tr><td>Cego</td><td>Desv. atk</td><td>Variável</td></tr><tr><td>Amedrontado</td><td>Desv. fonte</td><td>Conc/SAB</td></tr><tr><td>Envenenado</td><td>Desv. atk/testes</td><td>Variável</td></tr></table></div>';
+  h+='<div class="sub-label">Rolador</div><div class="crd"><div class="f fw g6 jc" style="margin-bottom:8px">';
+  ['1d4','1d6','1d8','1d10','1d12','1d20','1d100','2d6','3d6','3d8'].forEach(d=>{h+='<button class="bt bo bsm" onclick="qR(\''+d+'\')">'+d+'</button>'});
+  h+='</div><div class="f g6 ai jc" style="margin-bottom:6px"><input type="text" id="cD" value="1d20" style="width:70px;text-align:center"><input type="number" id="dM" value="0" style="width:50px;text-align:center"><button class="bt bp bsm" onclick="qR($(\'cD\').value)">Rolar</button></div><div id="dR" style="text-align:center;font-family:Cinzel,serif;font-size:20px;font-weight:700;color:var(--ac);min-height:28px"></div></div>';
+  $('t-referencia').innerHTML=h;
+}
+function qR(n){var r=rD(n),mod=+$('dM').value||0,t=r.t+mod,cr=n==='1d20'&&r.t===20,fl=n==='1d20'&&r.t===1,c=cr?'var(--warn)':fl?'var(--dn)':'var(--ac)';$('dR').innerHTML='<span style="color:'+c+'">'+t+'</span> <span style="font-size:11px;color:var(--td)">['+r.r+']'+(mod?(mod>0?'+':'')+mod:'')+'</span>'+(cr?' <span style="color:var(--warn);font-size:11px">CRIT!</span>':'')+(fl?' <span style="color:var(--dn);font-size:11px">FALHA!</span>':'')}
+
+// ═══ ARKA ═══
+var arkaData={Elyndra:{cap:3,cur:3,color:'#a8c8e8',desc:'Montanhas geladas, Arka escassa mas pura.'},Valmoria:{cap:4,cur:4,color:'#7ec886',desc:'Terras férteis. Arka moderada.'},Xendarion:{cap:5,cur:5,color:'#c9a96e',desc:'Florestas estabilizam. Ideal treino.'},Zaratheon:{cap:6,cur:6,color:'#e06040',desc:'Vulcões alimentam Arka intensa.'},Vestigar:{cap:9,cur:9,color:'#a855f7',desc:'Ruptura. Caótica. 15% Surto.'}};
+function bArka(){
+  var h='<div class="st">Arka dos Continentes</div><div style="font-size:11px;color:var(--td);margin-bottom:10px">1 treino = 1 Arka. Regenera com tempo narrativo.</div><div id="aL"></div>';
+  h+='<div class="sub-label">Regras</div><table class="ref-table"><tr><th>Continente</th><th>Arka</th><th>Especial</th></tr>';
+  h+='<tr><td>Elyndra</td><td>2-4</td><td>Anjos picos (4). Starks sem. Forja-Fria (3).</td></tr>';
+  h+='<tr><td>Valmoria</td><td>3-5</td><td>Aquamarine bônus água. Nytherion monopoliza.</td></tr>';
+  h+='<tr><td>Xendarion</td><td>4-6</td><td>Eryndoril/Sylvanos (6). Império compete.</td></tr>';
+  h+='<tr><td>Zaratheon</td><td>5-7</td><td>Fissuras. Demônios em crateras.</td></tr>';
+  h+='<tr><td style="color:#a855f7;font-weight:700">Vestigar</td><td style="color:#a855f7;font-weight:700">8-10</td><td style="color:#a855f7">15% Surto/sessão.</td></tr></table>';
+  h+='<div class="sub-label">Surto (Vestigar)</div><table class="ref-table"><tr><th>1d6</th><th>Efeito</th></tr><tr><td>1</td><td>Explosão: 2d6 em 5m, CON CD 14</td></tr><tr><td>2</td><td>Distorção temporal: perde turno</td></tr><tr><td>3</td><td>Mutação: +2/-2 (1d4h)</td></tr><tr><td>4</td><td>Visão: info + 1d4 psíquico</td></tr><tr><td>5</td><td>Ressonância: treino ×2!</td></tr><tr><td>6</td><td>Portal: 1d4 min, criaturas!</td></tr></table>';
+  $('t-arka').innerHTML=h;rA();
+}
+function rA(){var el=$('aL');if(!el)return;var h='';Object.keys(arkaData).forEach(k=>{var c=arkaData[k],pct=Math.round(c.cur/c.cap*100),sc=c.cur===0?'var(--dn)':c.cur<=Math.floor(c.cap*.3)?'var(--warn)':'var(--sc)',st=c.cur===0?'ESGOTADO':c.cur<=Math.floor(c.cap*.3)?'Baixo':'OK';h+='<div class="cont-card" style="border-left-color:'+c.color+'"><div class="f ai jsb"><div class="cont-name" style="color:'+c.color+'">'+k+'</div><span style="font-size:10px;color:'+sc+';font-weight:700;font-family:Cinzel,serif">'+st+'</span></div><div class="cont-desc">'+c.desc+'</div><div class="f ai g8"><div class="nc"><button class="nb" onclick="adjAr(\''+k+'\',-1)">−</button><span class="nv" style="color:'+c.color+'">'+c.cur+'</span><button class="nb" onclick="adjAr(\''+k+'\',1)">+</button></div><span style="font-size:10px;color:var(--tm)">/ '+c.cap+'</span><div class="arka-bar" style="flex:1"><div class="arka-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div class="f g4"><button class="bt bo bsm" onclick="adjAC(\''+k+'\',-1)">Cap−</button><button class="bt bo bsm" onclick="adjAC(\''+k+'\',1)">Cap+</button></div></div>';if(k==='Vestigar')h+='<div style="margin-top:6px"><button class="bt bsm bwn" onclick="rS()">⚡ Surto</button></div>';h+='</div>'});el.innerHTML=h}
+function adjAr(k,d){arkaData[k].cur=clamp(arkaData[k].cur+d,0,arkaData[k].cap);rA()}
+function adjAC(k,d){arkaData[k].cap=Math.max(1,arkaData[k].cap+d);if(arkaData[k].cur>arkaData[k].cap)arkaData[k].cur=arkaData[k].cap;rA()}
+function rS(){var r=rD('1d6'),e=['Explosão: 2d6 em 5m!','Distorção: perde turno!','Mutação: +2/-2 1d4h!','Visão: info+1d4 psíq!','Ressonância: treino×2!','Portal: 1d4min!'];toast('Surto ['+r.t+']: '+e[r.t-1])}
+
+// ═══ SAVE/LOAD ═══
+function saveGM(){var d={encounter,arkaData,nxId,curRegion};var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='mestre-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Salvo!')}
+function loadGM(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=ev=>{try{var d=JSON.parse(ev.target.result);encounter=d.encounter||[];arkaData=d.arkaData||arkaData;nxId=d.nxId||1;if(d.curRegion){curRegion=d.curRegion;rRB();rET()}rE();rA();toast('OK!')}catch(x){toast('Erro!')}};r.readAsText(f)}
+
+bEcon();bEnc();bRef();bArka();
+document.querySelector('.hdr').innerHTML+='<div style="margin-top:6px;display:flex;gap:8px;justify-content:center"><button class="bt bo bsm" onclick="saveGM()">💾 Salvar</button><label class="bt bo bsm" style="cursor:pointer">📂 Carregar<input type="file" accept=".json" onchange="loadGM(event)" style="display:none"></label></div>';
+</script>
+</body>
+</html>
