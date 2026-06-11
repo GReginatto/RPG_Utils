@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O Crepúsculo dos Reinos — Ficha</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080810;--sf:#0e0e1a;--cd:#131320;--bd:#252540;--bl:#353555;--ac:#c9a96e;--ag:#c9a96e55;--ad:#8a6a3e;--tx:#ddd8cc;--td:#6a6680;--tm:#4a4660;--dn:#b83030;--sc:#3a7a4c;--mn:#3a6aaa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:'Crimson Text',Georgia,serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+input::placeholder,textarea::placeholder{color:var(--tm)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.hdr{padding:20px 20px 6px;text-align:center;position:relative}
+.hdr::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--ad),transparent)}
+.hdr h1{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--ac);letter-spacing:.08em;text-shadow:0 0 30px var(--ag)}
+.tabs{display:flex;justify-content:center;padding:8px 4px 0;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tb{padding:7px 11px;background:0;color:var(--td);border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Cinzel',serif;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;transition:.25s}
+.tb:hover{color:var(--tx)}.tb.on{color:var(--ac);border-bottom-color:var(--ac)}
+.ct{max-width:740px;margin:0 auto;padding:12px 12px 70px}
+.tp{display:none;animation:fadeUp .3s}.tp.on{display:block}
+.st{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--ac);letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+input[type="text"],input[type="number"],textarea,select{padding:6px 9px;background:var(--cd);border:1px solid var(--bd);color:var(--tx);border-radius:4px;font-family:'Crimson Text',serif;font-size:13px;outline:none;width:100%}
+input:focus,textarea:focus,select:focus{border-color:var(--ad)}
+textarea{resize:vertical;min-height:42px}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236a6680'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.fd{margin-bottom:10px}.fl{display:block;font-family:'Cinzel',serif;font-size:8px;font-weight:600;color:var(--td);letter-spacing:.18em;text-transform:uppercase;margin-bottom:3px}
+.bt{padding:6px 14px;border:none;border-radius:4px;cursor:pointer;font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;transition:.2s}
+.bt:hover{filter:brightness(1.15)}
+.bp{background:var(--ac);color:var(--bg)}.bo{background:0;border:1px solid var(--bd);color:var(--td)}.bo:hover{border-color:var(--ad);color:var(--ac)}
+.bs{background:var(--sc);color:var(--tx)}.bsm{padding:4px 9px;font-size:8px}
+.pl{padding:4px 10px;border-radius:16px;font-size:11px;cursor:pointer;border:1px solid var(--bd);background:0;color:var(--td);font-family:'Crimson Text',serif;transition:.2s}
+.pl.on{font-weight:700}.pl:hover{border-color:var(--tm)}
+.crd{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:12px}
+.sb{background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:7px 10px;text-align:center;min-width:58px}
+.sbl{font-size:8px;color:var(--td);text-transform:uppercase;letter-spacing:.12em;font-family:'Cinzel',serif;margin-bottom:2px}
+.sbv{font-size:18px;font-weight:700;font-family:'Cinzel',serif;color:var(--ac)}
+.sbs{font-size:9px;color:var(--tm);margin-top:1px}
+.nc{display:inline-flex;align-items:center;gap:3px}
+.nb{width:21px;height:21px;background:var(--sf);border:1px solid var(--bd);color:var(--td);cursor:pointer;border-radius:3px;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.15s;font-family:sans-serif}
+.nb:hover{border-color:var(--ad);color:var(--ac)}
+.nv{min-width:22px;text-align:center;font-weight:700;font-size:14px;font-family:'Cinzel',serif}
+.bt2{height:6px;background:var(--sf);border-radius:3px;overflow:hidden;flex:1}
+.bf{height:100%;border-radius:3px;transition:width .35s}
+.ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:6px}
+.an{position:absolute;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;transition:.25s;background:var(--cd);border:2px solid var(--bd)}
+.an:hover{transform:scale(1.1)}
+.ii{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--cd);border:1px solid var(--bd);border-radius:5px}
+.ii.eq{border-left:3px solid var(--ac)}.ii.cr{border-left:3px solid var(--mn)}.ii.sr{border-left:3px solid var(--tm);opacity:.7}
+.is{font-size:8px;padding:2px 7px;border-radius:10px;font-family:'Cinzel',serif;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:rgba(201,169,110,.08);color:var(--td);text-transform:uppercase;white-space:nowrap}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.ja{font-family:'Courier New',monospace;font-size:10px;line-height:1.4;background:var(--bg);border:1px solid var(--bd);color:var(--ac);border-radius:4px;padding:9px;width:100%;min-height:80px;resize:vertical}
+.fh{position:absolute;width:0;height:0;opacity:0;pointer-events:none}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:7px 18px;background:var(--cd);border:1px solid var(--ad);color:var(--ac);border-radius:5px;font-family:'Cinzel',serif;font-size:10px;font-weight:600;z-index:10000;animation:fadeUp .3s;pointer-events:none}
+.f{display:flex}.fw{flex-wrap:wrap}.fc{flex-direction:column}.g4{gap:4px}.g6{gap:6px}.g8{gap:8px}.g10{gap:10px}.g12{gap:12px}.g16{gap:16px}
+.ai{align-items:center}.jc{justify-content:center}.jsb{justify-content:space-between}.f1{flex:1}.tc{text-align:center}
+.pr{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;transition:.15s}
+.pr:hover{background:rgba(201,169,110,.04)}
+.pc{width:16px;height:16px;border-radius:50%;border:2px solid var(--bd);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+.pc.on{border-color:var(--ac);background:var(--ac)}
+.pc.on::after{content:'✓';font-size:9px;color:var(--bg);font-weight:700}
+.aci{background:var(--cd);border:1px solid var(--bd);border-radius:5px;margin-bottom:5px;overflow:hidden}
+.ach{padding:8px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:.15s}
+.ach:hover{background:rgba(201,169,110,.04)}
+.acb{padding:0 12px 10px;display:none}
+.aci.open .acb{display:block}
+.alv{padding:7px 10px;margin-bottom:5px;border-radius:4px;border-left:3px solid var(--bd)}
+.pe{background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:10px;margin-top:8px}
+@media(max-width:550px){.pg{grid-template-columns:1fr}.ag{grid-template-columns:repeat(auto-fit,minmax(78px,1fr))}.tb{padding:6px 8px;font-size:8px}.hdr h1{font-size:17px}}
+.tcd{background:var(--cd);border:1px solid var(--bd);border-radius:5px;margin-bottom:8px;overflow:hidden}
+.tch{padding:8px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--ac);letter-spacing:.06em;transition:.15s}
+.tch:hover{background:rgba(201,169,110,.06)}
+.tch .arr{transition:transform .2s;font-size:8px;color:var(--td)}
+.tcd.open .tch .arr{transform:rotate(90deg)}
+.tcb{display:none;padding:8px 12px 12px;font-size:12px;line-height:1.5}
+.tcd.open .tcb{display:block}
+.tmc{font-size:11px;color:var(--td);margin-bottom:3px}
+.tmc b{color:var(--tx);font-weight:600}
+.tmc em{color:var(--ac);font-style:normal;font-weight:600}
+.tdt{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-family:'Cinzel',serif;font-weight:600;letter-spacing:.06em;margin-right:4px;margin-bottom:3px}
+.flx-panel{background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:12px;margin-bottom:10px}
+.flx-active{border-color:var(--ac);box-shadow:0 0 12px rgba(201,169,110,.12)}
+.flx-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.flx-deseq{display:flex;gap:4px}
+.flx-pip{width:20px;height:20px;border-radius:3px;border:1px solid var(--bd);background:var(--cd);display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'Cinzel',serif;font-weight:700;color:var(--tm);transition:.2s}
+.flx-pip.on{background:rgba(201,169,110,.15);border-color:var(--ac);color:var(--ac)}
+.flx-pip.danger{background:rgba(184,48,48,.15);border-color:var(--dn);color:var(--dn)}
+.flx-log{max-height:120px;overflow-y:auto;font-size:10px;color:var(--td)}
+.flx-log div{padding:3px 0;border-bottom:1px solid var(--bd)}
+.trn-card{background:var(--sf);border:1px solid var(--bd);border-radius:5px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.trn-prog{display:flex;gap:3px}
+.trn-dot{width:14px;height:14px;border-radius:50%;border:1px solid var(--bd);background:var(--cd);transition:.2s}
+.trn-dot.done{background:var(--sc);border-color:var(--sc)}
+.exh-lvl{display:flex;gap:4px;margin-bottom:6px}
+.exh-pip{width:24px;height:24px;border-radius:4px;border:1px solid var(--bd);background:var(--cd);display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'Cinzel',serif;font-weight:700;color:var(--tm);cursor:pointer;transition:.2s}
+.exh-pip.on{background:rgba(184,48,48,.2);border-color:var(--dn);color:var(--dn)}
+.fort-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+@media(max-width:500px){.fort-grid{grid-template-columns:1fr}}
+.fort-item{background:var(--sf);border:1px solid var(--bd);border-radius:4px;padding:7px 9px;font-size:10px;line-height:1.4}
+.fort-item b{color:var(--ac);font-family:'Cinzel',serif;font-size:9px;letter-spacing:.04em}
+.sub-label{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--td);letter-spacing:.1em;text-transform:uppercase;margin:10px 0 5px;padding-bottom:3px;border-bottom:1px solid var(--bd)}
+</style>
+</head>
+<body>
+<div class="hdr"><h1>O Crepúsculo dos Reinos</h1></div>
+<div class="tabs" id="tabs"></div>
+<div class="ct" id="ct"></div>
+<script>
+var A=["FOR","DEX","CON","SAB","INT","CAR","DOM"];
+var AN={FOR:"Força",DEX:"Destreza",CON:"Constituição",SAB:"Sabedoria",INT:"Inteligência",CAR:"Carisma",DOM:"Dominação"};
+var RACES={Humano:{bonus:{},ab:"Adaptação: 2×/dia pode rerolar um teste de atributo. +1 em um atributo à escolha.",c:"#c9a96e"},Elfo:{bonus:{DEX:1},ab:"Visão no escuro, +2 furtividade e iniciativa. Fraqueza: -1 CON.",c:"#7ec8a0"},"Anão":{bonus:{CON:1},ab:"Imunidade a venenos, +2 resistência, visão no escuro. Fraqueza: -2m movimento.",c:"#b07840"},"Demônio":{bonus:{DOM:1},ab:"+3 dano com fogo, 50% resistência a fogo. Fraqueza: -2 CAR com não-demônios.",c:"#c43030"},Anjo:{bonus:{SAB:1},ab:"Escudo de absorção: 15 pts, 1×/dia. Fraqueza: 150% dano de Trevas.",c:"#f0e68c"}};
+var PP={Guerreiro:{m:{FOR:2,CON:1,INT:-2,DOM:-1},hp:"1d12",mp:"1d4",mv:"9+DEX",sk:"Armas marciais, armaduras pesadas, atletismo",pr:["Atletismo","Intimidação"]},Explorador:{m:{DEX:2,SAB:1,FOR:-1,CON:-1,DOM:-1},hp:"1d8",mp:"1d6",mv:"9+DEX",sk:"Furtividade, sobrevivência, percepção",pr:["Sobrevivência","Percepção"]},Estudioso:{m:{INT:2,SAB:1,FOR:-2,CON:-1},hp:"1d6",mp:"1d10",mv:"9+DEX",sk:"Arcanismo, história, investigação",pr:["Arcanismo","História","Investigação"]},Diplomata:{m:{CAR:2,INT:1,FOR:-1,DEX:-1,DOM:-1},hp:"1d6",mp:"1d8",mv:"9+DEX",sk:"Persuasão, enganação, intuição",pr:["Persuasão","Enganação","Intuição"]},Arkano:{m:{DOM:3,INT:2,FOR:-3,CON:-1,DEX:-1},hp:"1d6",mp:"1d12",mv:"9+DEX",sk:"Canalização de Arka, arcanismo, meditação",pr:["Arcanismo","Meditação"]},"Guardião":{m:{CON:2,SAB:2,FOR:1,DEX:-3,INT:-1,CAR:-1},hp:"1d12",mp:"1d8",mv:"9+DEX",sk:"Defesa, resistência, proteção de aliados",pr:["Atletismo","Percepção"]},Curandeiro:{m:{SAB:3,CAR:2,FOR:-2,DEX:-2,DOM:-1},hp:"1d8",mp:"1d10",mv:"9+DEX",sk:"Medicina, herbologia, cura por Arka",pr:["Medicina","Herbologia"]}};
+var DP=[{n:"Acrobacia",a:"DEX"},{n:"Adestrar Animais",a:"SAB"},{n:"Arcanismo",a:"INT"},{n:"Atletismo",a:"FOR"},{n:"Atuação",a:"CAR"},{n:"Enganação",a:"CAR"},{n:"Furtividade",a:"DEX"},{n:"História",a:"INT"},{n:"Intimidação",a:"CAR"},{n:"Intuição",a:"SAB"},{n:"Investigação",a:"INT"},{n:"Medicina",a:"SAB"},{n:"Natureza",a:"INT"},{n:"Percepção",a:"SAB"},{n:"Persuasão",a:"CAR"},{n:"Prestidigitação",a:"DEX"},{n:"Religião",a:"INT"},{n:"Sobrevivência",a:"SAB"}];
+
+// Hexagram: clockwise from upper-left matching the book image
+var AG=[
+  {n:"Criadora",ag:330,c:"#2ecc71",i:"❋"},
+  {n:"Emissora",ag:30,c:"#e74c3c",i:"◈"},
+  {n:"Divina",ag:90,c:"#f4d03f",i:"✦"},
+  {n:"Deformadora",ag:150,c:"#9b59b6",i:"◉"},
+  {n:"Mental",ag:210,c:"#3498db",i:"◎"},
+  {n:"Ícor",ag:270,c:"#1abc9c",i:"⬡"}
+];
+
+var AD={
+Emissora:[
+{n:"Fogo",l:["Manipula fogo existente no ambiente em um raio de até 3 metros com dificuldade média. Pode gerar pequenas chamas (equivalentes a uma vela) a partir do próprio corpo. Possui 25% de resistência a danos de fogo.","Controla facilmente o fogo ambiente em um raio de até 10 metros. Gera chamas médias (equivalentes a uma fogueira) a partir do próprio corpo. Pode direcionar o fogo em trajetórias simples. Possui 50% de resistência a danos de fogo.","Realiza manipulações complexas com fogo em um raio de até 30 metros, incluindo formas precisas e movimentos elaborados. Pode criar um mini plano de fogo (área de 5 metros de diâmetro) a partir do próprio corpo. Possui 100% de imunidade a danos de fogo, mas sofre 30% a mais de dano de água."]},
+{n:"Água",l:["Manipula até 10 litros de água no ambiente em um raio de até 3 metros com dificuldade média. Pode alterar o fluxo e a direção da água existente. Possui 25% de resistência a danos de água.","Controla facilmente até 100 litros de água no ambiente em um raio de até 10 metros. Cria jatos e correntes com pressão suficiente para derrubar um humano. Pode extrair umidade do ar em ambientes úmidos. Possui 50% de resistência a danos de água.","Manipula até 1000 litros de água em um raio de até 30 metros. Cria barreiras ou esferas de proteção capazes de deter projéteis. Pode extrair água de plantas e corpos. Possui 100% de imunidade a danos de água, mas sofre 30% a mais de dano de fogo."]},
+{n:"Vento",l:["Controla correntes de ar suaves (até 20 km/h) e realiza rajadas de vento moderadas em um raio de até 5 metros. Pode desviar pequenos projéteis e alterar levemente a trajetória de objetos leves. Possui 25% de resistência a danos relacionados ao vento.","Controla com facilidade ventos de até 60 km/h em um raio de até 15 metros. Pode criar ventanias fortes ou formar pequenos tornados (1 metro de diâmetro) que duram até 1 minuto. Capaz de desviar projéteis médios. Possui 50% de resistência a danos relacionados ao vento.","Manipula ventos intensos de até 120 km/h em um raio de até 50 metros. Pode criar furacões localizados (5 metros de diâmetro) ou gerar uma corrente de ar que permite levitar a até 10 metros do solo por até 10 minutos. Possui 100% de imunidade a danos relacionados ao vento, mas sofre 30% a mais de dano de ataques de terra."]},
+{n:"Terra",l:["Manipula até 50 kg de terra ou pedras em um raio de até 5 metros. Pode criar pequenas elevações no solo (até 50 cm de altura) ou lançar projéteis de pedra com força moderada. Possui 25% de resistência a danos relacionados à terra.","Controla com facilidade até 500 kg de terra e rochas em um raio de até 15 metros. Pode criar estruturas de até 3 metros de altura ou causar tremores leves que desequilibram oponentes em um raio de 10 metros. Possui 50% de resistência a danos relacionados à terra.","Manipula até 5 toneladas de terra em um raio de até 50 metros. Pode criar formações rochosas de até 10 metros de altura ou abrir fissuras de até 3 metros de largura e 10 metros de profundidade. Possui 100% de imunidade a danos relacionados à terra, mas sofre 30% a mais de dano de ataques de vento."]},
+{n:"Venenosa",l:["Cria nuvens tóxicas de até 2 metros de diâmetro que causam dano leve (1d4 por turno) e manipula até 1 litro de venenos líquidos presentes no ambiente em um raio de até 5 metros. Recebe apenas 50% do dano normal de toxinas e venenos.","Manipula facilmente até 10 litros de veneno em um raio de até 15 metros. Cria nuvens tóxicas de até 10 metros de diâmetro que causam dano moderado (2d6 por turno) ou lança rajadas de toxinas (alcance de 10 metros) que provêm do próprio corpo. Pode alterar a composição de venenos existentes, modificando seus efeitos. Possui 100% de imunidade a danos relacionados a toxinas e venenos.","Manipula até 100 litros de veneno em um raio de até 50 metros. Pode criar formas sólidas de veneno cristalizado (com dureza equivalente ao aço) ou transformar-se em uma névoa venenosa por até 10 minutos. Pode criar novos tipos de venenos com efeitos personalizados. Possui 200% de imunidade a venenos (recupera vida igual a 100% do dano que receberia), mas sofre 50% a mais de dano de fogo."]},
+{n:"Sombria",l:["Manipula sombras existentes em um raio de até 5 metros. Pode criar pequenos objetos sombrios (até 30 cm) ou obscurecer uma área de até 3 metros de diâmetro, reduzindo a visibilidade. Só pode manipular sombras já presentes e que provêm de objetos próximos. Possui 25% de resistência a danos de trevas.","Controla com facilidade as sombras em um raio de até 15 metros. Pode se camuflar na escuridão (concedendo +10 em testes de furtividade), manipular sombras de outros corpos, e gerar sombra própria que não se dissipa em contato com luz fraca ou moderada. Possui 50% de resistência a danos de trevas.","Manipula a escuridão em um raio de até 50 metros. Pode criar portais sombrios para se teleportar até 100 metros entre áreas de sombra ou transformar-se em uma sombra intangível por até 5 minutos. Suas sombras só se dissipam após 10 minutos de exposição direta a luz intensa (como luz solar do meio-dia). Possui 100% de imunidade a danos de trevas, mas sofre 50% a mais de dano de luz."]},
+{n:"Nebulosa",l:["Cria uma neblina densa que cobre uma área de até 5 metros de diâmetro ou emite pequenas rajadas de névoa com alcance de até 3 metros. Pode ficar parcialmente invisível (50% de chance de não ser detectado) quando envolto em neblina natural ou criada. Possui 25% de resistência a danos relacionados à névoa/neblina.","Manipula com facilidade a névoa em um raio de até 15 metros. Pode criar nevoeiros espessos que cobrem até 20 metros de diâmetro ou controlar a visibilidade em uma área, criando \"janelas\" de visão clara em meio à névoa. Torna-se completamente invisível em meio à neblina. Possui 50% de resistência a danos relacionados à névoa/neblina.","Controla névoa em um raio de até 50 metros. Pode criar tempestades de névoa que cobrem até 100 metros de diâmetro e reduzem a visibilidade a zero, ou se transformar em uma forma intangível de neblina por até 10 minutos, podendo passar por frestas e pequenas aberturas. Possui 100% de imunidade a danos relacionados à névoa/neblina, mas sofre 30% a mais de dano de ataques de fogo."]}
+],
+Criadora:[
+{n:"Materialização",l:["Materializa sua aura em objetos físicos com resistência variável (da leveza da seda até a dureza do ferro). Pode criar objetos pequenos (até 30 cm em qualquer dimensão) sem conhecer sua estrutura interna. As criações duram até 1 hora ou até receberem dano significativo. Volume máximo: 10 litros.","Cria objetos de tamanho médio (até 1,5 metros em qualquer dimensão) que duram até serem desfeitos voluntariamente ou sofrerem dano crítico. Pode materializar objetos complexos (como mecanismos simples) se conhecer seu funcionamento básico. Volume máximo: 100 litros.","Cria materiais com resistência equivalente ao grafeno (10 vezes mais resistente que o aço). Pode materializar objetos complexos (como dispositivos mecânicos elaborados) sem conhecer seu funcionamento detalhado, e objetos grandes (até 3 metros em qualquer dimensão) com conhecimento parcial. As criações podem durar indefinidamente se receberem manutenção periódica. Volume máximo: 1000 litros."]},
+{n:"Rejuvenescimento",l:["Restaura objetos pequenos (até 30 cm) a seu estado original sem conhecer sua estrutura, e objetos médios (até 1 metro) se conhecer seu funcionamento. Cura até 2d6 pontos de vida em ferimentos recentes (menos de 1 hora) em outras pessoas ou em si mesmo.","Restaura objetos de tamanho médio (até 1,5 metros) sem conhecer sua estrutura interna. Cura até 4d8 pontos de vida em ferimentos de até 24 horas e pode estabilizar personagens caídos em combate, impedindo a morte por 1 hora. Pode ser usado 5 vezes por dia.","Restaura objetos grandes (até 3 metros) conhecendo apenas parcialmente seu funcionamento. Cura até 8d8 pontos de vida em ferimentos de até 3 dias, e reviver pessoas mortas há menos de 10 minutos, desde que o corpo esteja relativamente intacto. Pode ser usado 7 vezes por dia."]},
+{n:"Dracônica",l:["Manifesta escamas resistentes (CA +2) e garras afiadas (1d6 de dano) em pequenos membros do corpo (mãos, braços ou pernas). Pode respirar um elemento primordial à escolha (fogo, gelo, ácido, eletricidade) em um cone de 3 metros, causando 2d6 de dano. Estas manifestações duram até 10 minutos e podem ser usadas 3 vezes por dia.","Além das habilidades anteriores com valores aprimorados (CA +4, garras 2d6), manifesta asas membranosas com envergadura de 4 metros que permitem voar a 60 km/h por até 1 hora. O sopro dracônico aumenta para 5 metros de alcance e 4d6 de dano. Pode se transformar em uma forma dracônica humanoide completa por até 10 minutos, uma vez por dia.","Transforma-se completamente em um dragão de 5 metros de comprimento por até 1 hora, uma vez por dia. Nesta forma, ganha Força 20, CA natural de 18, imunidade ao elemento escolhido, e sopro dracônico de 10 metros causando 8d6 de dano (recarrega a cada 1d4 turnos). Mantém a capacidade de fala e inteligência originais."]},
+{n:"Animalesca",l:["Aprimora os sentidos (visão, audição, olfato) em 100%, concedendo +5 em testes de Percepção. Aumenta uma característica física (velocidade, força ou agilidade) em 50%, concedendo +3 no atributo correspondente. Pode se comunicar telepaticamente com animais em um raio de 10 metros e manifestar partes animais (garras, presas, etc.) em membros pequenos por até 1 hora, 3 vezes ao dia.","Transforma-se completamente em um animal não-mítico de tamanho pequeno ou médio por até 3 horas, adquirindo todas as suas capacidades físicas. Pode manifestar partes de animais míticos menores (como garras de grifo ou escamas de basilisco) em até 30% do corpo por 1 hora, 2 vezes ao dia.","Transforma-se em qualquer animal não-mítico que tenha observado por pelo menos 10 minutos, independente do tamanho, por até 12 horas. Pode se transformar em animais míticos menores (como um grifo jovem ou um pequeno basilisco) por até 1 hora, uma vez por dia. As transformações mantêm a consciência e inteligência originais."]},
+{n:"Naturae",l:["Acelera o crescimento de plantas e vegetação ao toque, fazendo-as crescer até 10 vezes mais rápido que o normal. As plantas afetadas podem sobreviver em superfícies inóspitas (pedras, areia, etc.) por até 1 semana. Pode afetar uma área de até 5 metros de raio e identificar propriedades medicinais ou tóxicas de qualquer planta.","Além das capacidades do nível 1, pode gerar plantas e frutos com efeitos mágicos específicos (cura 2d8 PV, veneno que causa 2d6 de dano, efeito de sono por 1d4 horas, etc.). Afeta uma área de até 20 metros de raio. Sua presença apazigua vegetações contaminadas ou danosas em um raio de 10 metros, neutralizando seus efeitos nocivos por 1 hora.","Faz crescer pequenas florestas (até 100 metros de raio) em questão de horas, mesmo em terrenos completamente estéreis. As plantas criadas podem ter propriedades especiais (luminescência, resistência ao fogo, capacidade de movimento limitado). Pode infundir vida em objetos inanimados de origem natural (madeira, pedra, etc.), criando criaturas (como um golem) com até 100 PV que obedecem a comandos simples por até 24 horas."]}
+],
+"Ícor":[
+{n:"Aura Própria",l:["Uma aura extremamente rara que permite ao usuário criar sua própria manifestação de poder, não limitada pelas categorias convencionais. Deve respeitar a regra dos três níveis de progressão e ser submetida ao mestre para balanceamento. O poder da aura Ícor deve ser equivalente às outras auras em cada nível, mas com efeitos únicos.","A criação de uma aura Ícor deve incluir: descrição detalhada dos efeitos em cada nível, limitações específicas (tempo, alcance, recursos), possíveis fraquezas ou vulnerabilidades, e progressão lógica entre os níveis.","Recomenda-se que o mestre estabeleça limitações claras (número de usos por dia, duração dos efeitos, área de alcance) para manter o equilíbrio do jogo."]}
+],
+Deformadora:[
+{n:"Morfologista",l:["Realiza alterações leves na forma física de objetos ou seres vivos, afetando até 10% do volume total. Pode modificar texturas, cores e propriedades superficiais. Altera propriedades químicas simples (como pH ou solubilidade) por até 1 hora. As alterações em seres vivos são temporárias (duração de 10 minutos) e requerem consentimento ou um teste de resistência.","Permite alterações que afetam até 50% do volume de um objeto ou ser vivo. Pode modificar estruturas internas simples e alterar propriedades químicas e físicas (densidade, estado da matéria, reatividade) por até 24 horas. Pode transformar objetos externos em híbridos com corpos orgânicos, criando enxertos temporários (duração de 1 hora) ou permanentes (com sucesso em teste de Constituição).","Controle total sobre a morfologia, podendo transformar completamente sua própria forma física ou a de outros seres vivos (com consentimento ou falha em teste de resistência com -5 de penalidade). Pode criar formas híbridas complexas que combinam características de múltiplas espécies por tempo indefinido. Altera permanentemente propriedades químicas e físicas de objetos e substâncias, podendo criar materiais com propriedades únicas."]},
+{n:"Luz (Elemento Falso)",l:["Cria pequenas chamas douradas com propriedades purificadoras em um raio de até 5 metros. Estas chamas causam 2d6 de dano a criaturas das trevas ou podem purificar alvos afetados por maldições menores, restaurando 1d8 pontos de vida. A luz gerada ilumina uma área de 10 metros de raio e dura até 10 minutos. Possui 25% de resistência a danos de trevas.","Controla com facilidade a luz sagrada em um raio de até 15 metros, criando chamas douradas mais brilhantes que causam 4d6 de dano a criaturas das trevas e dissipam maldições de nível médio. A luz gerada pode cegar temporariamente oponentes (teste de Constituição ou ficam cegos por 1d4 turnos) e ilumina uma área de 30 metros de raio por até 1 hora. Possui 50% de resistência a danos de trevas.","Domínio total sobre a luz divina em um raio de até 50 metros. Cria chamas douradas intensas que causam 8d6 de dano a criaturas das trevas, bane a escuridão mágica instantaneamente e quebra maldições poderosas. Pode criar explosões de luz que causam 6d8 de dano em uma área de 10 metros de raio. Possui 100% de imunidade a danos de trevas, mas sofre 30% a mais de dano de ataques caóticos."]},
+{n:"Trevas (Elemento Falso)",l:["Cria áreas de escuridão intensa de até 5 metros de raio, obscurecendo completamente a visão normal. Criaturas dentro da área sofrem -5 em testes de Percepção e Ataque. A escuridão dura até 10 minutos e pode ser dissipada por luz mágica de nível equivalente. Possui 25% de resistência a danos de luz.","Amplia a escuridão para áreas de até 15 metros de raio, criando uma atmosfera opressora que causa desconforto psicológico (-2 em testes de Vontade) a criaturas não acostumadas às trevas. Pode solidificar sombras para criar barreiras temporárias (30 PV, duração de 10 minutos) ou tentáculos que restringem movimento. Possui 50% de resistência a danos de luz.","Controle absoluto sobre as trevas em um raio de até 50 metros. Cria escuridão total que anula mesmo fontes mágicas de luz de nível inferior. Criaturas na área devem fazer um teste de Vontade ou sofrem efeito de medo. Pode criar construtos de sombra sólida (100 PV) que obedecem a comandos simples por até 1 hora. Possui 100% de imunidade a danos de trevas, mas sofre 50% a mais de dano de ataques de luz."]},
+{n:"Realidade",l:["Cria pequenas distorções na realidade em um raio de até 5 metros. Pode gerar ilusões simples que afetam um sentido (visão, audição, etc.) e alterar sutilmente propriedades físicas (como fazer um objeto parecer mais pesado ou leve). As distorções duram até 10 minutos e podem ser percebidas com um teste de Percepção com dificuldade média.","Cria ilusões complexas em um raio de até 15 metros que afetam todos os sentidos simultaneamente. Pode distorcer a percepção em uma área maior, alterando como as pessoas interpretam o ambiente (fazendo uma porta parecer uma parede, por exemplo). As ilusões duram até 1 hora e requerem um teste de Percepção com dificuldade alta para serem identificadas.","Controle significativo sobre a realidade em um raio de até 30 metros. Pode criar ilusões praticamente indistinguíveis da realidade, modificar leis físicas localmente (alterar a gravidade, permitir que objetos atravessem paredes, etc.) e criar pequenos bolsões de realidade alternativa (até 10 metros de diâmetro) onde as regras são diferentes. Estes efeitos duram até 24 horas e só podem ser detectados por criaturas com habilidades especiais de percepção da realidade."]},
+{n:"Gravitacional",l:["Manipula ligeiramente a gravidade em objetos pequenos (até 50 kg) em um raio de até 10 metros. Pode aumentar ou diminuir o peso aparente em até 50%, alterando sua trajetória ou intensidade. Os efeitos duram até 5 minutos e requerem concentração para serem mantidos.","Cria campos gravitacionais intensos ou negativos em um raio de até 20 metros, afetando objetos de até 500 kg. Pode aumentar a gravidade em uma área de 5 metros de diâmetro (reduzindo o movimento pela metade e causando -4 em testes de Destreza) ou criar zonas de gravidade zero onde objetos e criaturas flutuam. Os efeitos duram até 10 minutos.","Domínio significativo sobre a gravidade em um raio de até 50 metros. Pode criar campos gravitacionais poderosos que afetam objetos de até 5 toneladas, gerar pontos de atração gravitacional que funcionam como mini buracos negros (sugando tudo num raio de 10 metros), ou anular completamente a gravidade em uma área de 30 metros de diâmetro. Os efeitos duram até 1 hora."]},
+{n:"Vetorial",l:["Manipula a direção e a velocidade de objetos pequenos (até 5 kg) em um raio de até 10 metros. Pode alterar a trajetória de projéteis, aumentar ou diminuir a velocidade de objetos em até 50%, e redirecionar o movimento de líquidos. Os efeitos duram até que o objeto pare naturalmente ou por 1 minuto.","Manipula vetores com precisão em um raio de até 20 metros, afetando objetos de até 100 kg. Pode alterar completamente a direção de movimento, multiplicar a velocidade por até 3x, ou anular completamente o momentum de um objeto em movimento. Afeta até 5 objetos simultaneamente. Os efeitos duram até 5 minutos.","Controle total sobre vetores em um raio de até 50 metros, manipulando a direção, velocidade e impulso de objetos de até 1 tonelada ou corpos inteiros. Pode criar \"zonas vetoriais\" onde todas as forças físicas seguem direções predeterminadas, independentemente das leis normais da física. Pode afetar até 20 objetos simultaneamente. Os efeitos duram até 30 minutos."]},
+{n:"Temporal",l:["Realiza manipulações temporais sutis em um raio de até 3 metros. Pode acelerar ou retardar o tempo em até 50% em uma área pequena ou em um corpo, afetando processos naturais (como decomposição, crescimento) ou a velocidade percebida de ações. Os efeitos duram até 1 minuto e afetam apenas um alvo por vez.","Manipula o tempo em um raio de até 10 metros. Pode acelerar o tempo (2x mais rápido), retardá-lo (até 75% mais lento) ou pausá-lo completamente por até 10 segundos em uma área de até 5 metros de diâmetro. Pode criar distorções temporais que fazem com que eventos ocorram fora de sequência e realizar pequenos saltos no tempo (até 5 minutos, afetando apenas o próprio usuário). Pode afetar até 3 alvos simultaneamente.","Controle avançado sobre o tempo em um raio de até 30 metros. Pode prender objetos ou seres de até 500 kg em estase temporal por até 1 hora, prever eventos até 30 segundos no futuro com 80% de precisão, e manipular o fluxo temporal em uma área de até 20 metros de diâmetro. Pode criar bolsões onde o tempo flui diferentemente (10x mais rápido ou lento) por até 10 minutos."]}
+],
+Mental:[
+{n:"Raksasha",l:["Desenvolve intuição aguçada e percepção ampliada, concedendo +5 em testes de Intuição e Percepção. Detecta sutilezas nas emoções e intenções das pessoas em um raio de até 10 metros, identificando mentiras simples com 70% de precisão. Possui 25% de resistência à manipulação mental e ilusões.","Lê pensamentos superficiais (informações imediatas, não memórias) de até 3 pessoas simultaneamente em um raio de 20 metros. Discerne mentiras complexas com 90% de precisão e identifica quando alguém está sob efeito de manipulação mental. Possui 50% de resistência à influência mental e recebe +5 em testes de Carisma relacionados à persuasão e enganação.","Realiza leitura profunda da mente de até 5 pessoas simultaneamente em um raio de 50 metros, acessando memórias específicas (com teste de resistência do alvo) e pensamentos complexos. Pode implantar memórias falsas simples (duração de 1d4 dias) e projetar seus próprios pensamentos para influenciar sutilmente as decisões de outros. Possui 90% de resistência mental a efeitos de controle e ilusão."]},
+{n:"Ilusão",l:["Cria ilusões simples que afetam um ou dois sentidos (geralmente visão e audição) em um raio de até 10 metros. As ilusões podem ter até 2 metros em qualquer dimensão e afetar até 3 pessoas simultaneamente. Alvos podem realizar testes de Sabedoria (dificuldade média) para perceber a ilusão. Os efeitos duram até 10 minutos.","Gera ilusões complexas que afetam múltiplos sentidos (visão, audição, olfato, e sensação térmica) em um raio de até 30 metros. As ilusões podem ter até 10 metros em qualquer dimensão e afetar até 10 pessoas. Alvos fazem testes de Sabedoria com dificuldade alta para perceber a falsidade. Os efeitos duram até 1 hora.","Cria projeções praticamente indistinguíveis da realidade que afetam todos os sentidos em um raio de até 100 metros. As ilusões podem ter até 50 metros em qualquer dimensão, afetar um número ilimitado de observadores, e incluir interações físicas limitadas (sensação de solidez, calor/frio, etc.). Apenas indivíduos com resistência mental excepcional (acima de 18 em Sabedoria) ou habilidades especiais de detecção podem perceber a ilusão. Os efeitos duram até 24 horas."]},
+{n:"Copiadora",l:["Copia habilidades e conhecimentos simples (equivalentes a perícias de nível básico) de outros por até 1 hora, requerendo observação cuidadosa por pelo menos 10 minutos e proximidade física (toque). Pode copiar até 3 habilidades por dia, uma de cada vez.","Copia habilidades mais complexas (equivalentes a perícias de nível avançado ou habilidades de classe básicas) sem necessidade de contato físico, apenas observação por 5 minutos a uma distância de até 10 metros. As cópias duram até 6 horas e podem manter até 2 habilidades simultaneamente. Pode realizar até 5 cópias por dia.","Copia perfeitamente qualquer habilidade ou conhecimento (incluindo magias de até nível 5 e habilidades de classe avançadas) após apenas 1 minuto de observação a uma distância de até 50 metros. As cópias duram até 24 horas e pode manter até 3 habilidades simultaneamente. Pode realizar até 7 cópias por dia."]},
+{n:"Caótica",l:["Cria pequenos distúrbios e desordens no ambiente em um raio de até 10 metros. Pode causar falhas em mecanismos simples, alterar levemente as propriedades de materiais (tornar líquidos mais viscosos, superfícies mais escorregadias), ou gerar pequenas anomalias sensoriais (cores invertidas, sons distorcidos). Os efeitos duram até 10 minutos.","Gera ondas de caos que afetam áreas de até 30 metros de raio. Pode distorcer parcialmente a realidade física (fazer objetos flutuar brevemente, inverter a direção da gravidade por segundos) e causar rupturas temporais menores (déjà vu, breves vislumbres do passado/futuro próximo). Os efeitos duram até 30 minutos e podem afetar até 10 alvos simultaneamente.","Domínio significativo sobre o caos em um raio de até 100 metros. Cria distorções massivas na realidade (transformações aleatórias de matéria, portais temporários para locais aleatórios) e eventos caóticos planejados (sequências de coincidências impossíveis que levam a um resultado específico). A aura pode se rebelar contra o usuário se não for controlada com cuidado (teste de Vontade com dificuldade alta a cada uso prolongado). Os efeitos podem durar até 1 hora."]},
+{n:"Espiritual",l:["Manifesta uma entidade espiritual visível que age como extensão da vontade do usuário. A entidade tem forma humanoide básica, pode se mover até 10 metros do usuário e realizar ataques físicos básicos (1d8 de dano) ou defender (CA 14). Possui 30 PV e permanece manifestada por até 10 minutos, 3 vezes por dia.","A conexão com a entidade é fortalecida, permitindo que ela se mova até 30 metros do usuário. Seus atributos melhoram significativamente (ataques causam 2d8 de dano, CA 16, 60 PV) e ela desenvolve uma habilidade especial baseada na personalidade do usuário (ataque elemental, cura, detecção de mentiras, etc.). Permanece manifestada por até 30 minutos, 5 vezes por dia.","A entidade alcança seu potencial máximo, com forma única e distintiva. Possui atributos excepcionais (ataques causam 3d8 de dano, CA 18, 120 PV) e múltiplas habilidades especiais. O usuário e a entidade têm turnos separados em combate, permitindo duas ações por rodada, e podem realizar ataques especiais combinados (4d10 de dano) uma vez por combate. Permanece manifestada por até 1 hora, 7 vezes por dia."]}
+],
+Divina:[
+{n:"Chronos (Chrono-mente)",l:["A mente do usuário é aprimorada com compreensão profunda dos mecanismos do tempo, resultando em inteligência excepcional (+4 em testes de Inteligência). Pode perceber padrões temporais sutis, prever eventos simples com minutos de antecedência (70% de precisão) e compreender idiomas após apenas 1 hora de exposição. Inclui as habilidades de Temporal 1.","Percepção ampliada da complexidade dos padrões temporais, permitindo processamento mental acelerado (resolve problemas complexos em metade do tempo normal). Pode visualizar linhas temporais alternativas para decisões imediatas (vantagem em testes de estratégia) e compreender textos antigos ou códigos complexos instantaneamente. Inclui as habilidades de Temporal 2.","Inteligência temporal que transcende o conhecimento convencional (+8 em testes de Inteligência). Pode alterar sua própria percepção do tempo, experimentando até 1 hora de pensamento em apenas 1 minuto real. Visualiza múltiplas linhas temporais simultaneamente, identificando a mais favorável com 90% de precisão. Inclui as habilidades de Temporal 3."]},
+{n:"Ódin (Mjölnirsonância)",l:["O corpo do usuário é aprimorado pela força primordial, permitindo golpes com energia universal. Ataques corpo-a-corpo causam +1d8 de dano de força e podem afetar criaturas incorpóreas. Recebe +2 em testes de Força e Constituição. Inclui as habilidades de Terra 1.","Golpes recebem o modificador de Sabedoria (pela metade) como dano adicional, e o usuário fica invulnerável a ataques não-mágicos por 1 rodada após realizar um ataque bem-sucedido (limite de 5 vezes por dia). Pode canalizar energia através de armas, criando ondas de choque num raio de 3 metros (2d6 de dano). Inclui as habilidades de Terra 2.","O corpo se torna manifestação da força primordial, com pele que brilha sutilmente em situações de combate. Golpes causam +3d8 de dano de força, ignoram resistências físicas e podem afetar inimigos imunes a golpes físicos. Uma vez por dia, pode invocar um ataque devastador que causa 10d10 de dano em uma linha de 30 metros. Inclui as habilidades de Terra 3."]},
+{n:"Hera (Voz de Argos)",l:["Conhecimento inato sobre plantas e substâncias naturais com propriedades curativas e mágicas (+5 em testes relacionados). Pode identificar qualquer planta ou veneno natural instantaneamente e manipular pequenas quantidades (até 1 kg) de materiais inorgânicos e orgânicos, alterando suas propriedades básicas. Inclui as habilidades de Naturae 1.","Cria poções e encantamentos poderosos com plantas comuns (cura 4d8 PV, antídotos universais, poções de força/agilidade que concedem +4 no atributo). Pode convocar proteção de animais e criaturas míticas menores (1d4+1 animais normais ou 1 criatura mítica menor) que servem por até 1 hora, uma vez por dia. Inclui as habilidades de Naturae 2.","Domina os segredos da natureza, criando itens mágicos temporários a partir de plantas (duração de 1d4 dias). Pode invocar a fúria da natureza para defender aliados (plantas animadas, enxames de insetos) ou punir aqueles que desrespeitam o equilíbrio natural (praga localizada, crescimento acelerado que destrói estruturas). Uma vez por semana, pode realizar um ritual para curar qualquer doença ou maldição relacionada à natureza. Inclui as habilidades de Naturae 3."]},
+{n:"Hachiman (Dança das Lâminas)",l:["Coordenação e reflexos aprimorados (+3 em testes de Destreza), com bônus de dano (+1d6) ao usar espadas e arcos longos. Pode realizar ataques precisos que ignoram 2 pontos de CA do oponente. Movimentos fluidos concedem +2 em testes de Esquiva. Inclui as habilidades de Vetorial 1.","Movimentos quase imperceptíveis em combate (+5 em testes de Iniciativa), com golpes rápidos que permitem um ataque adicional por rodada com -2 de penalidade. Pode desviar de projéteis com teste de Destreza bem-sucedido e realizar ataques precisos que causam dano crítico em 19-20. Inclui as habilidades de Vetorial 2.","Desafia as leis da gravidade, movendo-se quase instantaneamente (velocidade de movimento +10m) e antecipando movimentos dos oponentes (ataques de oportunidade contra qualquer inimigo que entre ou saia do seu alcance). Pode realizar uma sequência de até 5 ataques em um único turno contra múltiplos oponentes, uma vez por combate. Inclui as habilidades de Vetorial 3."]},
+{n:"Baco (Encanto Ébrio)",l:["Manifesta carisma cativante (+4 em testes de Carisma) que permite influenciar sutilmente as emoções de até 3 pessoas simultaneamente, criando um efeito similar à embriaguez leve (penalidade de -2 em testes de Vontade). Pode identificar e aprimorar qualquer bebida alcoólica com um toque. Inclui as habilidades de Materialização 1.","Cria uma atmosfera mágica em um raio de 10 metros que afeta até 10 pessoas, induzindo estados emocionais específicos (euforia, melancolia, coragem). Manipula bebidas alcoólicas para criar poções temporárias (duração de 1 hora) com efeitos variados (cura 2d8 PV, +4 em um atributo, imunidade a medo). Inclui as habilidades de Materialização 2.","Manifesta carisma transcendente (+8 em testes de Carisma) que permite hipnotizar e controlar sutilmente as ações de até 20 pessoas por até 1 hora (teste de Vontade para resistir). Cria vinhos místicos com efeitos sobrenaturais duradouros (clarividência, juventude temporária, cura de doenças). Uma vez por semana, pode realizar um banquete mágico que concede benefícios específicos a todos os participantes por 1d4 dias. Inclui as habilidades de Materialização 3."]},
+{n:"Xing Tian (Resiliência Inabalável)",l:["Constituição fortalecida (+4 em testes de Constituição) que permite resistir a efeitos ambientais extremos (calor, frio, altitude) e manter o foco mesmo sob pressão (+2 em testes de Concentração). Recupera +2 PV por nível a cada descanso curto. Inclui as habilidades de Morfologista 1.","Regeneração acelerada (1 PV por minuto) e imunidade temporária a efeitos debilitantes (venenos, doenças, fadiga) por até 1 hora, 3 vezes por dia. Pode continuar lutando mesmo com 0 PV por até 5 rodadas antes de cair inconsciente. Inclui as habilidades de Morfologista 2.","Imunidade permanente a venenos e doenças naturais, podendo purificar substâncias tóxicas com um toque. Regenera 5 PV por rodada e pode ativar um fervor guerreiro que aumenta drasticamente as habilidades físicas (+6 em Força, Destreza e Constituição) por até 10 minutos, uma vez por dia. Pode sobreviver a ferimentos normalmente fatais, regenerando-se completamente após 1d4 dias. Inclui as habilidades de Morfologista 3."]}
+]
+};
+
+var XT=[0,0,300,500,800,1200,1800,2500,3500,5000,7000,10000,14000,20000,99999];
+
+var S={name:"",player:"",age:"",gender:"",origin:"",alignment:"",appearance:"",personality:"",background:"",motivation:"",notes:"",race:"Humano",prof:"custom",customProf:{name:"Personalizado",m:{},hp:"1d8",mp:"1d8",mv:"10+DEX",sk:""},attrs:{FOR:6,DEX:6,CON:6,SAB:6,INT:6,CAR:6,DOM:6},proficiencies:[],customProfs:[],curHP:0,maxHP:0,curMP:0,maxMP:0,falls:0,auraInit:"",auraDesc:"",techs:"",extraAuras:"",gold:0,inventory:[],xp:0,level:1,fluxoDeseq:0,fluxoActive:false,fluxoLog:[],exTreino:0,sessoesTreino:[],arkaLocal:3,arkaCap:3,tecMax:"",devTechs:[],hpRolls:[],mpRolls:[]};
+var selA=null,dAr=false,invF='all';
+
+function $(id){return document.getElementById(id)}
+function gv(id){var e=$(id);return parseInt(e?e.textContent:"0")||0}
+function sv(id,v){var e=$(id);if(e)e.textContent=v}
+function adj(id,d,mn,mx){var e=$(id);if(!e)return;var v=parseInt(e.textContent||"0")+d;v=Math.max(mn,Math.min(mx,v));e.textContent=v;if(id.indexOf('attr_')===0)uAt();sync()}
+function rD(n){var m=n.match(/(\d+)d(\d+)/);if(!m)return{t:0,r:[]};var c=+m[1],s=+m[2],t=0,r=[];for(var i=0;i<c;i++){var x=Math.floor(Math.random()*s)+1;r.push(x);t+=x}return{t:t,r:r}}
+function gP(){return S.prof==='custom'?S.customProf:PP[S.prof]||S.customProf}
+function gF(a){var p=gP();return S.attrs[a]+(p.m[a]||0)+(RACES[S.race]?RACES[S.race].bonus[a]||0:0)}
+function gM(v){return Math.floor((v-10)/2)}
+function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function sync(){
+  [['pName','name'],['pPlayer','player'],['pAge','age'],['pGender','gender'],['pOrigin','origin'],['pAlignment','alignment'],['pAppearance','appearance'],['pPersonality','personality'],['pBackground','background'],['pMotivation','motivation'],['pNotes','notes'],['pAuraInit','auraInit'],['pAuraDesc','auraDesc'],['pExtraAuras','extraAuras']].forEach(function(p){var e=$(p[0]);if(e)S[p[1]]=e.value});
+  S.gold=gv('pGold');S.falls=gv('falls');S.level=gv('charLv');S.xp=gv('charXP');S.curHP=gv('curHP');S.curMP=gv('curMP');
+  var tm=$('pTecMax');if(tm)S.tecMax=tm.value;
+}
+
+// TABS
+var TABS=[{id:'profile',l:'Perfil'},{id:'attrs',l:'Atributos'},{id:'profs',l:'Perícias'},{id:'inventory',l:'Inventário'},{id:'auras',l:'Auras'},{id:'tecnicas',l:'Técnicas'},{id:'xp',l:'XP'},{id:'save',l:'Salvar'}];
+$('tabs').innerHTML=TABS.map(function(t){return '<button class="tb'+(t.id==='profile'?' on':'')+'" data-t="'+t.id+'">'+t.l+'</button>'}).join('');
+$('tabs').querySelectorAll('.tb').forEach(function(b){b.onclick=function(){$('tabs').querySelectorAll('.tb').forEach(function(x){x.classList.remove('on')});document.querySelectorAll('.tp').forEach(function(x){x.classList.remove('on')});b.classList.add('on');var p=$('t-'+b.dataset.t);if(p)p.classList.add('on')}});
+$('ct').innerHTML=TABS.map(function(t){return '<div class="tp'+(t.id==='profile'?' on':'')+'" id="t-'+t.id+'"></div>'}).join('');
+
+// ═══ PROFILE ═══
+function bPf(){
+  var h='<div class="st">Identidade</div><div class="pg" style="margin-bottom:12px">';
+  [['pName','Nome','Nome do personagem...'],['pPlayer','Jogador','Seu nome...'],['pAge','Idade','Ex: 25'],['pGender','Gênero',''],['pOrigin','Região','Ex: Aldwynn'],['pAlignment','Alinhamento','Ex: Neutro Bom']].forEach(function(f){h+='<div class="fd"><label class="fl">'+f[1]+'</label><input type="text" id="'+f[0]+'" placeholder="'+f[2]+'" oninput="sync()"></div>'});
+  h+='</div><div class="st">Raça</div><div class="f fw g6" id="rBtn" style="margin-bottom:6px"></div><div id="rAb" class="crd" style="font-size:12px;color:var(--td);font-style:italic;border-left:3px solid var(--ac);margin-bottom:14px"></div>';
+  h+='<div class="st">Profissão</div><div class="f fw g6" id="pBtn" style="margin-bottom:6px"></div><div id="pNfo" class="crd" style="font-size:11px;color:var(--td);margin-bottom:6px"></div><div id="pEd"></div>';
+  h+='<div class="st" style="margin-top:14px">Aparência & Personalidade</div>';
+  h+='<div class="fd"><label class="fl">Aparência</label><textarea id="pAppearance" rows="2" placeholder="Descrição física..." oninput="sync()"></textarea></div>';
+  h+='<div class="fd"><label class="fl">Personalidade</label><textarea id="pPersonality" rows="2" placeholder="Traços, ideais, defeitos..." oninput="sync()"></textarea></div>';
+  h+='<div class="st">Background</div><div class="fd"><label class="fl">História</label><textarea id="pBackground" rows="3" placeholder="Background..." oninput="sync()"></textarea></div>';
+  h+='<div class="fd"><label class="fl">Motivação</label><textarea id="pMotivation" rows="2" placeholder="Motivação?" oninput="sync()"></textarea></div>';
+  h+='<div class="fd"><label class="fl">Notas</label><textarea id="pNotes" rows="2" placeholder="Anotações..." oninput="sync()"></textarea></div>';
+  $('t-profile').innerHTML=h;rRP()
+}
+function rRP(){
+  var rb=$('rBtn');if(!rb)return;
+  rb.innerHTML=Object.keys(RACES).map(function(r){var on=S.race===r;return '<button class="pl'+(on?' on':'')+'" onclick="S.race=\''+r+'\';rRP();uAt()" style="'+(on?'color:'+RACES[r].c+';border-color:'+RACES[r].c+';background:'+RACES[r].c+'15':'')+'">'+r+'</button>'}).join('');
+  $('rAb').innerHTML=RACES[S.race].ab;$('rAb').style.borderLeftColor=RACES[S.race].c;
+  var pb=$('pBtn');
+  pb.innerHTML=Object.keys(PP).map(function(p){var on=S.prof===p;return '<button class="pl'+(on?' on':'')+'" onclick="S.prof=\''+p+'\';rRP();uAt();rPr()" style="'+(on?'color:var(--ac);border-color:var(--ad);background:rgba(201,169,110,.1)':'')+'">'+p+'</button>'}).join('')+'<button class="pl'+(S.prof==='custom'?' on':'')+'" onclick="S.prof=\'custom\';rRP();uAt();rPr()" style="'+(S.prof==='custom'?'color:var(--ac);border-color:var(--ad);background:rgba(201,169,110,.1)':'')+'">✎ Personalizado</button>';
+  var p=gP();$('pNfo').innerHTML='<b style="color:var(--tx)">Perícias:</b> '+p.sk+'<br><b style="color:var(--tx)">HP:</b> '+p.hp+'+CON · <b style="color:var(--tx)">MP:</b> '+p.mp+'+INT · <b style="color:var(--tx)">Movi:</b> '+p.mv+'m';
+  var ed=$('pEd');
+  if(S.prof==='custom'){var cp=S.customProf;ed.innerHTML='<div class="pe"><div class="st">Editor de Profissão</div><div class="pg" style="margin-bottom:8px"><div class="fd"><label class="fl">Nome</label><input type="text" value="'+esc(cp.name)+'" onchange="S.customProf.name=this.value;rRP()"></div><div class="fd"><label class="fl">Dado HP</label><input type="text" value="'+esc(cp.hp)+'" onchange="S.customProf.hp=this.value;uAt()"></div><div class="fd"><label class="fl">Dado MP</label><input type="text" value="'+esc(cp.mp)+'" onchange="S.customProf.mp=this.value;uAt()"></div><div class="fd"><label class="fl">Locomoção</label><input type="text" value="'+esc(cp.mv)+'" onchange="S.customProf.mv=this.value;uAt()"></div></div><div class="fd"><label class="fl">Perícias</label><input type="text" value="'+esc(cp.sk)+'" onchange="S.customProf.sk=this.value;rRP()"></div><label class="fl">Modificadores</label><div class="f fw g8" style="margin-top:4px">'+A.map(function(a){var v=cp.m[a]||0;return '<div class="f ai g4"><span style="font-size:10px;color:var(--td);width:28px">'+a+'</span><div class="nc"><button class="nb" onclick="S.customProf.m.'+a+'=(S.customProf.m.'+a+'||0)-1;rRP();uAt()">−</button><span class="nv" style="color:'+(v>0?'#3a7a4c':v<0?'#b83030':'var(--tx)')+'">'+(v>0?'+':'')+v+'</span><button class="nb" onclick="S.customProf.m.'+a+'=(S.customProf.m.'+a+'||0)+1;rRP();uAt()">+</button></div></div>'}).join('')+'</div></div>'}else{ed.innerHTML=''}
+}
+
+// ═══ ATTRIBUTES ═══
+function bAt(){
+  var h='<div class="st">Pontos</div><div id="pBar" class="f ai jc g10" style="padding:7px 14px;border-radius:5px;margin-bottom:12px"></div>';
+  h+='<div class="ag" id="aGrid" style="margin-bottom:14px"></div>';
+  h+='<div class="st">Derivados</div><div class="f g8 fw jc" id="dSt" style="margin-bottom:14px"></div>';
+  h+='<div class="st">Vida & Mana</div>';
+  h+='<div class="f g16 fw" style="margin-bottom:10px">';
+  h+='<div class="f1" style="min-width:170px"><div class="f ai jsb" style="margin-bottom:4px"><span style="font-family:Cinzel,serif;font-size:9px;color:var(--dn);letter-spacing:.1em">HP</span><div class="f ai g4"><button class="nb" onclick="aHP(-1)">−</button><span class="nv" id="curHP" style="color:var(--dn);min-width:32px">0</span><span style="color:var(--tm);font-size:10px">/</span><span class="nv" id="maxHP" style="color:var(--td);font-size:11px">0</span><button class="nb" onclick="aHP(1)">+</button></div></div><div class="bt2"><div class="bf" id="hpB" style="background:var(--dn);width:100%"></div></div></div>';
+  h+='<div class="f1" style="min-width:170px"><div class="f ai jsb" style="margin-bottom:4px"><span style="font-family:Cinzel,serif;font-size:9px;color:var(--mn);letter-spacing:.1em">MP</span><div class="f ai g4"><button class="nb" onclick="aMP(-1)">−</button><span class="nv" id="curMP" style="color:var(--mn);min-width:32px">0</span><span style="color:var(--tm);font-size:10px">/</span><span class="nv" id="maxMP" style="color:var(--td);font-size:11px">0</span><button class="nb" onclick="aMP(1)">+</button></div></div><div class="bt2"><div class="bf" id="mpB" style="background:var(--mn);width:100%"></div></div></div>';
+  h+='</div>';
+  // Level Up Roll Section
+  h+='<div class="sub-label">Rolagem de Level Up</div>';
+  h+='<div class="flx-panel" style="margin-bottom:10px">';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:6px">Nv.1 = máx do dado + mod. Cada level up seguinte, role o dado e some o modificador.</div>';
+  h+='<div class="f g8 ai fw" style="margin-bottom:8px"><button class="bt bp" onclick="rollLevelUp()">🎲 Rolar Level Up</button><button class="bt bo bsm" onclick="undoLevelRoll()">↩ Desfazer Último</button><button class="bt bo bsm" onclick="resetRolls()">Resetar Rolls</button></div>';
+  h+='<div id="lvRollInfo"></div>';
+  h+='</div>';
+  h+='<div class="st">Quedas</div><div class="f ai g10"><div class="f ai g6"><span style="font-size:11px;color:var(--td)">Quedas:</span><div class="nc"><button class="nb" onclick="adj(\'falls\',-1,0,4)">−</button><span class="nv" id="falls" style="color:var(--dn)">0</span><button class="nb" onclick="adj(\'falls\',1,0,4)">+</button></div><span style="font-size:10px;color:var(--tm)">/4</span></div><button class="bt bo bsm" onclick="sv(\'falls\',0);S.falls=0;toast(\'Resetado\')">Reset</button></div>';
+  $('t-attrs').innerHTML=h;uAt()
+}
+function uAt(){
+  A.forEach(function(a){var e=$('attr_'+a);if(e)S.attrs[a]=parseInt(e.textContent)||6});
+  var used=0;A.forEach(function(a){used+=S.attrs[a]-6});var left=35-used;
+  var pb=$('pBar');if(!pb)return;
+  var c=left<0?'#b83030':left===0?'#3a7a4c':'#c9a96e';
+  pb.style.cssText='display:flex;align-items:center;justify-content:center;gap:10px;padding:7px 14px;border-radius:5px;background:'+(left<0?'rgba(184,48,48,.06)':'rgba(201,169,110,.04)')+';border:1px solid '+(left<0?'rgba(184,48,48,.2)':'rgba(201,169,110,.15)');
+  pb.innerHTML='<span style="font-size:11px;color:var(--td)">Pontos:</span><span style="font-size:22px;font-weight:700;font-family:Cinzel,serif;color:'+c+'">'+left+'</span><span style="font-size:10px;color:var(--tm)">/ 35</span>';
+  var g=$('aGrid');if(g){var p=gP();g.innerHTML=A.map(function(a){var b=S.attrs[a],pm=p.m[a]||0,rm=RACES[S.race]?RACES[S.race].bonus[a]||0:0,fin=gF(a),mod=gM(fin);var pc2=pm>0?'#3a7a4c':'#b83030';var mc2=mod>=0?'#3a7a4c':'#b83030';var pt=pm?'<span style="color:'+pc2+'">Prof'+(pm>0?'+':'')+pm+'</span> ':'';var rt=rm?'<span style="color:#3a7a4c">Raça+'+rm+'</span>':'';return '<div class="ac2" style="background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:7px 5px;text-align:center"><div style="font-family:Cinzel,serif;font-size:9px;color:var(--ac);font-weight:700;letter-spacing:.12em;margin-bottom:4px">'+a+'</div><div class="nc" style="justify-content:center"><button class="nb" onclick="adj(\'attr_'+a+'\',-1,6,18)">−</button><span class="nv" id="attr_'+a+'" style="color:var(--tx)">'+b+'</span><button class="nb" onclick="adj(\'attr_'+a+'\',1,6,18)">+</button></div><div style="font-size:8px;color:var(--tm);margin-top:3px;min-height:11px">'+pt+rt+'</div><div style="font-size:18px;font-weight:700;font-family:Cinzel,serif;margin-top:3px">'+fin+'</div><div style="font-size:9px;color:'+mc2+'">mod '+(mod>=0?'+':'')+mod+'</div></div>'}).join('')}
+  // Use MODIFIERS for derived stats
+  var p=gP();
+  var hDie=p.hp.match(/(\d+)d(\d+)/);var hN=hDie?+hDie[1]:1;var hS=hDie?+hDie[2]:8;
+  var mDie=p.mp.match(/(\d+)d(\d+)/);var mN=mDie?+mDie[1]:1;var mS=mDie?+mDie[2]:8;
+  var mvB=parseInt((p.mv.match(/(\d+)/)||[0,10])[1]);
+  var conMod=gM(gF('CON')),intMod=gM(gF('INT')),dexMod=gM(gF('DEX'));
+  // Level 1 base: max die value + modifier
+  var baseHP=hN*hS+conMod;var baseMP=mN*mS+intMod;
+  // Add level up rolls
+  var bonusHP=0,bonusMP=0;
+  if(S.hpRolls)S.hpRolls.forEach(function(r){bonusHP+=r});
+  if(S.mpRolls)S.mpRolls.forEach(function(r){bonusMP+=r});
+  S.maxHP=Math.max(1,baseHP+bonusHP);S.maxMP=Math.max(0,baseMP+bonusMP);
+  sv('maxHP',S.maxHP);sv('maxMP',S.maxMP);
+  if(S.curHP>S.maxHP){S.curHP=S.maxHP;sv('curHP',S.maxHP)}
+  if(S.curMP>S.maxMP){S.curMP=S.maxMP;sv('curMP',S.maxMP)}
+  uBa();
+  var mov=mvB+dexMod;
+  var dv=$('dSt');if(dv)dv.innerHTML='<div class="sb"><div class="sbl">HP Base</div><div class="sbv" style="color:var(--dn)">'+baseHP+'</div><div class="sbs">'+p.hp+(conMod>=0?'+':'')+conMod+'</div></div><div class="sb"><div class="sbl">MP Base</div><div class="sbv" style="color:var(--mn)">'+baseMP+'</div><div class="sbs">'+p.mp+(intMod>=0?'+':'')+intMod+'</div></div><div class="sb"><div class="sbl">HP Total</div><div class="sbv" style="color:var(--dn)">'+S.maxHP+'</div><div class="sbs">base'+(bonusHP?'+'+bonusHP+' rolls':'')+'</div></div><div class="sb"><div class="sbl">MP Total</div><div class="sbv" style="color:var(--mn)">'+S.maxMP+'</div><div class="sbs">base'+(bonusMP?'+'+bonusMP+' rolls':'')+'</div></div><div class="sb"><div class="sbl">Movi</div><div class="sbv" style="color:var(--sc);font-size:15px">'+mov+'m</div><div class="sbs">'+mvB+(dexMod>=0?'+':'')+dexMod+'</div></div><div class="sb"><div class="sbl">Iniciativa</div><div class="sbv" style="font-size:13px">3d8'+(dexMod>=0?'+':'')+dexMod+'</div><div class="sbs">3d8+mod DEX</div></div>';
+  rLvRolls();uWt();rPr()
+}
+function rollLevelUp(){
+  var p=gP();
+  var hDie=p.hp.match(/(\d+)d(\d+)/);var hN=hDie?+hDie[1]:1;var hS=hDie?+hDie[2]:8;
+  var mDie=p.mp.match(/(\d+)d(\d+)/);var mN=mDie?+mDie[1]:1;var mS=mDie?+mDie[2]:8;
+  var conMod=gM(gF('CON')),intMod=gM(gF('INT'));
+  var hpR=rD(hN+'d'+hS);var mpR=rD(mN+'d'+mS);
+  var hpGain=Math.max(1,hpR.t+conMod);var mpGain=Math.max(0,mpR.t+intMod);
+  if(!S.hpRolls)S.hpRolls=[];if(!S.mpRolls)S.mpRolls=[];
+  S.hpRolls.push(hpGain);S.mpRolls.push(mpGain);
+  var lvl=(S.hpRolls.length)+1;
+  uAt();
+  S.curHP=S.maxHP;sv('curHP',S.maxHP);S.curMP=S.maxMP;sv('curMP',S.maxMP);uBa();
+  toast('Level '+lvl+'! HP +'+hpGain+' ['+hpR.r.join(',')+((conMod>=0?'+':'')+conMod)+'] · MP +'+mpGain+' ['+mpR.r.join(',')+((intMod>=0?'+':'')+intMod)+']')
+}
+function undoLevelRoll(){
+  if(!S.hpRolls||!S.hpRolls.length){toast('Nenhum roll para desfazer');return}
+  S.hpRolls.pop();S.mpRolls.pop();uAt();toast('Último roll removido')
+}
+function resetRolls(){S.hpRolls=[];S.mpRolls=[];uAt();toast('Rolls resetados — voltou ao Nv.1')}
+function rLvRolls(){
+  var el=$('lvRollInfo');if(!el)return;
+  var hp=S.hpRolls||[],mp=S.mpRolls||[];
+  if(!hp.length){el.innerHTML='<div style="font-size:10px;color:var(--tm);font-style:italic">Nenhuma rolagem de level up. Nível atual: 1 (base).</div>';return}
+  var h='<div style="font-size:10px;color:var(--td);margin-bottom:4px">Rolagens acumuladas ('+hp.length+' level ups → Nível '+(hp.length+1)+'):</div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:4px">';
+  hp.forEach(function(v,i){
+    h+='<div style="background:var(--cd);border:1px solid var(--bd);border-radius:4px;padding:3px 7px;font-size:10px;text-align:center">';
+    h+='<div style="font-size:8px;color:var(--tm)">Nv.'+(i+2)+'</div>';
+    h+='<span style="color:var(--dn);font-weight:700">+'+v+'</span>';
+    h+='<span style="color:var(--tm)"> / </span>';
+    h+='<span style="color:var(--mn);font-weight:700">+'+(mp[i]||0)+'</span>';
+    h+='</div>';
+  });
+  h+='</div>';
+  el.innerHTML=h
+}
+function aHP(d){var v=gv('curHP')+d;v=Math.max(0,Math.min(S.maxHP,v));sv('curHP',v);S.curHP=v;uBa()}
+function aMP(d){var v=gv('curMP')+d;v=Math.max(0,Math.min(S.maxMP,v));sv('curMP',v);S.curMP=v;uBa()}
+function uBa(){var h=$('hpB'),m=$('mpB');if(h)h.style.width=Math.max(0,(gv('curHP')/(S.maxHP||1))*100)+'%';if(m)m.style.width=Math.max(0,(gv('curMP')/(S.maxMP||1))*100)+'%'}
+
+// ═══ PROFICIENCIES ═══
+function bPr(){
+  $('t-profs').innerHTML='<div class="st">Perícias</div><div style="font-size:11px;color:var(--td);margin-bottom:10px">Clique no círculo para marcar proficiência. Bônus = mod do atributo + proficiência (+2).</div><div id="pList"></div><div class="st" style="margin-top:14px">Perícias Personalizadas</div><div id="cpList"></div><div class="f g6 ai" style="margin-top:8px"><input type="text" id="npN" placeholder="Nome..." style="width:130px"><select id="npA" style="width:65px">'+A.map(function(a){return'<option value="'+a+'">'+a+'</option>'}).join('')+'</select><button class="bt bp bsm" onclick="aCP()">+ Adicionar</button></div>';
+  rPr()
+}
+function rPr(){
+  var el=$('pList');if(!el)return;
+  el.innerHTML=DP.map(function(p){var on=S.proficiencies.indexOf(p.n)>=0;var mod=gM(gF(p.a));var total=mod+(on?2:0);var tc=total>=0?'#3a7a4c':'#b83030';return '<div class="pr"><div class="pc'+(on?' on':'')+'" onclick="tP(\''+p.n+'\')"></div><span style="font-size:12px;flex:1;min-width:80px">'+p.n+'</span><span style="font-size:9px;color:var(--td);font-family:Cinzel,serif;width:28px;text-align:center">'+p.a+'</span><span style="font-size:13px;font-weight:700;font-family:Cinzel,serif;width:28px;text-align:center;color:'+tc+'">'+(total>=0?'+':'')+total+'</span></div>'}).join('');
+  var cl=$('cpList');if(!cl)return;
+  if(!S.customProfs||!S.customProfs.length){cl.innerHTML='<div style="font-size:11px;color:var(--tm);font-style:italic;padding:6px 0">Nenhuma perícia custom criada.</div>';return}
+  cl.innerHTML=S.customProfs.map(function(p,i){var on=S.proficiencies.indexOf(p.n)>=0;var mod=gM(gF(p.a));var total=mod+(on?2:0);var tc=total>=0?'#3a7a4c':'#b83030';return '<div class="pr"><div class="pc'+(on?' on':'')+'" onclick="tP(\''+esc(p.n)+'\')"></div><span style="font-size:12px;flex:1">'+esc(p.n)+'</span><span style="font-size:9px;color:var(--td);font-family:Cinzel,serif;width:28px;text-align:center">'+p.a+'</span><span style="font-size:13px;font-weight:700;font-family:Cinzel,serif;width:28px;text-align:center;color:'+tc+'">'+(total>=0?'+':'')+total+'</span><button style="width:18px;height:18px;border-radius:3px;border:1px solid var(--bd);background:0;color:var(--dn);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center" onclick="dCP('+i+')">✕</button></div>'}).join('')
+}
+function tP(n){var i=S.proficiencies.indexOf(n);if(i>=0)S.proficiencies.splice(i,1);else S.proficiencies.push(n);rPr()}
+function aCP(){var n=$('npN').value.trim();if(!n)return;if(!S.customProfs)S.customProfs=[];S.customProfs.push({n:n,a:$('npA').value});$('npN').value='';rPr();toast('"'+n+'" criada')}
+function dCP(i){var nm=S.customProfs[i].n;var pi=S.proficiencies.indexOf(nm);if(pi>=0)S.proficiencies.splice(pi,1);S.customProfs.splice(i,1);rPr()}
+
+// ═══ INVENTORY ═══
+function bIn(){
+  $('t-inventory').innerHTML='<div class="st">Capacidade de Carga</div><div class="f ai g12 fw" style="margin-bottom:12px"><div class="sb"><div class="sbl">Peso</div><div class="sbv" id="wCur" style="font-size:15px">0</div><div class="sbs">kg</div></div><div class="f1" style="min-width:140px"><div class="f ai jsb" style="margin-bottom:3px"><span style="font-size:10px;color:var(--td)">Carga</span><span style="font-size:10px;color:var(--td)" id="wLbl">0/0 kg</span></div><div style="height:8px;background:var(--sf);border-radius:4px;overflow:hidden"><div id="wBar" style="height:100%;border-radius:4px;background:var(--sc);width:0%;transition:width .3s"></div></div><div style="font-size:9px;color:var(--tm);margin-top:2px" id="wNote"></div></div><div class="sb"><div class="sbl">Gold</div><div class="f ai g4" style="justify-content:center"><button class="nb" onclick="adj(\'pGold\',-1,0,99999);sync()" style="width:17px;height:17px;font-size:10px">−</button><span class="nv" id="pGold" style="color:#f4d03f;font-size:15px">0</span><button class="nb" onclick="adj(\'pGold\',1,0,99999);sync()" style="width:17px;height:17px;font-size:10px">+</button></div></div></div><div class="st">Adicionar Item</div><div class="f g6 ai fw" style="margin-bottom:12px"><input type="text" id="iN" placeholder="Nome..." style="flex:1;min-width:110px"><div class="f ai g4"><span style="font-size:9px;color:var(--td)">Peso</span><input type="number" id="iW" value="0.5" step="0.1" min="0" style="width:52px;text-align:center"><span style="font-size:9px;color:var(--tm)">kg</span></div><select id="iS" style="width:95px"><option value="carried">Carregando</option><option value="equipped">Equipado</option><option value="stored">Guardado</option></select><input type="text" id="iNo" placeholder="Nota..." style="width:100px"><button class="bt bp bsm" onclick="aIt()">+</button></div><div class="st">Itens <span id="iCt" style="color:var(--td);font-weight:400">(0)</span></div><div class="f g6 fw" style="margin-bottom:8px"><button class="pl on" id="fAll" onclick="sF(\'all\')" style="color:var(--ac);border-color:var(--ad)">Todos</button><button class="pl" id="fEquipped" onclick="sF(\'equipped\')">⚔ Equip</button><button class="pl" id="fCarried" onclick="sF(\'carried\')">🎒 Carreg</button><button class="pl" id="fStored" onclick="sF(\'stored\')">📦 Guard</button></div><div class="fc g6" id="iList"><div class="tc" style="padding:20px;color:var(--tm);font-style:italic;font-size:11px">Vazio</div></div>';rIn()
+}
+function aIt(){var n=$('iN').value.trim();if(!n)return;S.inventory.push({id:Date.now(),n:n,w:parseFloat($('iW').value)||0,s:$('iS').value,no:$('iNo').value.trim()});$('iN').value='';$('iNo').value='';rIn()}
+function rmIt(id){S.inventory=S.inventory.filter(function(i){return i.id!==id});rIn()}
+function cyS(id){var it=S.inventory.find(function(i){return i.id===id});if(!it)return;var o=['equipped','carried','stored'];it.s=o[(o.indexOf(it.s)+1)%3];rIn()}
+function sF(f){invF=f;['fAll','fEquipped','fCarried','fStored'].forEach(function(id){var e=$(id);if(e){e.className='pl';e.style.cssText=''}});var a=$('f'+f.charAt(0).toUpperCase()+f.slice(1))||$('fAll');if(a){a.classList.add('on');a.style.cssText='color:var(--ac);border-color:var(--ad)'}rIn()}
+function rIn(){
+  var list=$('iList');if(!list)return;var items=invF==='all'?S.inventory:S.inventory.filter(function(i){return i.s===invF});
+  var ct=$('iCt');if(ct)ct.textContent='('+S.inventory.length+')';
+  if(!items.length){list.innerHTML='<div class="tc" style="padding:20px;color:var(--tm);font-style:italic;font-size:11px">'+(S.inventory.length?'Nenhum neste filtro':'Vazio')+'</div>';uWt();return}
+  var lb={equipped:'Equipado',carried:'Carregando',stored:'Guardado'},ic={equipped:'⚔',carried:'🎒',stored:'📦'};
+  list.innerHTML=items.map(function(it){return '<div class="ii '+(it.s==='equipped'?'eq':it.s==='carried'?'cr':'sr')+'"><button class="is" onclick="cyS('+it.id+')">'+ic[it.s]+' '+lb[it.s]+'</button><div style="flex:1;min-width:60px"><div style="font-size:12px;font-weight:600">'+esc(it.n)+'</div>'+(it.no?'<div style="font-size:9px;color:var(--tm)">'+esc(it.no)+'</div>':'')+'</div><div style="font-size:10px;color:var(--td);min-width:34px;text-align:right;font-family:Cinzel,serif">'+it.w.toFixed(1)+'</div><button class="nb" onclick="rmIt('+it.id+')" style="width:18px;height:18px;font-size:10px;color:var(--dn)">✕</button></div>'}).join('');uWt()
+}
+function uWt(){var c=S.inventory.filter(function(i){return i.s!=='stored'}).reduce(function(s,i){return s+i.w},0);var mx=gF('FOR')*7;var pct=mx>0?Math.min(100,(c/mx)*100):0;sv('wCur',c.toFixed(1));var l=$('wLbl');if(l)l.textContent=c.toFixed(1)+'/'+mx+' kg';var b=$('wBar');if(b){b.style.width=pct+'%';b.style.background=pct>100?'var(--dn)':pct>75?'var(--ac)':'var(--sc)'}var nt=$('wNote');if(nt){if(pct>100)nt.textContent='⚠ Sobrecarga!';else if(pct>75)nt.textContent='⚠ Pesada: -4m, desvantagem';else if(pct>50)nt.textContent='Leve: -2m';else nt.textContent='FOR('+gF('FOR')+')×7 = '+mx+'kg'}}
+
+// ═══ AURAS ═══
+function bAu(){
+  var h='<div class="st">Hexagrama</div><div style="font-size:11px;color:var(--td);text-align:center;max-width:380px;margin:0 auto 10px">Clique em um grupo para ver afinidades.</div><div class="f jc" style="margin-bottom:12px"><div id="aHex" style="position:relative;width:260px;height:260px"></div></div><div id="aInfo" style="max-width:380px;margin:0 auto 14px"></div>';
+  h+='<div class="st">Catálogo de Auras</div><div id="aCat"></div>';
+  h+='<div class="st" style="margin-top:14px">Auras do Personagem</div>';
+  h+='<div class="fd"><label class="fl">Aura Inicial</label><select id="pAuraInit" onchange="sync()"><option value="">— Selecione —</option>';
+  AG.forEach(function(g){h+='<option value="'+g.n+'">'+g.n+'</option>'});
+  h+='<option value="Titânica">Titânica</option></select></div>';
+  h+='<div class="fd"><label class="fl">Descrição</label><textarea id="pAuraDesc" rows="2" placeholder="Como manifesta..." oninput="sync()"></textarea></div>';
+  h+='<div class="fd"><label class="fl">Técnicas <span style="font-weight:400;color:var(--tm)">(ver aba Técnicas)</span></label><div id="pTechsSummary" style="font-size:11px;color:var(--td);padding:6px 9px;background:var(--cd);border:1px solid var(--bd);border-radius:4px;min-height:28px"></div></div>';
+  h+='<div class="fd"><label class="fl">Auras Adicionais</label><textarea id="pExtraAuras" rows="2" placeholder="Adquiridas na campanha..." oninput="sync()"></textarea></div>';
+  $('t-auras').innerHTML=h;iHex();rCat();syncTechsText()
+}
+function iHex(){
+  var hex=$('aHex');if(!hex)return;var cx=130,cy=130,r=96;
+  function pos(a){return{x:cx+r*Math.cos((a-90)*Math.PI/180),y:cy+r*Math.sin((a-90)*Math.PI/180)}}
+  var svg='<svg width="260" height="260" style="position:absolute;top:0;left:0">';
+  for(var i=0;i<6;i++){var p1=pos(AG[i].ag),p2=pos(AG[(i+1)%6].ag);svg+='<line x1="'+p1.x+'" y1="'+p1.y+'" x2="'+p2.x+'" y2="'+p2.y+'" stroke="'+AG[i].c+'30" stroke-width="1.5"/>'}
+  AG.forEach(function(g){var p=pos(g.ag);svg+='<line x1="'+p.x+'" y1="'+p.y+'" x2="'+cx+'" y2="'+cy+'" stroke="#252540" stroke-width="0.6"/>'});
+  svg+='</svg>';
+  svg+='<div class="an" onclick="cA(\'Titânica\')" id="a_T" style="left:'+(cx-24)+'px;top:'+(cy-24)+'px;width:48px;height:48px;background:#0a0a18;border-color:#444"><span style="font-size:13px">⬢</span><span style="font-size:6px;font-family:Cinzel,serif;font-weight:700;color:#ff6600;letter-spacing:.04em">TITÂNICA</span></div>';
+  AG.forEach(function(g){var p=pos(g.ag);svg+='<div class="an" id="a_'+g.n+'" onclick="cA(\''+g.n+'\')" style="left:'+(p.x-26)+'px;top:'+(p.y-26)+'px;border-color:'+g.c+'55"><span style="font-size:13px">'+g.i+'</span><span style="font-size:6px;font-family:Cinzel,serif;font-weight:700;color:'+g.c+';letter-spacing:.03em">'+g.n.toUpperCase()+'</span></div>'});
+  hex.innerHTML=svg
+}
+function aDist(a,b){var ia=-1,ib=-1;AG.forEach(function(g,i){if(g.n===a)ia=i;if(g.n===b)ib=i});if(ia<0||ib<0)return 0;var d=Math.abs(ia-ib);return Math.min(d,6-d)}
+function cA(n){selA=selA===n?null:n;rAI();rCat()}
+function rAI(){
+  AG.forEach(function(g){var e=$('a_'+g.n);if(!e)return;if(selA===g.n){e.style.background=g.c+'20';e.style.borderColor=g.c;e.style.boxShadow='0 0 12px '+g.c+'25'}else if(selA&&selA!=='Titânica'){var d=aDist(selA,g.n);e.style.background='var(--cd)';e.style.borderColor=d<=1?'#3a7a4c':d===2?'#c9a96e':'#b83030';e.style.boxShadow='none'}else{e.style.background='var(--cd)';e.style.borderColor=g.c+'55';e.style.boxShadow='none'}});
+  var t=$('a_T');if(t){t.style.background=selA==='Titânica'?'#ff660012':'#0a0a18';t.style.borderColor=selA==='Titânica'?'#ff6600':'#444'}
+  var info=$('aInfo');if(!info)return;
+  if(!selA){info.innerHTML='';return}
+  if(selA==='Titânica'){info.innerHTML='<div class="crd" style="border-left:3px solid #ff6600"><div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:#ff6600;margin-bottom:4px">⬢ Titânica</div><div style="font-size:11px;color:var(--td);line-height:1.5">Custo de afinidade: acesso a todos os grupos (exceto Ícor).</div></div>';return}
+  var g=AG.find(function(x){return x.n===selA});
+  var rows=AG.filter(function(x){return x.n!==selA}).map(function(x){var d=aDist(selA,x.n);var cost=d<=1?'1 pt':d===2?'2 pts':'3 pts';var c=d<=1?'#3a7a4c':d===2?'#c9a96e':'#b83030';return '<div style="display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid var(--bd)"><span style="font-size:11px">'+x.i+' '+x.n+'</span><span style="font-weight:700;color:'+c+';font-size:11px">'+cost+'</span></div>'}).join('');
+  info.innerHTML='<div class="crd" style="border-left:3px solid '+g.c+'"><div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:'+g.c+';margin-bottom:5px">'+g.i+' '+selA+'</div><div style="font-size:10px;color:var(--td);margin-bottom:5px">Custo a partir de <b style="color:var(--tx)">'+selA+'</b>:</div>'+rows+'</div>'
+}
+function rCat(){
+  var cat=$('aCat');if(!cat)return;
+  if(!selA){cat.innerHTML='<div style="text-align:center;padding:24px 10px;color:var(--tm);font-style:italic;font-size:12px">Clique em um grupo no hexagrama para ver suas auras.</div>';return}
+  var h='';
+  if(selA==='Titânica'){
+    h+='<div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:#ff6600;margin-bottom:8px;letter-spacing:.1em">⬢ TITÂNICA</div>';
+    h+='<div class="crd" style="border-left:3px solid #ff6600;margin-bottom:10px"><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px">Uma aura extremamente rara e poderosa que transcende as limitações das auras convencionais. Permite ao usuário acessar e utilizar todas as auras conhecidas (exceto Ícor) sem restrições de nível ou especialização.</div><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px"><b style="color:var(--tx)">Limitações:</b> Mesmo com este poder imenso, o usuário deve aprender a controlar cada aura individualmente. O domínio da aura Titânica evolui com o tempo e dedicação:</div></div>';
+    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Nível 1</div><div style="font-size:11px;color:var(--td);line-height:1.6">Acesso a três auras diferentes por dia, uma de cada vez, no nível 1. Cada troca de aura requer 1 minuto de concentração. Usar qualquer aura por mais de 10 minutos consecutivos causa 1d6 de dano por minuto adicional.</div></div>';
+    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Nível 2</div><div style="font-size:11px;color:var(--td);line-height:1.6">Acesso a cinco auras por dia, podendo usar duas simultaneamente, até o nível 2. Cada troca requer 30 segundos. Pode manter auras ativas por até 30 minutos antes de começar a sofrer dano.</div></div>';
+    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Nível 3</div><div style="font-size:11px;color:var(--td);line-height:1.6">Acesso a todas as auras, podendo usar até três simultaneamente, em qualquer nível. Trocas são instantâneas (ação bônus). Pode manter auras ativas por até 1 hora antes de sofrer efeitos negativos.</div></div>';
+    h+='<div class="alv" style="border-color:#b83030;margin-top:6px"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#b83030;margin-bottom:3px">Efeito Colateral</div><div style="font-size:11px;color:var(--td);line-height:1.6">Usar múltiplas auras simultaneamente causa fadiga proporcional ao número e poder das auras combinadas. Após atingir o limite de tempo, o usuário deve fazer um teste de Constituição (dificuldade aumenta com o tempo de uso) ou ficará incapacitado por 1d4 horas.</div></div>';
+    cat.innerHTML=h;return}
+  var g=AG.find(function(x){return x.n===selA});if(!g)return;
+  var auras=AD[g.n];if(!auras){cat.innerHTML='<div style="text-align:center;padding:16px;color:var(--tm);font-style:italic;font-size:12px">Sem auras catalogadas para este grupo.</div>';return}
+  h+='<div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:'+g.c+';margin-bottom:8px;letter-spacing:.1em">'+g.i+' '+g.n.toUpperCase()+'</div>';
+  auras.forEach(function(a){
+    h+='<div class="aci open"><div class="ach" onclick="this.parentElement.classList.toggle(\'open\')"><span style="font-size:12px;font-weight:600">'+a.n+'</span><span style="font-size:10px;color:var(--td)">▾</span></div><div class="acb" style="display:block">';
+    a.l.forEach(function(lv,i){h+='<div class="alv" style="border-color:'+g.c+'"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:'+g.c+';margin-bottom:3px">Nível '+(i+1)+'</div><div style="font-size:11px;color:var(--td);line-height:1.6">'+lv+'</div></div>'});
+    h+='</div></div>'});
+  cat.innerHTML=h;
+  setTimeout(function(){var c=$('aCat');if(c)c.scrollIntoView({behavior:'smooth',block:'start'})},100)
+}
+
+// ═══ TÉCNICAS ═══
+var TECGEN=[
+{n:"Projetar",tag:"Deformadora & Emissora",tagC:"#9b59b6",desc:"Concentra a aura na palma da mão e lança como projétil contra um oponente.",
+cost:"6 MP (mín) — 30 MP (máx por ataque)",
+dmg:"1d8 por cada 6 MP utilizado, até 5d8 (30 MP)",
+range:"Curto (≤10m): sem penalidade · Médio (10–30m): −2 acerto · Longo (30–50m): −5 acerto",
+extra:"Efeito pós-disparo (1d4 turnos): Fogo: 1d4 queimadura/turno · Água: −2 movimento · Terra: −2 esquiva · Ar: −2 próx. ataque · Outros: padrão similar"},
+{n:"Manifestar",tag:"Criadora & Mental",tagC:"#2ecc71",desc:"Manifesta algo no plano físico ou mental. Permanece enquanto MP estiver reservada.",
+cost:"Pequeno (≤0,5m³): 15 MP · Médio (≤2m³): 25 MP · Grande (≤5m³): 45 MP",
+dmg:"Ofensivo: 1d8 por 15 MP investidos",
+range:"Manifestação: até 20m · Distância máx: 50m do criador",
+extra:"Objetos complexos exigem teste de DOM. Manifestações ofensivas têm dano limitado. Duração enquanto MP reservada (ação livre para liberar)."},
+{n:"Proteger",tag:"Todas as Auras",tagC:"#3498db",desc:"Usa energia da aura como reação para se defender de outro efeito de aura.",
+cost:"Total: MP = ataque · Parcial: 50% (mín 5 MP) · Reflexiva: 150% do ataque",
+dmg:"Reflexiva: retorna 25% do efeito ao atacante",
+range:"Reação (fora do turno)",
+extra:"Apenas contra efeitos de aura (não físicos). Requer mão livre. Não funciona inconsciente/incapacitado."},
+{n:"Amplificação: Expansão de Domínio",tag:"Todas (nível alto)",tagC:"#f4d03f",desc:"Manifesta a verdadeira natureza da aura, criando um domínio que sobrepõe a realidade. Dentro dele, as leis físicas se curvam à vontade do usuário.",
+cost:"50% do MP máximo (não recuperável no combate)",
+dmg:"Técnicas: +150% dano · 1 técnica/turno grátis (até 20 MP) · 100% acerto · Resistências inimigas ÷ 2",
+range:"Raio: 10m + 1m por 5 DOM acima de 30 · Duração: 1d4+1 turnos",
+extra:"Ativação: declarar nome do domínio em voz alta (vulnerável). Após uso: Exaustão de Aura nv.2 (sem técnicas 1d4h). Exaustão nv.1: −3 atributos 1h. Exaustão nv.3: inconsciência 1d6h. 1×/dia. Domínios opostos anulam-se (teste DOM oposto)."}
+];
+
+var FORT=[
+{n:"Sinais de Mão",ef:"+25% eficiência (dano, duração ou área)",req:"Ação bônus"},
+{n:"Encantamento",ef:"+20% eficiência",req:"Personalizado pelo jogador, ação bônus"},
+{n:"Tempo de Carga",ef:"1 turno: +50% · 2 turnos: +100% · 3 turnos: +200%",req:"Metade da velocidade durante carga"},
+{n:"Consumíveis Mágicos",ef:"+30% eficiência",req:"Utensílio que se consome após uso"},
+{n:"Técnica em Conjunto",ef:"Compatíveis: 175% soma MP · Neutras: 150% · Opostas: 125% (+1d6 dano a ambos)",req:"Dois jogadores combinam auras"},
+{n:"Votos",ef:"+100% eficiência",req:"Pacto com entidade, restrição permanente (Mestre define)"},
+{n:"Dança Ritualística",ef:"+75% eficiência",req:"Perda de locomoção + ação bônus"},
+{n:"Limites de Uso",ef:"1×/dia: +100% · 1×/semana: +200% · 1×/lua: +300%",req:"Restrição de frequência"}
+];
+
+function bTc(){
+  var h='';
+
+  // ─── SEÇÃO 1: Técnicas Genéricas ───
+  h+='<div class="st">Técnicas Genéricas</div>';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:8px">Técnicas fundamentais que todo usuário de aura pode aprender conforme seu tipo.</div>';
+  TECGEN.forEach(function(t,i){
+    h+='<div class="tcd" id="tg'+i+'">';
+    h+='<div class="tch" onclick="this.parentElement.classList.toggle(\'open\')"><span>'+t.n+'</span><span class="arr">▶</span></div>';
+    h+='<div class="tcb">';
+    h+='<div style="margin-bottom:6px"><span class="tdt" style="background:'+t.tagC+'20;color:'+t.tagC+';border:1px solid '+t.tagC+'40">'+t.tag+'</span></div>';
+    h+='<div class="tmc" style="margin-bottom:6px">'+t.desc+'</div>';
+    h+='<div class="tmc"><b>Custo:</b> '+t.cost+'</div>';
+    h+='<div class="tmc"><b>Dano:</b> '+t.dmg+'</div>';
+    h+='<div class="tmc"><b>Alcance:</b> '+t.range+'</div>';
+    h+='<div class="tmc"><b>Extra:</b> '+t.extra+'</div>';
+    h+='</div></div>';
+  });
+
+  // ─── SEÇÃO 2: Parâmetros de Balanceamento ───
+  h+='<div class="st" style="margin-top:14px">Parâmetros de Balanceamento</div>';
+  h+='<div class="tcd"><div class="tch" onclick="this.parentElement.classList.toggle(\'open\')"><span>Referência de Balanceamento</span><span class="arr">▶</span></div>';
+  h+='<div class="tcb">';
+  h+='<div class="tmc"><b>Custo Base:</b> 10–30 MP (básicas) · 30–60 MP (avançadas)</div>';
+  h+='<div class="tmc"><b>Dano Base:</b> 2d8 (básicas) · até 6d8 (avançadas)</div>';
+  h+='<div class="tmc"><b>Alcance:</b> Máx 100m para técnicas de longo alcance</div>';
+  h+='<div class="tmc"><b>Área de Efeito:</b> Máx 10m de raio para técnicas de área</div>';
+  h+='</div></div>';
+
+  // ─── SEÇÃO 3: Elementos de Fortalecimento ───
+  h+='<div class="st" style="margin-top:14px">Elementos de Fortalecimento</div>';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:8px">Modificadores que aumentam a eficiência de técnicas. Cada elemento além do 1º adiciona 1 ação bônus ao custo. 2 elementos = 1 turno de preparação, 3 = 2 turnos, etc.</div>';
+  h+='<div class="fort-grid">';
+  FORT.forEach(function(f){
+    h+='<div class="fort-item"><b>'+f.n+'</b><div style="color:var(--sc);margin:2px 0">'+f.ef+'</div><div style="color:var(--tm);font-size:9px">Req: '+f.req+'</div></div>';
+  });
+  h+='</div>';
+
+  // ─── SEÇÃO 4: Calculadora de Fortalecimento ───
+  h+='<div class="sub-label" style="margin-top:12px">Calculadora de Fortalecimento</div>';
+  h+='<div class="flx-panel" style="margin-bottom:14px">';
+  h+='<div style="font-size:10px;color:var(--td);margin-bottom:6px">Selecione os elementos ativos para calcular bônus total e custo de ações:</div>';
+  h+='<div id="fortChecks" style="margin-bottom:8px">';
+  FORT.forEach(function(f,i){
+    h+='<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;cursor:pointer"><input type="checkbox" onchange="calcFort()" id="fc'+i+'"><span>'+f.n+'</span></label>';
+  });
+  h+='</div>';
+  h+='<div class="f g12 fw"><div class="sb"><div class="sbl">Bônus Total</div><div class="sbv" id="fortBonus" style="font-size:14px;color:var(--sc)">+0%</div></div>';
+  h+='<div class="sb"><div class="sbl">Ações Extra</div><div class="sbv" id="fortActions" style="font-size:14px">0</div></div>';
+  h+='<div class="sb"><div class="sbl">Turnos Prep.</div><div class="sbv" id="fortTurns" style="font-size:14px">0</div></div></div>';
+  h+='</div>';
+
+  // ─── SEÇÃO 5: Fluxo de Aura ───
+  h+='<div class="st" style="margin-top:14px">Fluxo de Aura</div>';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:8px">Encadeamento de múltiplas técnicas num turno. Cada técnica acertada permite continuar, mas aumenta o Desequilíbrio.</div>';
+
+  h+='<div class="tcd"><div class="tch" onclick="this.parentElement.classList.toggle(\'open\')"><span>Regras do Fluxo</span><span class="arr">▶</span></div>';
+  h+='<div class="tcb">';
+  h+='<div class="tmc"><b>Gatilho:</b> Acertar uma técnica com dano/efeito direto. Consome ação bônus + MP.</div>';
+  h+='<div class="tmc"><b>Continuação:</b> Declara próxima técnica → gasta MP de fluxo → rola ataque. Sucesso: continua. Falha: fluxo interrompido, MP perdida.</div>';
+  h+='<div class="tmc"><b>Desequilíbrio:</b> +1 por técnica após a primeira. Persiste até próximo turno.</div>';
+  h+='<div class="tmc" style="color:var(--sc)"><b>Benefícios:</b> Bônus A: −1 MP por ponto (mín 1 MP). Bônus B: +1 acerto ou +1 dano por ponto.</div>';
+  h+='<div class="tmc" style="color:var(--dn)"><b>Riscos:</b> −1 Defesa por ponto. Falha crítica: MP dobrada + reduz limiar de crítico contra você.</div>';
+  h+='<div class="tmc"><b>Limite:</b> Máx técnicas = DOM. Encerra voluntariamente, por falha, ou sem MP/ações.</div>';
+  h+='</div></div>';
+
+  // Tracker interativo
+  h+='<div class="flx-panel" id="fluxoPanel">';
+  h+='<div class="flx-bar"><span style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:var(--ac);letter-spacing:.08em">FLUXO DE AURA</span>';
+  h+='<button class="bt bp bsm" id="fluxoBtn" onclick="toggleFluxo()" style="margin-left:auto">Iniciar</button>';
+  h+='<button class="bt bo bsm" onclick="resetFluxo()">Reset</button></div>';
+  h+='<div style="font-size:9px;color:var(--td);margin-bottom:6px">Desequilíbrio:</div>';
+  h+='<div class="flx-deseq" id="fluxoPips"></div>';
+  h+='<div class="f g12 fw" style="margin:8px 0"><div class="sb"><div class="sbl">Desequilíbrio</div><div class="sbv" id="fluxoDeseqVal" style="font-size:16px">0</div></div>';
+  h+='<div class="sb"><div class="sbl">Bônus MP</div><div class="sbv" id="fluxoMPBonus" style="font-size:14px;color:var(--sc)">−0</div></div>';
+  h+='<div class="sb"><div class="sbl">Bônus Atk/Dmg</div><div class="sbv" id="fluxoAtkBonus" style="font-size:14px;color:var(--sc)">+0</div></div>';
+  h+='<div class="sb"><div class="sbl">Penalidade Def</div><div class="sbv" id="fluxoDefPen" style="font-size:14px;color:var(--dn)">0</div></div></div>';
+  h+='<div class="f g6" style="margin-bottom:6px"><button class="bt bs bsm" onclick="addFluxoHit()">✓ Acertou</button><button class="bt bsm" onclick="addFluxoMiss()" style="background:var(--dn);color:var(--tx)">✕ Errou</button><button class="bt bo bsm" onclick="endFluxoVoluntary()">Encerrar</button></div>';
+  h+='<div class="flx-log" id="fluxoLog"></div>';
+  h+='</div>';
+
+  // ─── SEÇÃO 6: Desenvolvimento de Técnicas ───
+  h+='<div class="st" style="margin-top:14px">Desenvolvimento de Técnicas</div>';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:8px">Técnicas são desenvolvidas em Sessões de Treino Focado durante Downtime. O jogador descreve como está treinando e realiza um Teste de Dominação (DOM).</div>';
+
+  // Tracker de sessões
+  h+='<div class="flx-panel">';
+  h+='<div class="f ai g8" style="margin-bottom:8px"><span style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:var(--ac)">SESSÕES DE TREINO</span>';
+  h+='<button class="bt bp bsm" onclick="addSessao()" style="margin-left:auto">+ Nova Sessão</button></div>';
+  h+='<div id="sessoesList"></div>';
+  h+='</div>';
+
+  // Arka Local
+  h+='<div class="sub-label">Arka do Local</div>';
+  h+='<div class="flx-panel">';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:6px">Cada local tem Capacidade de Arka para Treino. Sessão bem-sucedida consome 1 ponto. Arka 0 = Esgotado (sem treino até regenerar).</div>';
+  h+='<div class="f ai g8"><span style="font-size:10px;color:var(--td)">Capacidade</span><div class="nc"><button class="nb" onclick="adjArka(\'cap\',-1)">−</button><span class="nv" id="arkaCap">3</span><button class="nb" onclick="adjArka(\'cap\',1)">+</button></div>';
+  h+='<span style="font-size:10px;color:var(--td);margin-left:12px">Atual</span><div class="nc"><button class="nb" onclick="adjArka(\'cur\',-1)">−</button><span class="nv" id="arkaLocal">3</span><button class="nb" onclick="adjArka(\'cur\',1)">+</button></div></div>';
+  h+='<div id="arkaStatus" style="font-size:10px;margin-top:5px"></div>';
+  h+='</div>';
+
+  // Exaustão de Treino
+  h+='<div class="sub-label">Exaustão de Treino</div>';
+  h+='<div class="flx-panel">';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:6px">+1 nível após cada sessão. Descanso Longo remove 1 nível. Clique para ajustar.</div>';
+  h+='<div class="exh-lvl" id="exhPips"></div>';
+  h+='<div id="exhDesc" style="font-size:10px;line-height:1.5;margin-top:4px"></div>';
+  h+='<div class="f g6" style="margin-top:6px"><button class="bt bs bsm" onclick="descLongo()">Descanso Longo (−1)</button><button class="bt bo bsm" onclick="S.exTreino=0;rExh()">Limpar</button></div>';
+  h+='</div>';
+
+  // ─── SEÇÃO 7: Técnicas Máximas ───
+  h+='<div class="st" style="margin-top:14px">Técnicas Máximas</div>';
+  h+='<div class="tcd"><div class="tch" onclick="this.parentElement.classList.toggle(\'open\')"><span>Técnicas Máximas (Nível 10+)</span><span class="arr">▶</span></div>';
+  h+='<div class="tcb">';
+  h+='<div class="tmc">Ao atingir <em>nível 10</em> ou superior, o personagem pode criar uma <em>Técnica Máxima</em> — a aproximação máxima de sua aura. Causam dano e efeitos significativamente superiores, projetadas para competir com Amplificações de Aura.</div>';
+  h+='<div style="margin-top:6px"><label class="fl">Sua Técnica Máxima</label><textarea id="pTecMax" rows="3" placeholder="Nome, descrição, efeito, custo..." oninput="S.tecMax=this.value"></textarea></div>';
+  h+='</div></div>';
+
+  // ─── SEÇÃO 8: Técnicas do Personagem ───
+  h+='<div class="st" style="margin-top:14px">Técnicas Desenvolvidas</div>';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:6px">Registre as técnicas que seu personagem dominou com todos os detalhes mecânicos.</div>';
+  h+='<div id="devTechList"></div>';
+
+  // Formulário de adicionar
+  h+='<div class="tcd" id="addTechForm"><div class="tch" onclick="this.parentElement.classList.toggle(\'open\')"><span>+ Nova Técnica</span><span class="arr">▶</span></div>';
+  h+='<div class="tcb">';
+  h+='<div class="pg" style="margin-bottom:6px">';
+  h+='<div class="fd"><label class="fl">Nome</label><input type="text" id="dtName" placeholder="Ex: Lâmina Flamejante"></div>';
+  h+='<div class="fd"><label class="fl">Custo MP</label><input type="text" id="dtCost" placeholder="Ex: 12 MP"></div>';
+  h+='<div class="fd"><label class="fl">Dano</label><input type="text" id="dtDmg" placeholder="Ex: 2d8 fogo"></div>';
+  h+='<div class="fd"><label class="fl">Alcance</label><input type="text" id="dtRange" placeholder="Ex: 10m"></div>';
+  h+='</div>';
+  h+='<div class="f g8 fw" style="margin-bottom:6px">';
+  h+='<div class="fd" style="min-width:100px"><label class="fl">Ação</label><select id="dtAction"><option value="Padrão">Padrão</option><option value="Bônus">Bônus</option><option value="Reação">Reação</option><option value="Livre">Livre</option></select></div>';
+  h+='<div class="fd" style="min-width:100px"><label class="fl">Tipo Aura</label><select id="dtAura"><option value="">— Qualquer —</option>';
+  AG.forEach(function(g){h+='<option value="'+g.n+'">'+g.n+'</option>'});
+  h+='<option value="Titânica">Titânica</option></select></div>';
+  h+='<div class="fd" style="min-width:80px"><label class="fl">Inicia Fluxo?</label><select id="dtFluxo"><option value="Não">Não</option><option value="Sim">Sim</option></select></div>';
+  h+='</div>';
+  h+='<div class="fd"><label class="fl">Efeito / Descrição</label><textarea id="dtDesc" rows="2" placeholder="Descreva o efeito, condições, duração..."></textarea></div>';
+  h+='<div class="fd"><label class="fl">Fortalecimentos Aceitos</label><div class="f fw g4" id="dtFortChecks">';
+  FORT.forEach(function(f,i){
+    h+='<label style="display:inline-flex;align-items:center;gap:4px;font-size:10px;cursor:pointer;padding:2px 6px;border:1px solid var(--bd);border-radius:3px;background:var(--cd)"><input type="checkbox" id="dtF'+i+'"><span>'+f.n+'</span></label>';
+  });
+  h+='</div></div>';
+  h+='<div class="fd"><label class="fl">Notas Extras</label><input type="text" id="dtNotes" placeholder="Condições especiais, restrições..."></div>';
+  h+='<div class="f g6"><button class="bt bp" onclick="addDevTech()">Adicionar Técnica</button><button class="bt bo" onclick="clearDTForm()">Limpar</button></div>';
+  h+='</div></div>';
+
+  $('t-tecnicas').innerHTML=h;
+  rFluxoPips();rFluxoLog();rExh();rArka();rSessoes();rDevTechs();
+  var em=$('pTecMax');if(em)em.value=S.tecMax||'';
+}
+
+// ═══ TÉCNICAS DESENVOLVIDAS (CRUD) ═══
+function addDevTech(){
+  var n=$('dtName').value.trim();if(!n){toast('Dê um nome à técnica');return}
+  var forts=[];FORT.forEach(function(f,i){var cb=$('dtF'+i);if(cb&&cb.checked)forts.push(f.n)});
+  var tech={id:Date.now(),name:n,cost:$('dtCost').value.trim(),dmg:$('dtDmg').value.trim(),range:$('dtRange').value.trim(),action:$('dtAction').value,aura:$('dtAura').value,fluxo:$('dtFluxo').value,desc:$('dtDesc').value.trim(),forts:forts,notes:$('dtNotes').value.trim()};
+  S.devTechs.push(tech);clearDTForm();rDevTechs();syncTechsText();toast('"'+n+'" adicionada!')
+}
+function clearDTForm(){
+  ['dtName','dtCost','dtDmg','dtRange','dtDesc','dtNotes'].forEach(function(id){var e=$(id);if(e)e.value=''});
+  $('dtAction').value='Padrão';$('dtAura').value='';$('dtFluxo').value='Não';
+  FORT.forEach(function(f,i){var cb=$('dtF'+i);if(cb)cb.checked=false});
+  var form=$('addTechForm');if(form)form.classList.remove('open')
+}
+function delDevTech(id){S.devTechs=S.devTechs.filter(function(t){return t.id!==id});rDevTechs();syncTechsText()}
+function editDevTech(id){
+  var t=S.devTechs.find(function(x){return x.id===id});if(!t)return;
+  $('dtName').value=t.name;$('dtCost').value=t.cost||'';$('dtDmg').value=t.dmg||'';$('dtRange').value=t.range||'';
+  $('dtAction').value=t.action||'Padrão';$('dtAura').value=t.aura||'';$('dtFluxo').value=t.fluxo||'Não';
+  $('dtDesc').value=t.desc||'';$('dtNotes').value=t.notes||'';
+  FORT.forEach(function(f,i){var cb=$('dtF'+i);if(cb)cb.checked=(t.forts||[]).indexOf(f.n)>=0});
+  var form=$('addTechForm');if(form)form.classList.add('open');
+  delDevTech(id);toast('Editando "'+t.name+'" — modifique e adicione novamente')
+}
+function syncTechsText(){
+  S.techs=S.devTechs.map(function(t){return t.name+' · '+t.cost+' · '+t.dmg+' · '+t.range+' · '+t.desc}).join('\n');
+  var el=$('pTechsSummary');if(!el)return;
+  if(!S.devTechs.length){el.innerHTML='<span style="font-style:italic;color:var(--tm)">Nenhuma — adicione na aba Técnicas</span>';return}
+  el.innerHTML=S.devTechs.map(function(t){return '<div style="margin-bottom:3px"><span style="color:var(--ac);font-weight:600">'+esc(t.name)+'</span> <span style="color:var(--tm)">'+esc(t.cost||'')+(t.dmg?' · '+esc(t.dmg):'')+'</span></div>'}).join('')
+}
+function rDevTechs(){
+  var el=$('devTechList');if(!el)return;
+  if(!S.devTechs||!S.devTechs.length){el.innerHTML='<div style="padding:12px;color:var(--tm);font-style:italic;font-size:11px;text-align:center">Nenhuma técnica desenvolvida. Use o formulário abaixo para adicionar.</div>';return}
+  var acC={Padrão:'var(--ac)',Bônus:'var(--sc)',Reação:'var(--mn)',Livre:'var(--td)'};
+  var auC={};AG.forEach(function(g){auC[g.n]=g.c});auC['Titânica']='#ff6600';
+  el.innerHTML=S.devTechs.map(function(t){
+    var h='<div class="tcd"><div class="tch" onclick="this.parentElement.classList.toggle(\'open\')">';
+    h+='<span style="display:flex;align-items:center;gap:6px"><span>'+esc(t.name)+'</span>';
+    if(t.action)h+='<span class="tdt" style="background:rgba(201,169,110,.1);color:'+( acC[t.action]||'var(--td)')+'">'+t.action+'</span>';
+    if(t.fluxo==='Sim')h+='<span class="tdt" style="background:rgba(58,122,76,.1);color:var(--sc)">Fluxo</span>';
+    h+='</span><span class="arr">▶</span></div>';
+    h+='<div class="tcb">';
+    if(t.aura)h+='<div style="margin-bottom:5px"><span class="tdt" style="background:'+(auC[t.aura]||'var(--td)')+'20;color:'+(auC[t.aura]||'var(--td)')+'">'+t.aura+'</span></div>';
+    if(t.cost)h+='<div class="tmc"><b>Custo:</b> '+esc(t.cost)+'</div>';
+    if(t.dmg)h+='<div class="tmc"><b>Dano:</b> '+esc(t.dmg)+'</div>';
+    if(t.range)h+='<div class="tmc"><b>Alcance:</b> '+esc(t.range)+'</div>';
+    if(t.desc)h+='<div class="tmc" style="margin-top:4px">'+esc(t.desc)+'</div>';
+    if(t.forts&&t.forts.length)h+='<div class="tmc" style="margin-top:4px"><b>Fortalecimentos:</b> '+t.forts.map(function(f){return '<span class="tdt" style="background:rgba(58,122,76,.08);color:var(--sc);font-size:8px">'+f+'</span>'}).join(' ')+'</div>';
+    if(t.notes)h+='<div class="tmc" style="margin-top:4px;color:var(--tm)"><b>Notas:</b> '+esc(t.notes)+'</div>';
+    h+='<div class="f g6" style="margin-top:8px"><button class="bt bo bsm" onclick="editDevTech('+t.id+')">✎ Editar</button><button class="bt bsm" onclick="delDevTech('+t.id+')" style="background:var(--dn);color:var(--tx)">✕ Remover</button></div>';
+    h+='</div></div>';
+    return h
+  }).join('')
+}
+
+// ═══ FLUXO DE AURA TRACKER ═══
+function toggleFluxo(){
+  S.fluxoActive=!S.fluxoActive;
+  if(S.fluxoActive){S.fluxoDeseq=0;S.fluxoLog=[{t:'Fluxo iniciado! Ação bônus consumida.',c:'ac'}]}
+  else{S.fluxoLog.unshift({t:'Fluxo encerrado.',c:'td'});S.fluxoDeseq=0}
+  rFluxo()
+}
+function resetFluxo(){S.fluxoActive=false;S.fluxoDeseq=0;S.fluxoLog=[];rFluxo()}
+function addFluxoHit(){
+  if(!S.fluxoActive){toast('Inicie o fluxo primeiro');return}
+  S.fluxoDeseq++;
+  var d=S.fluxoDeseq;
+  S.fluxoLog.unshift({t:'Técnica #'+(d+1)+' acertou! Desequilíbrio: '+d+' (Bônus: −'+d+' MP ou +'+d+' atk/dmg · Penalidade: −'+d+' Defesa)',c:'sc'});
+  rFluxo()
+}
+function addFluxoMiss(){
+  if(!S.fluxoActive){toast('Inicie o fluxo primeiro');return}
+  S.fluxoLog.unshift({t:'FALHOU! Fluxo interrompido. MP perdida. Desequilíbrio '+S.fluxoDeseq+' persiste até próximo turno.',c:'dn'});
+  S.fluxoActive=false;rFluxo()
+}
+function endFluxoVoluntary(){
+  if(!S.fluxoActive){toast('Nenhum fluxo ativo');return}
+  S.fluxoLog.unshift({t:'Fluxo encerrado voluntariamente com Desequilíbrio '+S.fluxoDeseq+'. Penalidade −'+S.fluxoDeseq+' Defesa até próximo turno.',c:'ac'});
+  S.fluxoActive=false;rFluxo()
+}
+function rFluxo(){
+  var p=$('fluxoPanel');if(p){if(S.fluxoActive)p.classList.add('flx-active');else p.classList.remove('flx-active')}
+  var b=$('fluxoBtn');if(b){b.textContent=S.fluxoActive?'Ativo ●':'Iniciar';b.style.background=S.fluxoActive?'var(--sc)':''}
+  sv('fluxoDeseqVal',S.fluxoDeseq);
+  $('fluxoMPBonus').textContent='−'+S.fluxoDeseq;
+  $('fluxoAtkBonus').textContent='+'+S.fluxoDeseq;
+  $('fluxoDefPen').textContent='−'+S.fluxoDeseq;
+  rFluxoPips();rFluxoLog()
+}
+function rFluxoPips(){
+  var el=$('fluxoPips');if(!el)return;
+  var dom=gF('DOM'),mx=Math.max(dom,8);var h='';
+  for(var i=1;i<=mx;i++){
+    var cls='flx-pip';
+    if(i<=S.fluxoDeseq){cls+=i>Math.floor(mx*0.7)?' danger':' on'}
+    h+='<div class="'+cls+'">'+i+'</div>';
+  }
+  el.innerHTML=h
+}
+function rFluxoLog(){
+  var el=$('fluxoLog');if(!el)return;
+  if(!S.fluxoLog.length){el.innerHTML='<div style="padding:6px;color:var(--tm);font-style:italic">Nenhum fluxo registrado.</div>';return}
+  el.innerHTML=S.fluxoLog.slice(0,15).map(function(l){return '<div style="color:var(--'+l.c+')">'+l.t+'</div>'}).join('')
+}
+
+// ═══ EXAUSTÃO DE TREINO ═══
+var EXH_DESC=[
+  "",
+  "Nv.1: Desvantagem em testes de DOM para treino no mesmo dia.",
+  "Nv.2: Desvantagem em todos os testes de DOM e CON para fadiga.",
+  "Nv.3+: Velocidade −50%. Desvantagem em DEX, INT, SAB. Não mantém concentração >1 turno. Desvantagem em físicos. Erro → teste CON ou cai. Sem ação bônus/reação. Início do turno: CON ou perde ação.",
+  "Nv.4+: Tudo acima. Desmaia de exaustão. Só acorda com ajuda ou Descanso Longo. Em combate, desmaia ao sofrer qualquer dano."
+];
+function rExh(){
+  var el=$('exhPips');if(!el)return;var h='';
+  for(var i=1;i<=5;i++){h+='<div class="exh-pip'+(i<=S.exTreino?' on':'')+'" onclick="S.exTreino='+(i<=S.exTreino?i-1:i)+';rExh()">'+i+'</div>'}
+  el.innerHTML=h;
+  var d=$('exhDesc');if(d){
+    if(S.exTreino===0)d.innerHTML='<span style="color:var(--sc)">Sem exaustão de treino.</span>';
+    else if(S.exTreino<=2)d.innerHTML='<span style="color:var(--ac)">'+EXH_DESC[S.exTreino]+'</span>';
+    else d.innerHTML='<span style="color:var(--dn)">'+EXH_DESC[Math.min(S.exTreino,4)]+'</span>';
+  }
+}
+function descLongo(){S.exTreino=Math.max(0,S.exTreino-1);rExh();toast('Descanso Longo: Exaustão → '+S.exTreino)}
+
+// ═══ ARKA LOCAL ═══
+function adjArka(t,d){
+  if(t==='cap'){S.arkaCap=Math.max(0,Math.min(20,S.arkaCap+d));sv('arkaCap',S.arkaCap);if(S.arkaLocal>S.arkaCap){S.arkaLocal=S.arkaCap;sv('arkaLocal',S.arkaLocal)}}
+  else{S.arkaLocal=Math.max(0,Math.min(S.arkaCap,S.arkaLocal+d));sv('arkaLocal',S.arkaLocal)}
+  rArka()
+}
+function rArka(){
+  var el=$('arkaStatus');if(!el)return;
+  if(S.arkaLocal<=0)el.innerHTML='<span style="color:var(--dn);font-weight:700">⚠ ESGOTADO — Sem treino possível neste local.</span>';
+  else if(S.arkaLocal<=1)el.innerHTML='<span style="color:var(--ac)">⚠ Quase esgotado. Restam '+S.arkaLocal+' sessões.</span>';
+  else el.innerHTML='<span style="color:var(--sc)">Arka disponível: '+S.arkaLocal+'/'+S.arkaCap+'</span>';
+}
+
+// ═══ SESSÕES DE TREINO ═══
+function addSessao(){
+  var nome=prompt('Nome da técnica sendo treinada:');
+  if(!nome)return;
+  var need=parseInt(prompt('Sessões necessárias para dominar (ex: 3):'))||3;
+  S.sessoesTreino.push({nome:nome,need:need,done:0,id:Date.now()});
+  rSessoes()
+}
+function sessDone(id){
+  var s=S.sessoesTreino.find(function(x){return x.id===id});
+  if(!s)return;
+  if(S.arkaLocal<=0){toast('Arka esgotada! Mude de local.');return}
+  s.done=Math.min(s.need,s.done+1);
+  S.arkaLocal=Math.max(0,S.arkaLocal-1);sv('arkaLocal',S.arkaLocal);
+  S.exTreino=Math.min(5,S.exTreino+1);
+  rSessoes();rExh();rArka();
+  if(s.done>=s.need)toast('🎉 '+s.nome+' dominada!');
+  else toast(s.nome+': '+s.done+'/'+s.need+' (Exaustão +1)')
+}
+function sessUndo(id){
+  var s=S.sessoesTreino.find(function(x){return x.id===id});
+  if(s&&s.done>0){s.done--;rSessoes()}
+}
+function sessDel(id){S.sessoesTreino=S.sessoesTreino.filter(function(x){return x.id!==id});rSessoes()}
+function rSessoes(){
+  var el=$('sessoesList');if(!el)return;
+  if(!S.sessoesTreino.length){el.innerHTML='<div style="padding:10px;color:var(--tm);font-style:italic;font-size:11px">Nenhuma técnica em treino.</div>';return}
+  el.innerHTML=S.sessoesTreino.map(function(s){
+    var pct=s.need>0?Math.round((s.done/s.need)*100):0;
+    var done=s.done>=s.need;
+    var h='<div class="trn-card">';
+    h+='<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:'+(done?'var(--sc)':'var(--tx)')+'">'+esc(s.nome)+(done?' ✓':'')+'</div>';
+    h+='<div style="font-size:9px;color:var(--td)">'+s.done+'/'+s.need+' sessões</div>';
+    h+='<div class="bt2" style="margin-top:4px;height:5px"><div class="bf" style="width:'+pct+'%;background:'+(done?'var(--sc)':'linear-gradient(90deg,var(--ad),var(--ac))')+'"></div></div></div>';
+    h+='<div class="f g4">';
+    if(!done)h+='<button class="bt bs bsm" onclick="sessDone('+s.id+')" title="Sessão bem-sucedida">+</button>';
+    h+='<button class="nb" onclick="sessUndo('+s.id+')" title="Desfazer" style="font-size:9px">↩</button>';
+    h+='<button class="nb" onclick="sessDel('+s.id+')" title="Remover" style="color:var(--dn);font-size:10px">✕</button>';
+    h+='</div></div>';
+    return h;
+  }).join('')
+}
+
+// ═══ CALCULADORA FORTALECIMENTO ═══
+function calcFort(){
+  var bonuses=[25,20,0,30,0,100,75,0];
+  var special={2:[50,100,200],4:[175,150,125],7:[100,200,300]};
+  var count=0,total=0;
+  FORT.forEach(function(f,i){
+    var cb=$('fc'+i);if(!cb||!cb.checked)return;
+    count++;
+    if(special[i]){total+=special[i][0]}
+    else{total+=bonuses[i]}
+  });
+  var extraActions=Math.max(0,count-1);
+  var prepTurns=Math.max(0,count-2);
+  $('fortBonus').textContent='+'+total+'%';
+  $('fortActions').textContent=extraActions;
+  $('fortTurns').textContent=prepTurns
+}
+
+// ═══ XP ═══
+function bXP(){
+  $('t-xp').innerHTML='<div class="st">Calculadora XP</div><div style="font-size:10px;color:var(--td);margin-bottom:8px">(NvCriatura × NvDesafio) ÷ Participantes</div><div class="f g16 fw ai" style="margin-bottom:14px"><div><label class="fl">Criatura</label><div class="nc"><button class="nb" onclick="adj(\'xCr\',-1,1,100);cXP()">−</button><span class="nv" id="xCr">5</span><button class="nb" onclick="adj(\'xCr\',1,1,100);cXP()">+</button></div></div><div><label class="fl">Desafio</label><div class="nc"><button class="nb" onclick="adj(\'xCh\',-1,1,100);cXP()">−</button><span class="nv" id="xCh">1</span><button class="nb" onclick="adj(\'xCh\',1,1,100);cXP()">+</button></div></div><div><label class="fl">Jogadores</label><div class="nc"><button class="nb" onclick="adj(\'xPa\',-1,1,20);cXP()">−</button><span class="nv" id="xPa">4</span><button class="nb" onclick="adj(\'xPa\',1,1,20);cXP()">+</button></div></div><div class="sb"><div class="sbl">XP</div><div class="sbv" id="xG" style="font-size:16px">1</div></div></div><div class="st">Progresso</div><div class="f g12 ai fw" style="margin-bottom:8px"><div class="f ai g4"><span style="font-size:10px;color:var(--td)">Nível</span><div class="nc"><button class="nb" onclick="adj(\'charLv\',-1,1,20);uXP()">−</button><span class="nv" id="charLv">1</span><button class="nb" onclick="adj(\'charLv\',1,1,20);uXP()">+</button></div></div><div class="f ai g4"><span style="font-size:10px;color:var(--td)">XP</span><div class="nc"><button class="nb" onclick="adj(\'charXP\',-10,0,9999);uXP()">−</button><span class="nv" id="charXP">0</span><button class="nb" onclick="adj(\'charXP\',10,0,9999);uXP()">+</button></div></div><button class="bt bs bsm" onclick="aXP()">+ Add</button></div><div class="f ai g8" style="margin-bottom:5px"><div class="bt2" style="height:9px"><div class="bf" id="xF" style="background:linear-gradient(90deg,var(--ad),var(--ac));width:0%"></div></div><span id="xL" style="font-size:10px;min-width:60px;text-align:right;color:var(--td)">0/200</span></div><div id="lU" style="display:none;padding:6px;background:rgba(244,208,63,.06);border:1px solid rgba(244,208,63,.2);border-radius:4px;font-family:Cinzel,serif;font-size:9px;color:#f4d03f;text-align:center;font-weight:700;margin-bottom:12px"></div><div class="st" style="margin-top:12px">Durabilidade</div><div class="f g8" style="margin-bottom:7px"><button class="pl on" id="dW" onclick="dAr=false;uDU()" style="color:var(--ac);border-color:var(--ad)">Arma (0.25)</button><button class="pl" id="dA2" onclick="dAr=true;uDU()">Armadura (0.20)</button></div><div class="f g16 ai fw"><div class="fc g6"><div class="f ai g4"><span style="font-size:9px;color:var(--td);min-width:40px">Ataques</span><div class="nc"><button class="nb" onclick="adj(\'dAt\',-1,0,200);cD()">−</button><span class="nv" id="dAt">10</span><button class="nb" onclick="adj(\'dAt\',1,0,200);cD()">+</button></div></div><div class="f ai g4"><span style="font-size:9px;color:var(--td);min-width:40px">Atual</span><div class="nc"><button class="nb" onclick="adj(\'dCu\',-1,0,200);cD()">−</button><span class="nv" id="dCu">20</span><button class="nb" onclick="adj(\'dCu\',1,0,200);cD()">+</button></div></div></div><div class="f g8"><div class="sb"><div class="sbl">Perda</div><div class="sbv" id="dL" style="color:var(--dn);font-size:14px">2.50</div></div><div class="sb"><div class="sbl">Restante</div><div class="sbv" id="dR" style="color:var(--sc);font-size:14px">17.50</div></div></div></div>';cXP();cD();uXP()
+}
+function cXP(){sv('xG',Math.floor((gv('xCr')*gv('xCh'))/gv('xPa')))}
+function uXP(){var lv=gv('charLv'),xp=gv('charXP'),need=XT[lv-1]||4000;$('xF').style.width=Math.min(100,(xp/need)*100)+'%';$('xL').textContent=xp+'/'+need;var b=$('lU');if(xp>=need){b.style.display='block';b.textContent='✦ LEVEL UP! → Nível '+(lv+1)}else b.style.display='none';S.level=lv;S.xp=xp}
+function aXP(){var g=parseInt($('xG').textContent);sv('charXP',Math.min((XT[gv('charLv')-1]||4000),gv('charXP')+g));uXP();toast('+'+g+' XP')}
+function uDU(){$('dW').className='pl'+(dAr?'':' on');$('dW').style.cssText=dAr?'':'color:var(--ac);border-color:var(--ad)';$('dA2').className='pl'+(dAr?' on':'');$('dA2').style.cssText=dAr?'color:var(--ac);border-color:var(--ad)':'';cD()}
+function cD(){var atk=gv('dAt'),cur=gv('dCu'),rate=dAr?0.20:0.25,loss=atk*rate,rem=Math.max(0,cur-loss);$('dL').textContent=loss.toFixed(2);var r=$('dR');r.textContent=rem.toFixed(2);r.style.color=rem<=0?'var(--dn)':rem<=5?'var(--ac)':'var(--sc)'}
+
+// ═══ SAVE ═══
+function bSv(){
+  $('t-save').innerHTML='<div class="st">Exportar</div><p style="font-size:11px;color:var(--td);margin-bottom:8px">Gere e baixe o JSON do personagem.</p><div class="f g8 fw" style="margin-bottom:8px"><button class="bt bp" onclick="eJ()">Gerar JSON</button><button class="bt bs" onclick="dlJ()">⬇ Baixar .json</button></div><textarea class="ja" id="jO" readonly placeholder="JSON..."></textarea><div class="st" style="margin-top:16px">Importar</div><p style="font-size:11px;color:var(--td);margin-bottom:8px">Cole JSON ou carregue arquivo.</p><div class="f g8 fw" style="margin-bottom:8px"><button class="bt bp" onclick="iJ()">Carregar Texto</button><button class="bt bo" onclick="$(\'fIn\').click()">📂 Arquivo</button><input type="file" id="fIn" class="fh" accept=".json" onchange="lF(event)"></div><textarea class="ja" id="jI" placeholder="Cole JSON..."></textarea>'
+}
+function eJ(){sync();$('jO').value=JSON.stringify(S,null,2);toast('JSON gerado')}
+function dlJ(){sync();var nm=(S.name||'personagem').replace(/\s+/g,'_').toLowerCase();var bl=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=nm+'_crepusculo.json';a.click();URL.revokeObjectURL(a.href);toast(a.download+' baixado')}
+function iJ(){try{var raw=$('jI').value.trim();if(!raw){toast('Cole JSON');return}lS(JSON.parse(raw));toast('Carregado!')}catch(e){toast('Erro: '+e.message)}}
+function lF(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){try{var d=JSON.parse(ev.target.result);lS(d);$('jI').value=JSON.stringify(d,null,2);toast('Arquivo: '+f.name)}catch(err){toast('Erro: '+err.message)}};r.readAsText(f);e.target.value=''}
+function lS(d){
+  Object.keys(S).forEach(function(k){if(d[k]!==undefined)S[k]=d[k]});
+  S.inventory=(S.inventory||[]).map(function(it,i){return Object.assign({},it,{id:it.id||Date.now()+i})});
+  if(!S.customProf)S.customProf={name:'Personalizado',m:{},hp:'1d8',mp:'1d8',mv:'10+DEX',sk:''};
+  if(!S.customProfs)S.customProfs=[];if(!S.proficiencies)S.proficiencies=[];
+  var flds={pName:'name',pPlayer:'player',pAge:'age',pGender:'gender',pOrigin:'origin',pAlignment:'alignment',pAppearance:'appearance',pPersonality:'personality',pBackground:'background',pMotivation:'motivation',pNotes:'notes',pAuraInit:'auraInit',pAuraDesc:'auraDesc',pExtraAuras:'extraAuras'};
+  Object.keys(flds).forEach(function(e){var x=$(e);if(x)x.value=S[flds[e]]||''});
+  A.forEach(function(a){var e=$('attr_'+a);if(e)e.textContent=S.attrs[a]||6});
+  sv('charLv',S.level||1);sv('charXP',S.xp||0);sv('curHP',S.curHP||0);sv('curMP',S.curMP||0);sv('falls',S.falls||0);sv('pGold',S.gold||0);
+  rRP();uAt();uXP();rIn();uBa();rPr();
+  // Restore technique tracker state
+  if(S.sessoesTreino===undefined)S.sessoesTreino=[];
+  if(S.fluxoLog===undefined)S.fluxoLog=[];
+  if(S.devTechs===undefined)S.devTechs=[];
+  if(S.hpRolls===undefined)S.hpRolls=[];
+  if(S.mpRolls===undefined)S.mpRolls=[];
+  sv('arkaLocal',S.arkaLocal||3);sv('arkaCap',S.arkaCap||3);
+  var tm=$('pTecMax');if(tm)tm.value=S.tecMax||'';
+  rFluxo();rExh();rArka();rSessoes();rDevTechs();syncTechsText()
+}
+
+// ═══ INIT ═══
+bPf();bAt();bPr();bIn();bAu();bTc();bXP();bSv();cXP();cD();uXP();
+setTimeout(function(){sv('curHP',S.maxHP);S.curHP=S.maxHP;sv('curMP',S.maxMP);S.curMP=S.maxMP;uBa()},60);
+
+// ═══ VTT BRIDGE — PostMessage Communication ═══
+(function(){
+  // Only activate when running inside the VTT iframe
+  if(window.parent===window)return;
+
+  // ── SEND state to VTT parent whenever it changes ──
+  var bridgeTimer=null;
+  var originalSync=window.sync;
+  window.sync=function(){
+    if(originalSync)originalSync();
+    clearTimeout(bridgeTimer);
+    bridgeTimer=setTimeout(function(){
+      window.parent.postMessage({
+        type:'COMPANION_STATE_UPDATE',
+        payload:JSON.parse(JSON.stringify(S))
+      },'*');
+    },300);
+  };
+
+  // ── RECEIVE messages from VTT parent ──
+  window.addEventListener('message',function(event){
+    if(!event.data||!event.data.type)return;
+    switch(event.data.type){
+      case 'VTT_LOAD_STATE':
+        try{
+          lS(event.data.payload);
+          toast('Dados sincronizados com o VTT');
+        }catch(e){console.error('Bridge load error:',e);}
+        break;
+      case 'VTT_REQUEST_STATE':
+        window.sync();
+        window.parent.postMessage({
+          type:'COMPANION_STATE_UPDATE',
+          payload:JSON.parse(JSON.stringify(S))
+        },'*');
+        break;
+      case 'VTT_UPDATE_FIELD':
+        var field=event.data.field;
+        var value=event.data.value;
+        if(field==='curHP'){S.curHP=value;sv('curHP',value);uBa&&uBa();}
+        else if(field==='curMP'){S.curMP=value;sv('curMP',value);uBa&&uBa();}
+        else if(field&&S.hasOwnProperty(field)){S[field]=value;}
+        break;
+    }
+  });
+
+  // ── Notify parent that companion is ready ──
+  window.parent.postMessage({type:'COMPANION_READY'},'*');
+
+  // ── Send initial state after short delay (DOM may still be initialising) ──
+  setTimeout(function(){
+    window.parent.postMessage({
+      type:'COMPANION_STATE_UPDATE',
+      payload:JSON.parse(JSON.stringify(S))
+    },'*');
+  },500);
+})();
+</script>
+</body>
+</html>
