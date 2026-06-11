@@ -106,7 +106,7 @@ src/
 |---|---|
 | **Criador / Desenvolvedor** | Gustavo Reginatto ([@GReginatto](https://github.com/GReginatto)) |
 | **Sistema de RPG** | *Crepúsculo dos Reinos* — sistema próprio do grupo |
-| **Assistência de código** | Claude (Anthropic) |
+
 
 ---
 
@@ -118,4 +118,3 @@ Sinta-se à vontade para estudar o código, mas não redistribua ou use comercia
 
 ---
 
-*"Que os dados rolem bem e as masmorras nunca acabem."* 🎲
