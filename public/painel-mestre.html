@@ -112,16 +112,16 @@ var REGIONS={
   'As Forjas':{mult:0.8,color:'#90a4ae',desc:'Três clãs anões. Metal e armas muito baratos. Comida cara (importada).',moeda:'Lingotes-Selo',icon:'⚒'},
   'Bosque de Eryn':{mult:1.1,color:'#66bb6a',desc:'Elfos Eryndori e Nytheri. Itens naturais baratos, metal caro.',moeda:'Folhas de Prata',icon:'🌿'},
   'Planícies de Cinza':{mult:0.7,color:'#e53935',desc:'Tribos demoníacas. Escambo, estoque imprevisível.',moeda:'Dentes / Escambo',icon:'🦴'},
-  'Ruínas da Passagem':{mult:1.3,color:'#8d6e63',desc:'Terra de ninguém. Preço depende do vendedor. Contrabando.',moeda:'Qualquer moeda',icon:'🏚'},
-  'Pântano Profundo':{mult:0,color:'#2e5a2e',desc:'Sem comércio. Sobrevivência pura. Ninguém vende nada aqui.',moeda:'N/A',icon:'🐊'},
-  'As Fissuras':{mult:0.7,color:'#ff7043',desc:'Escambo demoníaco. Armas de pólvora via Clã do Magma.',moeda:'Escambo',icon:'🌋'},
+  'Ruínas da Passagem':{mult:1.0,multMin:1.0,multMax:2.0,color:'#8d6e63',desc:'Terra de ninguém. Preço depende do vendedor (×1.0–2.0). Contrabando.',moeda:'Qualquer moeda',icon:'🏚'},
+  'Selva Profunda':{mult:0,color:'#2e5a2e',desc:'Sem comércio. Sobrevivência pura. Ninguém vende nada aqui.',moeda:'N/A',icon:'🐊'},
+  'As Fissuras':{mult:0.7,color:'#ff7043',desc:'Escambo demoníaco. Armas de fogo via Clã do Magma (pioneiro).',moeda:'Escambo',icon:'🌋'},
   'Vestigar':{mult:2.0,color:'#a855f7',desc:'Proibido. Só contrabandistas. Tudo absurdamente caro.',moeda:'Fragmentos de Arka',icon:'💀'}
 };
 var RCAT={
   'Capitólio Imperial':{'Serviços':1.1,'Equipamento':.95},
   'Costa de Marés':{'Comida & Bebida':.7,'Montarias':1.3,'Equipamento':.9,'Serviços':.8},
   'Picos Celestes':{'Itens Mágicos':.9,'Comida & Bebida':1.3,'Armas Marciais':1.2,'Serviços':.8},
-  'As Forjas':{'Armas Marciais':.6,'Armas Simples':.6,'Armaduras Pesadas':.5,'Armaduras Médias':.6,'Armas de Pólvora':.7,'Comida & Bebida':1.4,'Itens Mágicos':1.2},
+  'As Forjas':{'Armas Marciais':.6,'Armas Simples':.6,'Armaduras Pesadas':.5,'Armaduras Médias':.6,'Armas de Fogo':.7,'Comida & Bebida':1.4,'Itens Mágicos':1.2},
   'Bosque de Eryn':{'Armas Simples':.7,'Armaduras Leves':.7,'Armaduras Pesadas':1.8,'Armas Marciais':1.3,'Comida & Bebida':.6,'Itens Mágicos':.9},
   'Planícies de Cinza':{'Armas Simples':.5,'Armaduras Leves':.5,'Itens Mágicos':1.8,'Comida & Bebida':.6,'Equipamento':1.5},
   'Ruínas da Passagem':{'Itens Mágicos':.8,'Equipamento':1.2},
@@ -151,21 +151,32 @@ var ITEMS=[
 {cat:'Armas Marciais',name:'Besta pesada',price:5000,notes:'1d10 perf. 30m. Recarga.'},
 {cat:'Armas Marciais',name:'Tridente',price:500,notes:'1d6 perf. Arremesso. Arma da Costa de Marés.'},
 {cat:'Armas Marciais',name:'Chicote',price:200,notes:'1d4 cort. Alcance 3m, acuidade.'},
-{cat:'Armas de Pólvora',name:'Mosquete anão',price:15000,notes:'2d8 perf. 40m. Recarga 2t. Exclusivo do Clã do Magma (As Forjas).'},
-{cat:'Armas de Pólvora',name:'Pistola de mão',price:10000,notes:'1d10 perf. 12m. Recarga 1t.'},
-{cat:'Armas de Pólvora',name:'Canhão portátil',price:25000,notes:'3d10 conc. 60m. Recarga 3t. Pesadíssimo.'},
-{cat:'Armas de Pólvora',name:'Granada incendiária (×10)',price:5000,notes:'2d6 fogo. Área 3m. Uso único cada.'},
-{cat:'Armas de Pólvora',name:'Munição (20 tiros)',price:1000,notes:'Pólvora + projéteis. Sensível a água.'},
+{cat:'Armas Marciais',name:'Rapieira',price:2500,notes:'1d8 perf. Acuidade.'},
+// Armas de fogo (PR-5): não somam atributo ao dano; emperram no 1 natural (1 ação para desemperrar); perfuram armadura N
+{cat:'Armas de Fogo',name:'Pistola de pederneira',price:4000,notes:'2d6 perf. 12/36m. Recarga: ação bônus. Perfura 2. 1 mão. Licença civil.'},
+{cat:'Armas de Fogo',name:'Mosquete',price:7500,notes:'2d10 perf. 40/120m. Recarga: 1 ação. Perfura 3. 2 mãos. Licença civil.'},
+{cat:'Armas de Fogo',name:'Bacamarte',price:6000,notes:'2d8, cone 5m. Recarga: 1 ação. Sem rolagem de ataque: teste de DEX (CD 8 + prof + DEX) para metade. Licença civil.'},
+{cat:'Armas de Fogo',name:'Carabina de repetição a vapor',price:40000,notes:'2d8 perf. 30/90m. Recarga: 1 ação a cada 4 tiros. Perfura 2. 2 mãos; caldeira 1h. Licença militar.'},
+{cat:'Armas de Fogo',name:'Canhão portátil',price:25000,notes:'3d10 conc. 60m. Recarga: 2 ações. Perfura 4. FOR 15. Arma de guerra (licença militar).'},
+{cat:'Armas de Fogo',name:'Granada incendiária',price:500,notes:'2d6 fogo, raio 3m, arremesso. Uso único. + Queimadura.'},
+{cat:'Armas de Fogo',name:'Munição (10 tiros)',price:200,notes:'Sensível à água.'},
+{cat:'Armas a Vapor',name:'Lança-vapor',price:20000,notes:'2d6 fogo, cone 3m. 3 jatos por caldeira (1 min para reaquecer). Teste de DEX para metade; alvo fica Encharcado.'},
+{cat:'Armas a Vapor',name:'Martelo pneumático',price:12000,notes:'1d12. Corpo a corpo, 2 mãos. 1×/turno, ao acertar, empurra 1,5m (FOR, CD 8 + prof + FOR).'},
+{cat:'Prata dos Anjos',name:'Banho de prata (arma corpo a corpo)',price:10000,notes:'Dano conta como Luz para resistências; +1d4 de Luz contra criaturas distorcidas, mortos-vivos e entidades de Vestigar; pode servir de foco de técnica, sem bônus.'},
+{cat:'Prata dos Anjos',name:'Munição de prata (+10 tiros)',price:1000,notes:'Acréscimo sobre a munição comum. Mesmos efeitos do banho de prata.'},
 {cat:'Armaduras Leves',name:'Acolchoado',price:500,notes:'CA 11+DEX. Desv. furtividade.'},
 {cat:'Armaduras Leves',name:'Couro',price:1000,notes:'CA 11+DEX.'},
-{cat:'Armaduras Leves',name:'Couro batido',price:4500,notes:'CA 12+DEX (máx 2).'},
+{cat:'Armaduras Leves',name:'Couro batido',price:4500,notes:'CA 12+DEX.'},
 {cat:'Armaduras Médias',name:'Cota de malha',price:5000,notes:'CA 13+DEX (máx 2). Desv. furtividade.'},
 {cat:'Armaduras Médias',name:'Peitoral de aço',price:40000,notes:'CA 14+DEX (máx 2).'},
 {cat:'Armaduras Médias',name:'Meia-placa',price:75000,notes:'CA 15+DEX (máx 2). Desv. furtividade.'},
+{cat:'Armaduras Médias',name:'Brigantina de prata (Anjos)',price:60000,notes:'CA 14+DEX (máx 2). Resistência 25% a Trevas (multiplicativa). Só nos Picos Celestes.'},
 {cat:'Armaduras Pesadas',name:'Cota de anéis',price:3000,notes:'CA 14. Desv. furt. FOR 13.'},
 {cat:'Armaduras Pesadas',name:'Cota de talas',price:20000,notes:'CA 15. Desv. furt. FOR 13.'},
 {cat:'Armaduras Pesadas',name:'Placas completas',price:150000,notes:'CA 18. Desv. furt. FOR 15. Encomenda.'},
+{cat:'Armaduras Pesadas',name:'Armadura a vapor',price:300000,notes:'CA 19. FOR 13. Desv. furt. −2m de movimento. 1 carga de carvão (1 CO) = 1h. Crítico recebido: 1d6 de fogo no usuário (vazamento).'},
 {cat:'Armaduras Pesadas',name:'Escudo',price:1000,notes:'+2 CA. Uma mão.'},
+{cat:'Armaduras Pesadas',name:'Escudo de prata (Anjos)',price:25000,notes:'+2 CA. +2 no teste de Proteger.'},
 {cat:'Estalagem (por noite)',name:'Dormitório',price:7,notes:'6-10 pessoas. Básico.'},
 {cat:'Estalagem (por noite)',name:'Quarto simples',price:50,notes:'Cama, balde, vela. Tranca.'},
 {cat:'Estalagem (por noite)',name:'Quarto confortável',price:200,notes:'Cama dupla, lareira, banho.'},
@@ -226,7 +237,9 @@ var ITEMS=[
 {cat:'Itens Mágicos',name:'Pergaminho (Intermediária)',price:30000,notes:'INT CD 14 ou falha.'},
 {cat:'Itens Mágicos',name:'Cristal de Arka',price:20000,notes:'Enchantment. 1 uso. Vestigar.'},
 {cat:'Itens Mágicos',name:'Amuleto proteção (+1 CA)',price:50000,notes:'Sintonização. Raro.'},
-{cat:'Itens Mágicos',name:'Arma encantada (+1)',price:100000,notes:'Encomenda As Forjas ou Nytheri. Meses.'},
+{cat:'Itens Mágicos',name:'Arma forjada em Arka +1',price:100000,notes:'+1 no acerto e no dano. Encomenda nas Forjas ou com os Nytheri. Meses. Mestre controla a disponibilidade.'},
+{cat:'Itens Mágicos',name:'Arma forjada em Arka +2',price:400000,notes:'+2 no acerto e no dano. Encomenda nas Forjas ou com os Nytheri. Meses.'},
+{cat:'Itens Mágicos',name:'Arma forjada em Arka +3',price:1200000,notes:'+3 no acerto e no dano. Encomenda nas Forjas ou com os Nytheri. Meses.'},
 {cat:'Itens Mágicos',name:'Pedra comunicação (par)',price:25000,notes:'Até 100km. Fabricação Nytheri.'},
 {cat:'Itens Mágicos',name:'Antídoto universal',price:5000,notes:'Veneno mundano. 1 uso.'},
 {cat:'Itens Mágicos',name:'Incenso meditação',price:1000,notes:'1h: +25% MP extra. 1 uso.'},
@@ -240,8 +253,9 @@ function fmtPrice(fc){if(fc>=100){var co=Math.floor(fc/100),rem=fc%100,lp=Math.f
 function priceChange(b,a){if(b===a)return '';var p=Math.round(((a-b)/b)*100);return p<0?' <span class="cheap">('+p+'%)</span>':' <span class="exp">(+'+p+'%)</span>'}
 
 function bEcon(){
-  var h='<div class="st">Economia de Velarion</div>';
+  var h='<div class="st">Economia</div>';
   h+='<div class="econ-note"><b>Moeda:</b> 1 <span class="coin">Coroa de Ouro (CO)</span> = 10 <span class="coin-s">Lâminas de Prata (LP)</span> = 100 <span class="coin-c">Fagulhas de Cobre (FC)</span>. Reinos tribais usam escambo.</div>';
+  h+='<div class="econ-note"><b>Armas de fogo:</b> não somam atributo ao dano (ataque = DEX + proficiência); emperram no 1 natural (1 ação para desemperrar); <b>perfuram armadura N</b>: contra armadura média ou pesada, a CA do alvo conta N a menos (DEX, escudo e CA natural não são afetados). Porte exige licença (civil: pistola, bacamarte, mosquete; militar: carabina, canhão).</div>';
   h+='<div class="sub-label">Região</div><div class="f fw g4" style="margin-bottom:8px" id="regBtns"></div><div id="regInfo"></div>';
   h+='<div class="search-box"><input type="text" id="itemSearch" placeholder="     Buscar item..." oninput="searchTerm=this.value.toLowerCase();rET()"></div>';
   h+='<div style="max-height:60vh;overflow-y:auto;border:1px solid var(--bd);border-radius:5px"><table class="ref-table" id="eT"></table></div>';
@@ -251,8 +265,9 @@ function rRB(){
   var h='';Object.keys(REGIONS).forEach(k=>{var r=REGIONS[k];h+='<span class="region-badge'+(k===curRegion?' on':'')+'" style="'+(k===curRegion?'color:'+r.color+';border-color:'+r.color:'')+'" onclick="setR(\''+k+'\')">'+r.icon+' '+k+'</span>'});
   $('regBtns').innerHTML=h;
   var r=REGIONS[curRegion],ml=r.mult===1.0?'Base (×1.0)':r.mult<1.0?'Barato (×'+r.mult+')':'Caro (×'+r.mult+')',mc=r.mult<1.0?'var(--sc)':r.mult>1.0?'var(--dn)':'var(--ac)';
-  $('regInfo').innerHTML='<div class="crd" style="border-left:3px solid '+r.color+';margin-bottom:8px"><div class="f ai jsb"><span style="font-family:Cinzel,serif;font-weight:700;color:'+r.color+'">'+r.icon+' '+curRegion+'</span><span style="font-size:10px;color:'+mc+';font-weight:700;font-family:Cinzel,serif">'+ml+'</span></div><div style="font-size:11px;color:var(--td);margin-top:4px">'+r.desc+'</div><div style="font-size:10px;color:var(--tm);margin-top:3px">Moeda: <b>'+r.moeda+'</b></div></div>';
+  $('regInfo').innerHTML='<div class="crd" style="border-left:3px solid '+r.color+';margin-bottom:8px"><div class="f ai jsb"><span style="font-family:Cinzel,serif;font-weight:700;color:'+r.color+'">'+r.icon+' '+curRegion+'</span><span style="font-size:10px;color:'+mc+';font-weight:700;font-family:Cinzel,serif">'+ml+'</span></div><div style="font-size:11px;color:var(--td);margin-top:4px">'+r.desc+'</div><div style="font-size:10px;color:var(--tm);margin-top:3px">Moeda: <b>'+r.moeda+'</b></div>'+(r.multMin!==undefined?'<div class="f ai g8" style="margin-top:6px"><span style="font-size:10px;color:var(--td)">Multiplicador (×'+r.multMin+'–'+r.multMax+'):</span><input type="range" min="'+r.multMin+'" max="'+r.multMax+'" step="0.1" value="'+r.mult+'" style="flex:1" onchange="setRM(this.value)"><b style="font-size:11px">×'+r.mult.toFixed(1)+'</b></div>':'')+'</div>';
 }
+function setRM(v){REGIONS[curRegion].mult=Math.round(parseFloat(v)*10)/10;rRB();rET()}
 function setR(k){curRegion=k;rRB();rET()}
 function rET(){
   var fl=searchTerm?ITEMS.filter(i=>i.name.toLowerCase().indexOf(searchTerm)!==-1||i.cat.toLowerCase().indexOf(searchTerm)!==-1||i.notes.toLowerCase().indexOf(searchTerm)!==-1):ITEMS;
@@ -318,10 +333,10 @@ function cX(){var p=+$('xPa').textContent||4,t=0;encounter.forEach(n=>t+=n.lv*10
 function bRef(){
   var h='<div class="st">Referência Rápida</div>';
   h+='<div class="exp-head" onclick="toggle(\'cd\')"><span class="title">Tabelas de CD</span><span class="arrow" id="arrow-cd">▸</span></div><div class="exp-body" id="body-cd"><table class="ref-table"><tr><th>Tipo</th><th>CD</th><th>Exemplo</th></tr><tr><td>Muito Fácil</td><td>5</td><td>Identificar aura óbvia</td></tr><tr><td>Fácil</td><td>10</td><td>Treino básico</td></tr><tr><td>Médio</td><td>14</td><td>Treino intermediário</td></tr><tr><td>Difícil</td><td>18</td><td>Treino avançado</td></tr><tr><td>Muito Difícil</td><td>22</td><td>Técnica Máxima</td></tr><tr><td>Impossível</td><td>25+</td><td>Expansão, artefato</td></tr></table></div>';
-  h+='<div class="exp-head" onclick="toggle(\'tec\')"><span class="title">Técnicas Genéricas</span><span class="arrow" id="arrow-tec">▸</span></div><div class="exp-body" id="body-tec"><table class="ref-table"><tr><th>Técnica</th><th>Custo</th><th>Efeito</th><th>Alcance</th></tr><tr><td><b>Projetar</b></td><td>6-30 MP</td><td>1d8 a 5d8</td><td>10-50m</td></tr><tr><td><b>Manifestar</b></td><td>5-45 MP</td><td>Cria objetos</td><td>Toque-15m</td></tr><tr><td><b>Proteger</b></td><td>% ataque</td><td>Total/Parcial/Reflexivo</td><td>Reação</td></tr><tr><td><b>Expansão</b></td><td>50% MP</td><td>+150% dmg</td><td>DOM×2m</td></tr></table></div>';
+  h+='<div class="exp-head" onclick="toggle(\'tec\')"><span class="title">Técnicas Genéricas</span><span class="arrow" id="arrow-tec">▸</span></div><div class="exp-body" id="body-tec"><table class="ref-table"><tr><th>Técnica</th><th>Custo</th><th>Efeito</th><th>Alcance</th></tr><tr><td><b>Projetar</b></td><td>6-30 MP</td><td>1d8 a 5d8</td><td>10-50m</td></tr><tr><td><b>Manifestar</b></td><td>5-45 MP</td><td>Cria objetos</td><td>Toque-15m</td></tr><tr><td><b>Proteger</b></td><td>% do MP gasto pelo atacante (Total 100%, Reflexivo 150%)</td><td>Total bloqueia 100%; Reflexivo reflete 25%; Parcial: P-018. Teste d20+SAB+prof vs CD 10+DOM do atacante</td><td>Reação, 1×/rodada</td></tr><tr><td><b>Expansão</b></td><td>50% MP; ativar gasta a ação</td><td>2 de 4: vantagem nos ataques, +50% dano (conta como Fortalecimento), técnica extra grátis por turno (máx. 3d8; Proteger contra ela paga o custo de tabela), resist. do alvo ÷2. Conc. máx. 3t; 1×/dia; +1 Exaustão de Arka</td><td>Raio 10m</td></tr></table></div>';
   h+='<div class="exp-head" onclick="toggle(\'fort\')"><span class="title">Fortalecimentos</span><span class="arrow" id="arrow-fort">▸</span></div><div class="exp-body" id="body-fort"><table class="ref-table"><tr><th>Elemento</th><th>Bônus</th><th>Custo</th></tr><tr><td>Sinais de Mão</td><td>+25%</td><td>Ação bônus</td></tr><tr><td>Encantamento</td><td>+20%</td><td>Ação bônus</td></tr><tr><td>Carga (1/2/3t)</td><td>+50/100/200%</td><td>Vel ½</td></tr><tr><td>Consumíveis</td><td>+30%</td><td>Item</td></tr><tr><td>Conjunto</td><td>+75/50/25%</td><td>Comp/Neutra/Oposta</td></tr><tr><td>Votos</td><td>+100%</td><td>Pacto</td></tr><tr><td>Dança</td><td>+75%</td><td>Mov + bônus</td></tr><tr><td>Limites</td><td>+100/200/300%</td><td>Dia/Sem/Mês</td></tr></table></div>';
   h+='<div class="exp-head" onclick="toggle(\'flux\')"><span class="title">Fluxo de Aura</span><span class="arrow" id="arrow-flux">▸</span></div><div class="exp-body" id="body-flux"><table class="ref-table"><tr><th>Regra</th><th>Detalhe</th></tr><tr><td>Gatilho</td><td>Acertar técnica de aura</td></tr><tr><td>Continuação</td><td>Mesma aura: +1 Desequilíbrio</td></tr><tr><td>Bônus</td><td>−1 MP OU +1 atk/dmg</td></tr><tr><td>Penalidade</td><td>−1 Defesa/ponto</td></tr><tr><td>Limite</td><td>Máx = mod DOM</td></tr><tr><td>Falha</td><td>Perde tudo, custo ×2</td></tr></table></div>';
-  h+='<div class="exp-head" onclick="toggle(\'exh\')"><span class="title">Exaustão de Aura</span><span class="arrow" id="arrow-exh">▸</span></div><div class="exp-body" id="body-exh"><table class="ref-table"><tr><th>Nv</th><th>Efeito</th></tr><tr><td>1</td><td>Desv. DOM treino</td></tr><tr><td>2</td><td>Desv. DOM+CON</td></tr><tr><td>3</td><td>Vel −50%, desv. DEX/INT/SAB</td></tr><tr><td>4</td><td>CON CD 15 ou perde ação</td></tr><tr><td>5</td><td>Inconsciente</td></tr></table></div>';
+  h+='<div class="exp-head" onclick="toggle(\'exh\')"><span class="title">Exaustão de Arka</span><span class="arrow" id="arrow-exh">▸</span></div><div class="exp-body" id="body-exh"><table class="ref-table"><tr><th>Nv</th><th>Efeito</th></tr><tr><td>1</td><td>Desv. DOM treino</td></tr><tr><td>2</td><td>Desv. DOM+CON</td></tr><tr><td>3</td><td>Vel −50%, desv. DEX/INT/SAB</td></tr><tr><td>4</td><td>CON CD 15 ou perde ação</td></tr><tr><td>5</td><td>Inconsciente</td></tr></table></div>';
   h+='<div class="exp-head" onclick="toggle(\'cond\')"><span class="title">Condições</span><span class="arrow" id="arrow-cond">▸</span></div><div class="exp-body" id="body-cond"><table class="ref-table"><tr><th>Condição</th><th>Efeito</th><th>Duração</th></tr><tr><td>Queimadura</td><td>1d4/t</td><td>1d4t</td></tr><tr><td>Encharcado</td><td>−2 mov</td><td>1d4t</td></tr><tr><td>Enraizado</td><td>Imóvel</td><td>Conc/1d4t</td></tr><tr><td>Atordoado</td><td>Perde ação</td><td>1t</td></tr><tr><td>Cego</td><td>Desv. atk</td><td>Variável</td></tr><tr><td>Amedrontado</td><td>Desv. fonte</td><td>Conc/SAB</td></tr><tr><td>Envenenado</td><td>Desv. atk/testes</td><td>Variável</td></tr></table></div>';
   h+='<div class="sub-label">Rolador</div><div class="crd"><div class="f fw g6 jc" style="margin-bottom:8px">';
   ['1d4','1d6','1d8','1d10','1d12','1d20','1d100','2d6','3d6','3d8'].forEach(d=>{h+='<button class="bt bo bsm" onclick="qR(\''+d+'\')">'+d+'</button>'});
@@ -331,27 +346,42 @@ function bRef(){
 function qR(n){var r=rD(n),mod=+$('dM').value||0,t=r.t+mod,cr=n==='1d20'&&r.t===20,fl=n==='1d20'&&r.t===1,c=cr?'var(--warn)':fl?'var(--dn)':'var(--ac)';$('dR').innerHTML='<span style="color:'+c+'">'+t+'</span> <span style="font-size:11px;color:var(--td)">['+r.r+']'+(mod?(mod>0?'+':'')+mod:'')+'</span>'+(cr?' <span style="color:var(--warn);font-size:11px">CRIT!</span>':'')+(fl?' <span style="color:var(--dn);font-size:11px">FALHA!</span>':'')}
 
 // ═══ ARKA ═══
-var arkaData={'Capitólio Imperial':{cap:5,cur:5,color:'#ffd54f',desc:'Marco central. Estável e regulamentado.'},'Costa de Marés':{cap:4,cur:4,color:'#4fc3f7',desc:'Moderada. Bônus água perto do mar.'},'Picos Celestes':{cap:4,cur:4,color:'#e0e0ff',desc:'Pura mas escassa. Anjos monopolizam.'},'As Forjas':{cap:3,cur:3,color:'#90a4ae',desc:'Terrestre. Terra e Fogo favorecidos.'},'Bosque de Eryn':{cap:6,cur:6,color:'#66bb6a',desc:'Natural e estável. Melhor para treino.'},'Planícies de Cinza':{cap:6,cur:6,color:'#e53935',desc:'Forte e bruta. Fogo e Trevas.'},'Ruínas da Passagem':{cap:5,cur:5,color:'#8d6e63',desc:'Instável. Interferência de Vestigar.'},'Pântano Profundo':{cap:7,cur:7,color:'#2e5a2e',desc:'Alta e perigosa. 10% Surto.'},'As Fissuras':{cap:8,cur:8,color:'#ff7043',desc:'Altíssima. 15% Surto. Sagrada.'},Vestigar:{cap:9,cur:9,color:'#a855f7',desc:'Caótica. 15% Surto. Regras especiais.'}};
+var arkaData={'Capitólio Imperial':{cap:5,cur:5,color:'#ffd54f',desc:'Selo central. Estável e regulamentado.'},'Costa de Marés':{cap:4,cur:4,color:'#4fc3f7',desc:'Moderada. Bônus água perto do mar.'},'Picos Celestes':{cap:4,cur:4,color:'#e0e0ff',desc:'Pura mas escassa. Anjos monopolizam.'},'As Forjas':{cap:3,cur:3,color:'#90a4ae',desc:'Terrestre. Terra e Fogo favorecidos.'},'Bosque de Eryn':{cap:6,cur:6,color:'#66bb6a',desc:'Natural e estável. Melhor para treino.'},'Planícies de Cinza':{cap:6,cur:6,color:'#e53935',desc:'Forte e bruta. Fogo e Trevas.'},'Ruínas da Passagem':{cap:5,cur:5,color:'#8d6e63',desc:'Instável. Interferência de Vestigar.'},'Selva Profunda':{cap:7,cur:7,color:'#2e5a2e',desc:'Alta e perigosa. 10% Surto.'},'As Fissuras':{cap:8,cur:8,color:'#ff7043',desc:'Altíssima. 15% Surto. Sagrada.'},Vestigar:{cap:9,cur:9,color:'#a855f7',desc:'Caótica. 15% Surto. Regras especiais.'}};
 function bArka(){
   var h='<div class="st">Arka dos Continentes</div><div style="font-size:11px;color:var(--td);margin-bottom:10px">1 treino = 1 Arka. Regenera com tempo narrativo.</div><div id="aL"></div>';
   h+='<div class="sub-label">Regras</div><table class="ref-table"><tr><th>Continente</th><th>Arka</th><th>Especial</th></tr>';
-  h+='<tr><td>Capitólio Imperial</td><td>4-5</td><td>Marco central. Estável e regulamentado.</td></tr>';
+  h+='<tr><td>Capitólio Imperial</td><td>4-5</td><td>Selo central. Estável e regulamentado.</td></tr>';
   h+='<tr><td>Costa de Marés</td><td>3-5</td><td>Moderada. Bônus água.</td></tr>';
   h+='<tr><td>Picos Celestes</td><td>3-4</td><td>Pura. Anjos monopolizam os picos.</td></tr>';
   h+='<tr><td>As Forjas</td><td>3</td><td>Terrestre. Terra e Fogo favorecidos.</td></tr>';
   h+='<tr><td>Bosque de Eryn</td><td>4-6</td><td>Natural. Melhor para treino.</td></tr>';
   h+='<tr><td>Planícies de Cinza</td><td>5-7</td><td>Forte. Fogo e Trevas. Tribo livre.</td></tr>';
   h+='<tr><td>Ruínas da Passagem</td><td>4-6</td><td>Instável. Interferência de Vestigar.</td></tr>';
-  h+='<tr><td>Pântano Profundo</td><td>6-8</td><td>Perigosa. 10% Surto/técnica.</td></tr>';
+  h+='<tr><td>Selva Profunda</td><td>6-8</td><td>Perigosa. 10% Surto/técnica.</td></tr>';
   h+='<tr><td>As Fissuras</td><td>7-9</td><td>Altíssima. 15% Surto. Sagrada.</td></tr>';
-  h+='<tr><td style="color:#a855f7;font-weight:700">Vestigar</td><td style="color:#a855f7;font-weight:700">8-10</td><td style="color:#a855f7">15% Surto/sessão.</td></tr></table>';
-  h+='<div class="sub-label">Surto (Vestigar)</div><table class="ref-table"><tr><th>1d6</th><th>Efeito</th></tr><tr><td>1</td><td>Explosão: 2d6 em 5m, CON CD 14</td></tr><tr><td>2</td><td>Distorção temporal: perde turno</td></tr><tr><td>3</td><td>Mutação: +2/-2 (1d4h)</td></tr><tr><td>4</td><td>Visão: info + 1d4 psíquico</td></tr><tr><td>5</td><td>Ressonância: treino ×2!</td></tr><tr><td>6</td><td>Portal: 1d4 min, criaturas!</td></tr></table>';
+  h+='<tr><td style="color:#a855f7;font-weight:700">Vestigar</td><td style="color:#a855f7;font-weight:700">8-10</td><td style="color:#a855f7">15% Surto/técnica.</td></tr></table>';
+  // Surto de Arka — tabela revisada (PR-8 / D-11; texto da §3.3 do relatório de balanceamento da rodada 2)
+  h+='<div class="sub-label">Surto de Arka</div><div style="font-size:11px;color:var(--td);margin-bottom:6px">Chance por técnica: borda do Selo 5%, fora do Selo 10%, Vestigar 15%. A técnica é resolvida normalmente, salvo se o resultado disser o contrário; depois role 1d6. <b>CD do Surto:</b> borda 10, fora do Selo 12, Vestigar 14. Treino fora do Selo: um 1 natural num teste de treino também provoca Surto (além da Exaustão).</div>';
+  h+='<table class="ref-table"><tr><th>1d6</th><th>Surto</th><th>Efeito</th></tr>'+SURTO.map((s,i)=>'<tr><td>'+(i+1)+'</td><td><b>'+s[0]+'</b></td><td>'+s[1]+'</td></tr>').join('')+'</table>';
+  h+='<div class="f g6 fw jc" style="margin-top:8px"><button class="bt bsm bwn" onclick="rS(10)">⚡ Surto: borda (CD 10)</button><button class="bt bsm bwn" onclick="rS(12)">⚡ Surto: fora do Selo (CD 12)</button><button class="bt bsm bwn" onclick="rS(14)">⚡ Surto: Vestigar (CD 14)</button></div>';
   $('t-arka').innerHTML=h;rA();
 }
-function rA(){var el=$('aL');if(!el)return;var h='';Object.keys(arkaData).forEach(k=>{var c=arkaData[k],pct=Math.round(c.cur/c.cap*100),sc=c.cur===0?'var(--dn)':c.cur<=Math.floor(c.cap*.3)?'var(--warn)':'var(--sc)',st=c.cur===0?'ESGOTADO':c.cur<=Math.floor(c.cap*.3)?'Baixo':'OK';h+='<div class="cont-card" style="border-left-color:'+c.color+'"><div class="f ai jsb"><div class="cont-name" style="color:'+c.color+'">'+k+'</div><span style="font-size:10px;color:'+sc+';font-weight:700;font-family:Cinzel,serif">'+st+'</span></div><div class="cont-desc">'+c.desc+'</div><div class="f ai g8"><div class="nc"><button class="nb" onclick="adjAr(\''+k+'\',-1)">−</button><span class="nv" style="color:'+c.color+'">'+c.cur+'</span><button class="nb" onclick="adjAr(\''+k+'\',1)">+</button></div><span style="font-size:10px;color:var(--tm)">/ '+c.cap+'</span><div class="arka-bar" style="flex:1"><div class="arka-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div class="f g4"><button class="bt bo bsm" onclick="adjAC(\''+k+'\',-1)">Cap−</button><button class="bt bo bsm" onclick="adjAC(\''+k+'\',1)">Cap+</button></div></div>';if(k==='Vestigar')h+='<div style="margin-top:6px"><button class="bt bsm bwn" onclick="rS()">⚡ Surto</button></div>';h+='</div>'});el.innerHTML=h}
+function rA(){var el=$('aL');if(!el)return;var h='';Object.keys(arkaData).forEach(k=>{var c=arkaData[k],pct=Math.round(c.cur/c.cap*100),sc=c.cur===0?'var(--dn)':c.cur<=Math.floor(c.cap*.3)?'var(--warn)':'var(--sc)',st=c.cur===0?'ESGOTADO':c.cur<=Math.floor(c.cap*.3)?'Baixo':'OK';h+='<div class="cont-card" style="border-left-color:'+c.color+'"><div class="f ai jsb"><div class="cont-name" style="color:'+c.color+'">'+k+'</div><span style="font-size:10px;color:'+sc+';font-weight:700;font-family:Cinzel,serif">'+st+'</span></div><div class="cont-desc">'+c.desc+'</div><div class="f ai g8"><div class="nc"><button class="nb" onclick="adjAr(\''+k+'\',-1)">−</button><span class="nv" style="color:'+c.color+'">'+c.cur+'</span><button class="nb" onclick="adjAr(\''+k+'\',1)">+</button></div><span style="font-size:10px;color:var(--tm)">/ '+c.cap+'</span><div class="arka-bar" style="flex:1"><div class="arka-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div class="f g4"><button class="bt bo bsm" onclick="adjAC(\''+k+'\',-1)">Cap−</button><button class="bt bo bsm" onclick="adjAC(\''+k+'\',1)">Cap+</button></div></div>';if(k==='Vestigar')h+='<div style="margin-top:6px"><button class="bt bsm bwn" onclick="rS(14)">⚡ Surto (CD 14)</button></div>';h+='</div>'});el.innerHTML=h}
 function adjAr(k,d){arkaData[k].cur=clamp(arkaData[k].cur+d,0,arkaData[k].cap);rA()}
 function adjAC(k,d){arkaData[k].cap=Math.max(1,arkaData[k].cap+d);if(arkaData[k].cur>arkaData[k].cap)arkaData[k].cur=arkaData[k].cap;rA()}
-function rS(){var r=rD('1d6'),e=['Explosão: 2d6 em 5m!','Distorção: perde turno!','Mutação: +2/-2 1d4h!','Visão: info+1d4 psíq!','Ressonância: treino×2!','Portal: 1d4min!'];toast('Surto ['+r.t+']: '+e[r.t-1])}
+var SURTO=[
+['Retorno','A Arka excedente explode a partir do usuário. Ele e todas as criaturas a até 3 m sofrem 1d4 de dano de Arka por dado da técnica (técnica sem dados: 1d4 por 6 MP gastos). Teste de CON contra a CD do Surto reduz à metade.'],
+['Dreno','A técnica falha (sem efeito) e o MP é gasto. O usuário perde mais 1d6 MP.'],
+['Mutação','Por 1d4 horas, role 1d6 duas vezes na ordem FOR, DEX, CON, INT, SAB, CAR (repita resultados iguais): o primeiro atributo recebe +2, o segundo −2. A aparência muda de forma visível (olhos, pele, cabelo).'],
+['Eco','O usuário tem um lampejo: o Mestre revela uma informação verdadeira sobre a região, um inimigo ou o Selo mais próximo. O usuário sofre 1d6 de dano psíquico e faz um teste de SAB contra a CD do Surto: se falhar, tem desvantagem no próximo teste.'],
+['Ressonância','A técnica tem +50% de efeito (conta como Fortalecimento para o limite de +300%) e devolve metade do MP gasto. O próximo teste de treino nesta região conta como 2 sucessos.'],
+['Fenda','Abre-se uma fenda de 1,5 m por 1d4 rodadas a até 6 m do usuário. No fim de cada rodada, role 1d6: com 5–6 (Vestigar: 4–6), uma criatura distorcida atravessa (sugestão: nível do grupo − 3). Fora de combate, a fenda atrai o próximo encontro aleatório da região.']
+];
+var SURTO_AT=['FOR','DEX','CON','INT','SAB','CAR'];
+function rS(cd){cd=cd||14;var r=rD('1d6'),s=SURTO[r.t-1],x='';
+  if(r.t===3){var a=rD('1d6').t,b=a;while(b===a)b=rD('1d6').t;x=' → +2 '+SURTO_AT[a-1]+', −2 '+SURTO_AT[b-1]+' por '+rD('1d4').t+'h'}
+  if(r.t===6)x=' → '+rD('1d4').t+' rodadas';
+  toast('Surto ['+r.t+'] CD '+cd+': '+s[0]+x)}
 
 // ═══ SAVE/LOAD ═══
 function saveGM(){var d={encounter,arkaData,nxId,curRegion};var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='mestre-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Salvo!')}
