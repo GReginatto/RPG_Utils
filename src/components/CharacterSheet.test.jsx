@@ -33,3 +33,31 @@ test('PP: subir FOR com pontos no nível 10', () => {
   fireEvent.click(screen.getAllByText('Atributos')[0]);
   expect(screen.getByText('21')).toBeInTheDocument(); // 21 PP disponíveis no nível 10
 });
+
+test('Auras: Primordial no catálogo com Dons; Despertar mostra o deus (rodada 6)', () => {
+  const sheet = blankSheet({ level: 15, auras: [{ n: 'Fogo', lv: 4, her: true, deus: 'Agni' }], ppConf: { attrUps: {}, auras: { Fogo: 4 } } });
+  render(<CharacterSheet sheet={sheet} onUpdate={jest.fn()} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText('Auras')[0]);
+  expect(screen.getAllByText(/Boca dos Deuses/).length).toBeGreaterThan(0);
+  fireEvent.click(screen.getAllByText('PRIMORDIAL')[0]);
+  expect(screen.getAllByText('Nulidade').length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/Mini-Selo/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/Águas que Contêm/).length).toBeGreaterThan(0);
+});
+
+test('PP: compra pendente mostra o botão de confirmar (D-53)', () => {
+  const sheet = blankSheet({ level: 10, attrUps: { FOR: 1, DEX: 0, CON: 0, SAB: 0, INT: 0, CAR: 0, DOM: 0 }, ppConf: null });
+  const onUpdate = jest.fn();
+  window.confirm = () => true;
+  render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText('Atributos')[0]);
+  fireEvent.click(screen.getByText(/Confirmar compras \(1\)/));
+  expect(onUpdate).toHaveBeenCalledWith({ ppConf: expect.objectContaining({ attrUps: expect.objectContaining({ FOR: 1 }) }) });
+});
+
+test('ficha sem ppConf recebe as compras como confirmadas (D-53)', () => {
+  const { ppConf, ...old } = blankSheet({ id: 'x1', level: 8, auras: [{ n: 'Água', lv: 2, her: true }] });
+  const onUpdate = jest.fn();
+  render(<CharacterSheet sheet={old} onUpdate={onUpdate} onClose={() => {}} />);
+  expect(onUpdate).toHaveBeenCalledWith({ ppConf: expect.objectContaining({ auras: { 'Água': 2 } }) });
+});

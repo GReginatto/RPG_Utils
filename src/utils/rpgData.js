@@ -1,5 +1,5 @@
-// RPG data constants — gerados a partir de utils/crepusculo-ficha-v5.html (canon de 2026-10-05, rodada 5 do artífice).
-// Fonte única dos dados de jogo usados na CharacterSheet. Regras: livro/canon.md (decisões D-21…D-48 e PG).
+// RPG data constants — gerados a partir de utils/crepusculo-ficha-v5.html (canon de 2026-10-05, rodadas 5 e 6 do artífice).
+// Fonte única dos dados de jogo usados na CharacterSheet. Regras: livro/canon.md (decisões D-21…D-59, PG e PR5).
 // Para regenerar: extrair as constantes da ficha HTML (mesmos nomes entre parênteses).
 
 export const ATTRS = [
@@ -330,28 +330,44 @@ export const AURA_GROUPS = [
   }
 ];
 
-// Catálogo (AD): auras por Área (D-32). Primordial = auras em desenvolvimento (dev:true, sem níveis; D-41)
+// Catálogo (AD): auras por Área (D-32). Primordial: Selamento, Dreno, Nulidade, Corrente, nv 1–3 (D-55; texto do cap. 09, com <b> nos nomes das técnicas)
 export const AURA_DETAILS = {
   "Primordial": [
     {
       "n": "Selamento",
-      "dev": true,
-      "d": "Fechar e estabilizar a Arka, como fazem os Selos; no nível 3, um mini-Selo."
+      "nota": "Os Seladores fecham a Arka como quem fecha uma ferida. A Chancelaria Arkana os caça sem descanso, não para enforcá-los, mas para alistá-los: ninguém mais sabe consertar um Selo, e um Selador clandestino é um Selo que o Império não controla.",
+      "l": [
+        "Sente a estabilidade da Arka num raio de 10 metros: sabe se está dentro, na borda ou fora de um Selo e se um Selo próximo está falhando. Pode lacrar com Arka um objeto ou passagem de até 1 metro (porta, baú, frasco) por até 1 hora; para abrir à força, é preciso um teste de FOR contra a CD de aura do usuário. <b>Estabilizar</b> (reação, 6 MP): quando o usuário ou um aliado a até 10 metros provocaria um Surto, role de novo a chance; o segundo resultado vale. Possui 25% de resistência a dano de Arka. Dano de Arka é o dano sem tipo elemental: Retorno de Surto, Sangria e técnicas de auras sem elemento.",
+        "Os lacres chegam a 3 metros (um portão, uma sala pequena) e duram até 8 horas. <b>Selar Área</b> (12 MP, concentração até 10 minutos): num raio de 5 metros ao redor do usuário, a chance de Surto cai pela metade. <b>Lacre de Arka</b> (12 MP, ataque de Arka, alcance 10 m): a próxima técnica do alvo, até o fim do turno seguinte, custa +50% de MP. Possui 50% de resistência a dano de Arka.",
+        "<b>Mini-Selo</b> (1×/dia, ritual de 10 minutos, 30 MP): cria uma zona de 10 metros de raio que conta como “dentro de Selo ativo” por até 8 horas. Dentro dela não ocorre Surto, e criaturas distorcidas fazem teste de SAB contra a CD de aura para entrar. Encerrar o Mini-Selo antes da hora dá +1 nível de Exaustão. Os lacres podem ser permanentes, se o usuário os renovar uma vez por semana. O Lacre de Arka passa a dobrar (+100%) o custo da próxima técnica do alvo. É imune a dano de Retorno de Surto, mas sofre 30% a mais de dano de técnicas de Ícor."
+      ]
     },
     {
       "n": "Dreno",
-      "dev": true,
-      "d": "Absorver a Arka do ambiente e de outros seres."
+      "nota": "Nas Planícies de Cinza, chamam os Drenos de “bebedores”. Onde um deles vive por muito tempo, a terra fica seca de Arka e os aprendizes vão treinar em outro lugar. Mais de uma tribo já expulsou o próprio campeão por isso.",
+      "l": [
+        "Sente, a até 10 metros, quanta Arka uma criatura ainda tem (em faixas: cheia, metade, quase vazia) e qual é a Capacidade de Arka da região. <b>Beber do Ambiente</b> (ação, 3×/dia): recupera 1d8 MP. O primeiro uso de cada dia consome 1 ponto de Capacidade regional, e o Dreno nunca leva a Capacidade de uma região abaixo da metade do valor cheio (arredondado para cima). <b>Toque Sedento</b> (6 MP, ataque de Arka corpo a corpo): o alvo perde 1d8 MP e o usuário recupera o mesmo valor, até o seu máximo.",
+        "Sente, a até 30 metros, o MP exato de uma criatura e a Capacidade da região. Beber do Ambiente recupera 2d8 MP (3×/dia, com a mesma regra de Capacidade do nível 1). <b>Sangria</b> (12 MP, alcance 10 m, teste de CON do alvo): o alvo sofre 2d8 de dano de Arka e perde o mesmo tanto de MP, ou metade com sucesso; o usuário recupera metade do MP drenado. Não pode ser usada num alvo sem MP.",
+        "<b>Poço</b> (18 MP, concentração até 3 turnos): toda criatura escolhida num raio de 5 metros perde 1d6 MP no início do próprio turno (CON contra a CD de aura: metade). O usuário recupera metade do total, até 18 MP por uso. <b>Engolir o Surto</b> (reação, sem custo de MP, no máximo 2× por descanso longo): quando um Surto ocorre a até 10 metros, o usuário o absorve. O Surto não acontece, o usuário recupera 2d8 MP e recebe +1 nível de Exaustão. Sofre 30% a mais de dano de técnicas de Ícor."
+      ]
     },
     {
       "n": "Nulidade",
-      "dev": true,
-      "d": "Silenciar auras; custo alto."
+      "nota": "A Legião Imperial emprega os poucos Nulos que encontra como carcereiros: numa cela vigiada por um Nulo, nenhuma aura acende. Entre os despertos, ser chamado de “nulo” é o pior insulto. Entre os clandestinos, é uma sentença.",
+      "l": [
+        "Sente todas as auras ativas num raio de 10 metros e sabe a Área de cada uma. <b>Silenciar</b> (12 MP, ação bônus, ataque de Arka corpo a corpo): uma aura do alvo, à escolha do usuário entre as que ele sentiu, fica silenciada até o fim do próximo turno do alvo. Nesse tempo, nenhuma capacidade, passiva ou técnica dela funciona. As técnicas genéricas continuam funcionando.",
+        "Silenciar passa a ter alcance de 10 metros e dura até 1 minuto (concentração). O alvo repete um teste de SAB contra a CD de aura no fim de cada turno e encerra o efeito com sucesso. <b>Zona Muda</b> (24 MP, concentração até 1 minuto): num raio de 3 metros ao redor do usuário, toda técnica custa +50% de MP, inclusive as dele. Recebe 25% menos dano de capacidades de aura (não vale para as técnicas genéricas). Recebe só metade da cura vinda de auras e técnicas.",
+        "<b>Anular</b> (reação, 1×/rodada): anula por completo uma técnica a até 30 metros, sem teste, pagando 200% do MP gasto pelo atacante (no mínimo 12 MP). Conta como o Proteger do turno. <b>Silêncio Absoluto</b> (1×/dia, 36 MP, concentração até 1 minuto, +1 nível de Exaustão): num raio de 10 metros, todas as auras, inclusive as do usuário, ficam silenciadas. As técnicas genéricas continuam funcionando. Uma aura Divina (nível 4) faz o teste de SAB com vantagem a cada turno para escapar. Recebe 50% menos dano de capacidades de aura. Sofre 30% a mais de dano de técnicas de Ícor."
+      ]
     },
     {
       "n": "Corrente",
-      "dev": true,
-      "d": "Ler e manipular os veios de Arka do terreno; viagem entre Selos."
+      "nota": "Os Vedores leem a Arka como os marinheiros leem o mar. Os Contrabandistas do Véu pagam fortunas por um deles, porque uma Corrente sabe por onde a Arka corre entre os Selos, e dizem que os Arkanos usavam esses veios para viajar.",
+      "l": [
+        "Lê os veios de Arka do terreno: sabe a Capacidade exata da região, a direção e a distância do Selo mais próximo e a chance de Surto do lugar. Encontra, em 10 minutos, o melhor ponto de treino da região: quem treinar ali recebe +1 no teste de treino (não acumula com outros pontos). <b>Tropeço</b> (6 MP, alcance 10 m, teste de DEX do alvo): a Arka do chão se agita sob o alvo, que tem o deslocamento reduzido à metade até o fim do próximo turno dele.",
+        "<b>Desviar Veio</b> (ritual de 1 hora, 1×/semana): +1 na Capacidade de uma região até o fim do ciclo atual e −1 numa região vizinha. <b>Puxar o Chão</b> (12 MP, alcance 20 m, teste de DEX do alvo): o alvo fica Enraizado por 1 turno. O Tropeço passa a deixar o alvo Derrubado. Sente, a até 1 km, a abertura de Fendas e a ativação de Expansões de Domínio.",
+        "<b>Viagem entre Selos</b> (ritual de 10 minutos ao lado de um Selo ativo, 1×/dia, +1 nível de Exaustão): o usuário e até 5 pessoas viajam para outro Selo ativo que ele já tenha visitado. Partir de um Selo falhando provoca um Surto automático. Desviar Veio passa a mover até 2 pontos de Capacidade. <b>Rio de Arka</b> (18 MP, 1×/descanso curto, concentração até 3 turnos): ao ativar, consome 1 ponto de Capacidade regional (vale o mesmo piso de metade do Dreno). Num raio de 5 metros, aliados recuperam 1d4 MP no início do turno. Sofre 30% a mais de dano de técnicas de Ícor."
+      ]
     }
   ],
   "Emissora": [
@@ -558,56 +574,149 @@ export const AURA_DETAILS = {
   ]
 };
 
-// Despertar Divino (DIV): nível 4 da aura base (D-05). Sem custo de PP; exige aura no nv 3 + acontecimento de lore (D-47)
-export const DIVINE = {
-  "Temporal": {
-    "n": "Chronos (Chrono-mente)",
-    "l": [
-      "A mente do usuário é aprimorada com compreensão profunda dos mecanismos do tempo, resultando em inteligência excepcional (+4 em testes de Inteligência). Pode perceber padrões temporais sutis, prever eventos simples com minutos de antecedência (70% de precisão) e compreender idiomas após apenas 1 hora de exposição. Inclui as habilidades de Temporal 1.",
-      "Percepção ampliada da complexidade dos padrões temporais, permitindo processamento mental acelerado (resolve problemas complexos em metade do tempo normal). Pode visualizar linhas temporais alternativas para decisões imediatas (vantagem em testes de estratégia) e compreender textos antigos ou códigos complexos instantaneamente. Inclui as habilidades de Temporal 2.",
-      "Inteligência temporal que transcende o conhecimento convencional (+8 em testes de Inteligência). Pode alterar sua própria percepção do tempo, experimentando até 1 hora de pensamento em apenas 1 minuto real. Visualiza múltiplas linhas temporais simultaneamente, identificando a mais favorável com 90% de precisão. Inclui as habilidades de Temporal 3."
-    ]
-  },
-  "Terra": {
-    "n": "Ódin (Mjölnirsonância)",
-    "l": [
-      "O corpo do usuário é aprimorado pela força primordial, permitindo golpes com energia universal. Ataques corpo-a-corpo causam +1d8 de dano de força e podem afetar criaturas incorpóreas. Recebe +2 em testes de Força e Constituição. Inclui as habilidades de Terra 1.",
-      "Golpes recebem o modificador de Sabedoria (pela metade) como dano adicional, e o usuário fica invulnerável a ataques não-mágicos por 1 rodada após realizar um ataque bem-sucedido (limite de 5 vezes por dia). Pode canalizar energia através de armas, criando ondas de choque num raio de 3 metros (2d6 de dano). Inclui as habilidades de Terra 2.",
-      "O corpo se torna manifestação da força primordial, com pele que brilha sutilmente em situações de combate. Golpes causam +3d8 de dano de força, ignoram resistências físicas e podem afetar inimigos imunes a golpes físicos. Uma vez por dia, pode invocar um ataque devastador que causa 10d10 de dano em uma linha de 30 metros. Inclui as habilidades de Terra 3."
-    ]
-  },
-  "Naturae": {
-    "n": "Hera (Voz de Argos)",
-    "l": [
-      "Conhecimento inato sobre plantas e substâncias naturais com propriedades curativas e mágicas (+5 em testes relacionados). Pode identificar qualquer planta ou veneno natural instantaneamente e manipular pequenas quantidades (até 1 kg) de materiais inorgânicos e orgânicos, alterando suas propriedades básicas. Inclui as habilidades de Naturae 1.",
-      "Cria poções e encantamentos poderosos com plantas comuns (cura 4d8 PV, antídotos universais, poções de força/agilidade que concedem +4 no atributo). Pode convocar proteção de animais e criaturas míticas menores (1d4+1 animais normais ou 1 criatura mítica menor) que servem por até 1 hora, uma vez por dia. Inclui as habilidades de Naturae 2.",
-      "Domina os segredos da natureza, criando itens mágicos temporários a partir de plantas (duração de 1d4 dias). Pode invocar a fúria da natureza para defender aliados (plantas animadas, enxames de insetos) ou punir aqueles que desrespeitam o equilíbrio natural (praga localizada, crescimento acelerado que destrói estruturas). Uma vez por semana, pode realizar um ritual para curar qualquer doença ou maldição relacionada à natureza. Inclui as habilidades de Naturae 3."
-    ]
-  },
-  "Vetorial": {
-    "n": "Hachiman (Dança das Lâminas)",
-    "l": [
-      "Coordenação e reflexos aprimorados (+3 em testes de Destreza), com bônus de dano (+1d6) ao usar espadas e arcos longos. Pode realizar ataques precisos que ignoram 2 pontos de CA do oponente. Movimentos fluidos concedem +2 em testes de Esquiva. Inclui as habilidades de Vetorial 1.",
-      "Movimentos quase imperceptíveis em combate (+5 em testes de Iniciativa), com golpes rápidos que permitem um ataque adicional por rodada com -2 de penalidade. Pode desviar de projéteis com teste de Destreza bem-sucedido e realizar ataques precisos que causam dano crítico em 19-20. Inclui as habilidades de Vetorial 2.",
-      "Desafia as leis da gravidade, movendo-se quase instantaneamente (velocidade de movimento +10m) e antecipando movimentos dos oponentes (ataques de oportunidade contra qualquer inimigo que entre ou saia do seu alcance). Pode realizar uma sequência de até 5 ataques em um único turno contra múltiplos oponentes, uma vez por combate. Inclui as habilidades de Vetorial 3."
-    ]
-  },
-  "Materialização": {
-    "n": "Baco (Encanto Ébrio)",
-    "l": [
-      "Manifesta carisma cativante (+4 em testes de Carisma) que permite influenciar sutilmente as emoções de até 3 pessoas simultaneamente, criando um efeito similar à embriaguez leve (penalidade de -2 em testes de Vontade). Pode identificar e aprimorar qualquer bebida alcoólica com um toque. Inclui as habilidades de Materialização 1.",
-      "Cria uma atmosfera mágica em um raio de 10 metros que afeta até 10 pessoas, induzindo estados emocionais específicos (euforia, melancolia, coragem). Manipula bebidas alcoólicas para criar poções temporárias (duração de 1 hora) com efeitos variados (cura 2d8 PV, +4 em um atributo, imunidade a medo). Inclui as habilidades de Materialização 2.",
-      "Manifesta carisma transcendente (+8 em testes de Carisma) que permite hipnotizar e controlar sutilmente as ações de até 20 pessoas por até 1 hora (teste de Vontade para resistir). Cria vinhos místicos com efeitos sobrenaturais duradouros (clarividência, juventude temporária, cura de doenças). Uma vez por semana, pode realizar um banquete mágico que concede benefícios específicos a todos os participantes por 1d4 dias. Inclui as habilidades de Materialização 3."
-    ]
-  },
-  "Morfologista": {
-    "n": "Xing Tian (Resiliência Inabalável)",
-    "l": [
-      "Constituição fortalecida (+4 em testes de Constituição) que permite resistir a efeitos ambientais extremos (calor, frio, altitude) e manter o foco mesmo sob pressão (+2 em testes de Concentração). Recupera +2 PV por nível a cada descanso curto. Inclui as habilidades de Morfologista 1.",
-      "Regeneração acelerada (1 PV por minuto) e imunidade temporária a efeitos debilitantes (venenos, doenças, fadiga) por até 1 hora, 3 vezes por dia. Pode continuar lutando mesmo com 0 PV por até 5 rodadas antes de cair inconsciente. Inclui as habilidades de Morfologista 2.",
-      "Imunidade permanente a venenos e doenças naturais, podendo purificar substâncias tóxicas com um toque. Regenera 5 PV por rodada e pode ativar um fervor guerreiro que aumenta drasticamente as habilidades físicas (+6 em Força, Destreza e Constituição) por até 10 minutos, uma vez por dia. Pode sobreviver a ferimentos normalmente fatais, regenerando-se completamente após 1d4 dias. Inclui as habilidades de Morfologista 3."
-    ]
-  }
+// Panteão (PANTEAO, D-49, D-57) e Dons Divinos (PR5 Dons, D-59), texto do cap. 09. n, t (epíteto), mit, dm (domínio), dom (nome do Dom), d (texto)
+// Despertar Divino: qualquer aura no nv 3 + acontecimento de lore, sem PP (D-47, D-51); um só por personagem (D-56); Titânica não desperta (D-59)
+export const PANTHEON = {
+  "Primordial": [
+    {
+      "n": "Nun",
+      "t": "as Águas Antes do Mundo",
+      "mit": "Egípcia",
+      "dm": "O oceano primordial que cercava e continha toda a criação",
+      "dom": "Águas que Contêm",
+      "d": "2×/dia, abre um campo de 10 m de raio por 1 minuto. Dentro dele, ativar uma técnica de tier Intermediário ou superior exige um teste de DOM contra a CD de técnica do usuário. Pode conter um Surto de Arka a até 1 km (o Surto não acontece)."
+    },
+    {
+      "n": "Pangu",
+      "t": "o que Separou Céu e Terra",
+      "mit": "Chinesa",
+      "dm": "O gigante cujo corpo virou montanhas, rios e veios do mundo",
+      "dom": "Ossos do Mundo",
+      "d": "sente os veios de Arka num raio de 1 km. 1×/dia, meditar 1 hora sobre um veio recupera 50% do MP. 1×/dia, rasga o chão numa linha de 20 m: 4d8 de dano do tipo da aura (teste de DEX contra a CD de técnica reduz à metade) e terreno difícil até o fim do combate."
+    },
+    {
+      "n": "Ymir",
+      "t": "o Sangue do Gigante",
+      "mit": "Nórdica",
+      "dm": "O primeiro gigante, de cujo sangue veio o dilúvio",
+      "dom": "Sangue que Transborda",
+      "d": "sente o gasto de MP a até 30 m. 1×/rodada, quando um inimigo a até 10 m gasta MP, recupera 2d8 MP. 1×/dia, derrama Arka bruta: aliados a até 10 m recuperam 6d8 MP cada, e o usuário recebe +1 nível de Exaustão."
+    }
+  ],
+  "Emissora": [
+    {
+      "n": "Ódin",
+      "t": "o Pai de Todos",
+      "mit": "Nórdica",
+      "dm": "Guerra, sabedoria comprada com sacrifício, tempestade",
+      "dom": "Lança que Não Erra",
+      "d": "1×/turno, um ataque ou técnica da aura causa +1d8 de dano do tipo da aura e ignora a resistência a esse tipo (não a imunidade). 1×/dia, uma descarga em linha de 30 m causa 4d8 de dano do tipo da aura; teste de DEX contra a CD de técnica reduz à metade."
+    },
+    {
+      "n": "Agni",
+      "t": "o Fogo do Sacrifício",
+      "mit": "Hindu",
+      "dm": "O fogo que leva as oferendas aos deuses; mensageiro e purificação",
+      "dom": "Boca dos Deuses",
+      "d": "técnicas de área da aura ganham +5 m de raio. Inimigos que falham no teste delas ficam marcados até o fim do próximo turno, e o primeiro ataque de um aliado contra um alvo marcado tem vantagem. 1×/combate, repete a técnica usada no turno anterior sem pagar MP (até o teto de dados do nível)."
+    },
+    {
+      "n": "Susanoo",
+      "t": "o Senhor da Tormenta",
+      "mit": "Xintoísta",
+      "dm": "Tempestade, mar, fúria impetuosa",
+      "dom": "Tormenta Encarnada",
+      "d": "enquanto estiver em Fortalecimento, a aura transborda num raio de 5 m. Inimigos que começam o turno ali sofrem 1d8 de dano do tipo da aura e são empurrados 3 m (teste de FOR contra a CD de técnica evita o empurrão). 1×/dia, comanda o clima num raio de 300 m por 1 hora."
+    }
+  ],
+  "Criadora": [
+    {
+      "n": "Hera",
+      "t": "a Voz de Argos",
+      "mit": "Grega",
+      "dm": "Rainha dos deuses; guarda vigilante dos cem olhos; natureza fértil",
+      "dom": "Os Cem Olhos",
+      "d": "as criações da aura (plantas, matéria, construtos, curas contínuas) duram 1d4 dias em vez da duração normal. 1×/combate, quando um aliado a até 10 m cai a 0 HP, uma criação da aura se interpõe e ele fica com 1 HP. 1×/semana, um ritual cura uma doença ou maldição de um alvo."
+    },
+    {
+      "n": "Baco",
+      "t": "o Encanto Ébrio",
+      "mit": "Romana",
+      "dm": "Vinho, festa, êxtase e loucura",
+      "dom": "Banquete Ébrio",
+      "d": "+5 em testes de CAR. Pode encantar até 10 pessoas que partilhem algo criado pela aura (comida, bebida, flor, objeto) por até 1 hora; teste de Vontade contra a CD de técnica resiste. 1×/semana, um banquete dá a até 8 participantes, por 1d4 dias, um benefício escolhido com o Mestre (vantagem num tipo de teste, HP temporário ou resistência a um tipo de dano)."
+    },
+    {
+      "n": "Ptah",
+      "t": "o que Cria pela Palavra",
+      "mit": "Egípcia",
+      "dm": "Criou o mundo pensando-o e nomeando-o; patrono dos artesãos",
+      "dom": "Palavra que Cria",
+      "d": "1×/dia, ao nomear em voz alta uma criação da aura, ela dura até o próximo descanso longo, sem concentração, e tem +50% de HP. Técnicas da aura têm −2 na CD de treino."
+    }
+  ],
+  "Ícor": [
+    {
+      "n": "Prometeu",
+      "t": "o Ladrão do Fogo",
+      "mit": "Grega",
+      "dm": "Moldou o homem do barro e roubou o fogo dos deuses",
+      "dom": "Fogo Roubado",
+      "d": "1×/dia, depois de ver uma técnica alheia, reproduz um efeito equivalente dentro do tema da Aura Própria, pagando o custo normal; cada uso dá +1 nível de Exaustão (o castigo do titã). Ao ver uma técnica, sabe se pode roubá-la e quanto custa. Técnicas da Aura Própria custam −10% de MP."
+    }
+  ],
+  "Deformadora": [
+    {
+      "n": "Chronos",
+      "t": "a Chrono-mente",
+      "mit": "Grega",
+      "dm": "O tempo que devora o que vem; a inevitabilidade",
+      "dom": "Mente Fora do Tempo",
+      "d": "+5 em testes de INT. 2×/combate, depois de ver o resultado de um d20 (seu, de um aliado ou de um inimigo a até 10 m), obriga a rolar de novo. 1×/dia, vive 1 hora de pensamento em 1 minuto real."
+    },
+    {
+      "n": "Hachiman",
+      "t": "a Dança das Lâminas",
+      "mit": "Xintoísta",
+      "dm": "Guerra, arqueiros, proteção dos guerreiros",
+      "dom": "Dança das Lâminas",
+      "d": "o espaço se dobra a seu favor: +10 m de deslocamento e ataque de oportunidade contra qualquer inimigo que entre ou saia do seu alcance. 1×/rodada, pode se teleportar até 10 m como parte do movimento. 1×/combate, faz até 5 ataques num único turno contra alvos diferentes."
+    },
+    {
+      "n": "Xing Tian",
+      "t": "a Resiliência Inabalável",
+      "mit": "Chinesa",
+      "dm": "O gigante decapitado que seguiu lutando sem cabeça",
+      "dom": "O Sem-Cabeça que Luta",
+      "d": "imune a venenos e doenças naturais; regenera 3 HP por rodada enquanto tiver pelo menos 1 HP. 1×/dia, ao cair a 0 HP, levanta-se com HP igual a 2 × o nível de personagem e luta por mais 1 minuto antes de cair. Fervor: 1×/dia, +2 em FOR, DEX e CON por 10 minutos."
+    }
+  ],
+  "Mental": [
+    {
+      "n": "Thoth",
+      "t": "o Escriba dos Deuses",
+      "mit": "Egípcia",
+      "dm": "Escrita, conhecimento, magia e juízo das almas",
+      "dom": "Pena do Julgamento",
+      "d": "+5 em testes de INT e SAB. Ao ver uma técnica, sabe o custo, o tipo e o tier dela. 1×/dia, anula uma técnica de qualquer Área usada a até 30 m (teste de DOM contra a CD de técnica do autor dela)."
+    },
+    {
+      "n": "Morfeu",
+      "t": "o Portão dos Sonhos",
+      "mit": "Grega",
+      "dm": "Sonhos e sono; as formas que mortos e deuses usam para falar aos vivos",
+      "dom": "Portão de Chifre e Marfim",
+      "d": "1×/combate, um alvo a até 30 m faz teste de Vontade contra a CD de técnica ou dorme até o fim do próximo turno dele (sofrer dano acorda). 1×/noite, entra no sonho de alguém que já tenha visto, a qualquer distância, e conversa com ele."
+    },
+    {
+      "n": "Loki",
+      "t": "o de Muitas Formas",
+      "mit": "Nórdica",
+      "dm": "Trapaça, mudança de forma, o caos que derruba deuses",
+      "dom": "Língua de Prata",
+      "d": "vantagem em Enganação. 1×/combate, quando for alvo de um ataque, troca de lugar com uma duplicata e o ataque erra automaticamente. 1×/dia, assume a aparência, a voz e a assinatura de aura de uma criatura que já viu, por até 8 horas; Sentir Arka só percebe o disfarce com CD 20."
+    }
+  ]
 };
 
 // XP para subir do nível (índice+1) ao seguinte (cap. 12 + PB-6). Nível 3–15.
@@ -640,7 +749,7 @@ export const MILESTONES = {
   "10": "Técnica Máxima disponível",
   "11": "2ª Técnica Assinatura",
   "12": "—",
-  "13": "+1 dado no Projetar máximo (6d8 por 36 MP)",
+  "13": "+1 dado no Projetar máximo e no teto das técnicas criadas (6d8 por 36 MP)",
   "14": "—",
   "15": "Legado da Arka (escolha 1)"
 };
@@ -658,7 +767,7 @@ export const GENERIC_TECHS = [
     "cost": "6 MP (mín) — 30 MP (máx por ataque) · A partir do nível 13: até 36 MP",
     "dmg": "1d8 por cada 6 MP utilizado, até 5d8 (30 MP) · Nível 13+: 6d8 (36 MP)",
     "range": "Curto (≤10m): sem penalidade · Médio (10–30m): −2 acerto · Longo (30–50m): −5 acerto",
-    "extra": "Tipo de dano: o da aura escolhida pelo jogador (com várias auras, escolhe de qual); usuários da mesma aura podem ser imunes um ao outro. Efeito pós-disparo (1d4 turnos): Fogo: 1d4 queimadura/turno · Água: −2 movimento · Terra: −2 esquiva · Vento: −2 próx. ataque · Outros: padrão similar"
+    "extra": "Tipo de dano: o de uma das auras do personagem, escolhida pelo jogador a cada disparo; usuários da mesma aura podem ser imunes um ao outro. Efeito pós-disparo (1d4 turnos): Fogo: 1d4 queimadura/turno · Água: −2 movimento · Terra: −2 esquiva · Vento: −2 próx. ataque · Outros: padrão similar"
   },
   {
     "n": "Manifestar",
@@ -907,13 +1016,16 @@ export function profBonus(level) {
 }
 export function attrMod(v) { return Math.floor(((v ?? 10) - 10) / 2); }
 
-// Pontos de Progressão (PG economia; D-28, D-42, D-43, D-47)
+// Pontos de Progressão (PG economia; D-28, D-42, D-43, D-47, D-50, D-52, D-53)
 export const PP_PER_LEVEL = 3;              // nv 4–15 = 36 PP; acumulam
 export const PP_AURA_UP = { 2: 8, 3: 10 };  // 1→2 e 2→3
 export const PP_NEW_AURA = [3, 4, 5, 6];    // distância 0/1/2/3 a partir da Área da hereditária
 export const ATTR_CAP = 20;
 export const BIRTH_ONLY_AURAS = ['Titânica', 'Aura Própria'];
-export function ppAttrCost(resulting) { return resulting <= 16 ? 2 : resulting <= 18 ? 3 : 4; }
+export const PP_NEW_AURA_TITANIC = 4;       // D-50 (provisório): nascido Titânico compra qualquer outra aura como distância 1
+// Custo do +1 (D-52): faixa pelo valor COMPRADO (compra de pontos + aumentos anteriores), sem raça/profissão.
+// O exemplo do canon ("FOR comprada 16, 18 com bônus → ainda paga 2 PP") fixa a leitura pelo valor antes do +1 (⏳ pergunta da rodada 6).
+export function ppAttrCost(bought) { return bought <= 16 ? 2 : bought <= 18 ? 3 : 4; }
 export function ppEarned(level) {
   const lv = Math.max(LV_MIN, Math.min(LV_MAX, level || LV_MIN));
   return PP_PER_LEVEL * (lv - LV_MIN);
@@ -929,12 +1041,13 @@ export function auraArea(name) {
   return '';
 }
 export function hereditaryAura(auras) { return (auras || []).find(x => x.her); }
-// Custo de aura nova; null = não comprável (Titânica/Ícor, Primordial em desenvolvimento) ou não definido (nascido Titânico)
+// Custo de aura nova; null = não comprável (Titânica/Ícor só de nascença) ou fora do catálogo
 export function newAuraCost(auras, name) {
   const h = hereditaryAura(auras);
-  if (!h || BIRTH_ONLY_AURAS.includes(name) || h.n === 'Titânica') return null;
+  if (!h || BIRTH_ONLY_AURAS.includes(name)) return null;
   const det = Object.values(AURA_DETAILS).flat().find(x => x.n === name);
   if (!det || det.dev) return null;
+  if (h.n === 'Titânica') return PP_NEW_AURA_TITANIC;
   const ha = auraArea(h.n), na = auraArea(name);
   if (!ha || !na) return null;
   return PP_NEW_AURA[areaDistance(ha, na)];
@@ -944,11 +1057,31 @@ export function auraSpent(a) {
   for (let l = 2; l <= Math.min(3, a.lv || 1); l++) c += PP_AURA_UP[l];
   return c; // Despertar Divino (nv 4) não custa PP
 }
-export function attrUpsSpent(baseFinal, ups) {
+// bought = valor comprado na criação (sheet.attrs[a], sem profissão nem raça), D-52
+export function attrUpsSpent(bought, ups) {
   let c = 0;
-  for (let k = 1; k <= (ups || 0); k++) c += ppAttrCost(baseFinal + k);
+  for (let k = 0; k < (ups || 0); k++) c += ppAttrCost(bought + k);
   return c;
 }
+// Compras definitivas (D-53): ppConf = estado confirmado { attrUps: {FOR: n…}, auras: {nome: nível} }.
+// Só o que passa dele pode ser desfeito; confirma-se pelo botão ou ao subir de nível.
+export function ppConfirmState(sheet) {
+  const attrUps = {}; ATTRS.forEach(a => { attrUps[a] = sheet.attrUps?.[a] ?? 0; });
+  const auras = {}; (sheet.auras || []).forEach(x => { auras[x.n] = x.lv; });
+  return { attrUps, auras };
+}
+export function attrConfirmed(sheet, a) { return sheet.ppConf?.attrUps?.[a] ?? 0; }
+export function auraConfirmed(sheet, x) { const l = sheet.ppConf?.auras?.[x.n]; return l === undefined ? (x.her ? 1 : 0) : l; }
+export function ppPending(sheet) {
+  let n = 0;
+  ATTRS.forEach(a => { n += Math.max(0, (sheet.attrUps?.[a] ?? 0) - attrConfirmed(sheet, a)); });
+  (sheet.auras || []).forEach(x => { n += Math.max(0, (x.lv || 1) - auraConfirmed(sheet, x)); });
+  return n;
+}
+// Despertar Divino: um só por personagem (D-56)
+export function awakenedAura(auras) { return (auras || []).find(x => x.lv === 4); }
+// Teto de dados das técnicas criadas (PR5-07, D-58): máximo do Projetar no nível (5d8; 6d8 a partir do nv 13)
+export function techDiceCap(level) { return (level || LV_MIN) >= 13 ? 6 : 5; }
 
 // Fortalecimentos (cap. 11, PB-5): soma simples (⏳ P-015), teto +300% e 3 simultâneos; Votos (5) e Limites (7) não acumulam
 export function fortTotal(checks, variants, expansion) {
@@ -989,6 +1122,7 @@ export function blankSheet(overrides = {}) {
     armor: 'Sem armadura', shield: false,
     // Auras: [{ n, lv, her, pago, deus }]
     auraInit: '', auraDesc: '', extraAuras: '', auras: [],
+    ppConf: null,       // compras de PP confirmadas (D-53); null = nada confirmado ainda
     // Inventory / Gold
     gold: 0, inventory: [],
     // XP / Level

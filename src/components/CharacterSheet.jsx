@@ -3,11 +3,12 @@ import { rollDice } from '../utils/dice';
 import { resizeImage } from '../utils/imageUtils';
 import {
   ATTRS, ATTR_FULL, RACES_DATA, PROFESSIONS_DATA, SKILLS, SKILLS_AT_CREATION, FREE_TOOL_PROFS, SKILL_RENAMES,
-  AURA_GROUPS, AURA_DETAILS, DIVINE, XP_TABLE, LV_MIN, LV_MAX, MILESTONES, LEGACY_OPTIONS, GENERIC_TECHS,
+  AURA_GROUPS, AURA_DETAILS, PANTHEON, XP_TABLE, LV_MIN, LV_MAX, MILESTONES, LEGACY_OPTIONS, GENERIC_TECHS,
   FORT_ELEMENTS, FORT_VARIANTS, EXH_DESC, TRAINING_TIERS, ARMORS,
   PB_BASE, PB_TOTAL, PB_MAX, PB_DOUBLE, pointBuyCost, profBonus, attrMod,
   PP_PER_LEVEL, PP_AURA_UP, PP_NEW_AURA, ATTR_CAP, ppAttrCost, ppEarned, areaDistance, auraArea,
   hereditaryAura, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
+  ppConfirmState, attrConfirmed, auraConfirmed, ppPending, awakenedAura, techDiceCap,
 } from '../utils/rpgData';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -28,7 +29,7 @@ function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}
 function sheetLevel(sheet) { return Math.max(LV_MIN, Math.min(LV_MAX, sheet.level || LV_MIN)); }
 function ppSpent(sheet) {
   let c = 0;
-  ATTRS.forEach(a => { c += attrUpsSpent(baseFinalAttr(sheet, a), sheet.attrUps?.[a] ?? 0); });
+  ATTRS.forEach(a => { c += attrUpsSpent(sheet.attrs?.[a] ?? PB_BASE, sheet.attrUps?.[a] ?? 0); }); // D-52: valor comprado
   (sheet.auras || []).forEach(x => { c += auraSpent(x); });
   return c;
 }
@@ -48,13 +49,21 @@ function calcDefense(sheet) {
   const mv = (RACES_DATA[sheet.race]?.mv ?? 9) + (ar.mv || 0);
   return { ca, mv, ar };
 }
-function PPBar({ sheet }) {
-  const e = ppEarned(sheetLevel(sheet)), g = ppSpent(sheet), l = e - g;
+function PPBar({ sheet, onUpdate, isReadOnly }) {
+  const e = ppEarned(sheetLevel(sheet)), g = ppSpent(sheet), l = e - g, pend = ppPending(sheet);
+  // Compras definitivas (D-53): confirmar trava o estado atual; depois, sem reembolso
+  function confirmar() {
+    if (!window.confirm('Confirmar as compras com PP? Depois de confirmadas, não podem ser desfeitas nem reembolsadas (D-53).')) return;
+    onUpdate({ ppConf: ppConfirmState(sheet) });
+  }
   return (
     <div style={{ display:'flex',alignItems:'center',justifyContent:'center',gap:10,flexWrap:'wrap',padding:'5px 14px',borderRadius:5,marginBottom:8,border:'1px solid rgba(201,169,110,.15)' }}>
       <span style={{fontSize:11,color:'var(--sub)'}}>Pontos de Progressão:</span>
       <span style={{fontSize:20,fontWeight:700,fontFamily:"'Cinzel',serif",color:l<0?'#b83030':'var(--gold)'}}>{l}</span>
       <span style={{fontSize:10,color:'var(--sub)'}}>disponíveis · {e} ganhos (3 por nível do 4 ao 15) · {g} gastos{l<0&&<b style={{color:'#b83030'}}> · gasto acima do ganho</b>}</span>
+      {pend>0&&onUpdate&&!isReadOnly
+        ? <button className="tbtn" title="Compras pendentes podem ser desfeitas até confirmar; depois, sem reembolso (D-53)" onClick={confirmar}>✔ Confirmar compras ({pend})</button>
+        : <span style={{fontSize:9,color:'var(--sub)'}}>compras confirmadas não são reembolsadas (D-53)</span>}
     </div>
   );
 }
@@ -228,11 +237,14 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
   }
   function adjUp(a, d) {
     const n = sheet.attrUps?.[a]??0;
-    if (d<0) { if (n>0) setAttrs({ attrUps: { ...(sheet.attrUps||{}), [a]: n-1 } }); return; }
+    if (d<0) {
+      if (n <= attrConfirmed(sheet,a)) { addLog?.(n?`${a}: compra já confirmada, sem reembolso (D-53)`:`${a}: nenhum aumento com PP`,'system'); return; }
+      setAttrs({ attrUps: { ...(sheet.attrUps||{}), [a]: n-1 } }); return;
+    }
     const v = finalAttr(sheet,a)+1;
     if (v > ATTR_CAP) { addLog?.(`Teto do atributo: ${ATTR_CAP}`,'system'); return; }
-    const c = ppAttrCost(v);
-    if (ppLeft(sheet) < c) { addLog?.(`PP insuficientes: ${a} ${v} custa ${c} PP`,'system'); return; }
+    const bought = (sheet.attrs?.[a] ?? PB_BASE) + n, c = ppAttrCost(bought); // D-52: faixa pelo valor comprado
+    if (ppLeft(sheet) < c) { addLog?.(`PP insuficientes: +1 em ${a} (comprado ${bought}) custa ${c} PP`,'system'); return; }
     setAttrs({ attrUps: { ...(sheet.attrUps||{}), [a]: n+1 } });
   }
 
@@ -281,8 +293,8 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
         <span style={{fontSize:22,fontWeight:700,fontFamily:"'Cinzel',serif",color:ptColor}}>{leftPts}</span>
         <span style={{fontSize:10,color:'var(--sub)'}}>/ {PB_TOTAL} · base {PB_BASE}, máx. {PB_MAX}, acima de {PB_DOUBLE} custa 2</span>
       </div>
-      <PPBar sheet={sheet}/>
-      <div style={{fontSize:10,color:'var(--sub)',textAlign:'center',marginBottom:10}}>Compra (−/+ de cima): só na criação, sem passar de 18. Depois, +1 atributo com PP (−/+ de baixo): 2 PP se o resultado for até 16, 3 PP para 17–18, 4 PP para 19–20; teto 20.</div>
+      <PPBar sheet={sheet} onUpdate={u} isReadOnly={isReadOnly}/>
+      <div style={{fontSize:10,color:'var(--sub)',textAlign:'center',marginBottom:10}}>Compra (−/+ de cima): só na criação, sem passar de 18. Depois, +1 atributo com PP (−/+ de baixo): 2 / 3 / 4 PP pelas faixas até 16 / 17–18 / 19–20 do valor <b>comprado</b>, sem os bônus de raça e de profissão (D-52: FOR comprada 16, 18 com bônus, ainda paga 2 PP); teto 20 no valor final. Uma compra com PP só pode ser desfeita antes de confirmada (D-53).</div>
 
       {/* Attribute boxes */}
       <div style={{ display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4,marginBottom:12 }}>
@@ -306,6 +318,7 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
                 <span style={{color:'var(--gold)',fontWeight:700}}>+{ups}</span>
                 {!isReadOnly&&<button style={{...NB,width:15,height:15,fontSize:9}} onClick={()=>adjUp(a,1)}>+</button>}
               </div>
+              <div style={{fontSize:7,color:'var(--sub)'}}>próx. {ppAttrCost(base+ups)} PP</div>
             </div>
           );
         })}
@@ -577,7 +590,8 @@ function InventarioTab({ sheet, onUpdate, isReadOnly }) {
 
 // ── AurasTab ──────────────────────────────────────────────────────────────────
 // Hexagrama da imagem (D-32/D-40), progressão por PP (PG economia), múltiplas auras ativas (D-29),
-// Titânica e Ícor só de nascença (D-42/D-43), Despertar Divino sem PP (D-47)
+// Titânica e Ícor só de nascença (D-42/D-43), Titânica provisória (D-50), Despertar Divino sem PP e um só (D-47, D-51, D-56, D-59),
+// panteão e Dons (D-49, PR5), Primordiais jogáveis (D-55), compras definitivas (D-53)
 function AurasTab({ sheet, onUpdate, isReadOnly }) {
   const u = onUpdate;
   const [selGroup,setSelGroup] = useState(null);
@@ -601,16 +615,31 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
     if (d > 0) {
       if (x.lv >= 4) return;
       if (x.lv === 3) {
-        if (x.n === 'Titânica') { window.alert('Titânica: progressão própria ainda a criar (D-42); nunca acessa as Divinas.'); return; }
-        if (!window.confirm('Despertar Divino (nível 4): exige a aura no nível 3 e um acontecimento de lore aprovado pelo Mestre. Não custa PP. Confirmar?')) return;
-        list[i] = { ...x, lv: 4, deus: x.deus || '' };
+        if (x.n === 'Titânica') { window.alert('Titânica não desperta: sem Área e sem deus, até ter regra própria (D-59).'); return; }
+        const dz = awakenedAura(auras);
+        if (dz) { window.alert(`Só um Despertar Divino por personagem (D-56): ${dz.n}${dz.deus?' sob '+dz.deus:''}.`); return; }
+        const ar = auraArea(x.n), gods = PANTHEON[ar] || [];
+        if (!gods.length) return;
+        if (!window.confirm(`Despertar Divino (nível 4) de ${x.n}: exige a aura no nível 3 e um acontecimento de lore aprovado pelo Mestre. Não custa PP. Só um Despertar por personagem (D-56). Deus da Área ${ar}: ${gods.map(g=>g.n).join(', ')}. Confirmar?`)) return;
+        list[i] = { ...x, lv: 4, deus: gods.length === 1 ? gods[0].n : '' };
       } else {
         const c = PP_AURA_UP[x.lv + 1];
         if (ppLeft(sheet) < c) { window.alert(`PP insuficientes: ${x.n} ${x.lv}→${x.lv+1} custa ${c} PP`); return; }
         list[i] = { ...x, lv: x.lv + 1 };
       }
-    } else if (x.lv > 1) list[i] = { ...x, lv: x.lv - 1 };
-    else if (!x.her) { if (!window.confirm(`Remover ${x.n} (devolve ${x.pago||0} PP)?`)) return; list.splice(i, 1); }
+    } else {
+      // Desfazer só o que ainda não foi confirmado (D-53)
+      const cf = auraConfirmed(sheet, x);
+      if (x.lv > 1) {
+        if (x.lv <= cf) { window.alert(`${x.n}: nível ${x.lv} já confirmado, sem reembolso (D-53).`); return; }
+        list[i] = { ...x, lv: x.lv - 1 };
+        if (x.lv - 1 < 4) delete list[i].deus;
+      } else if (!x.her) {
+        if (cf > 0) { window.alert(`${x.n}: compra já confirmada, sem reembolso (D-53).`); return; }
+        if (!window.confirm(`Desfazer a compra de ${x.n} (ainda não confirmada; devolve ${x.pago||0} PP)?`)) return;
+        list.splice(i, 1);
+      } else return;
+    }
     u({ auras: list });
   }
   function buyAura() {
@@ -671,7 +700,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
       {selGroup==='Titânica'&&(
         <div style={{background:'var(--card)',border:'1px solid var(--border)',borderLeft:'3px solid #ff6600',borderRadius:4,padding:'10px 12px',marginBottom:12}}>
           <div style={{fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700,color:'#ff6600',marginBottom:4}}>⬢ Titânica</div>
-          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42); progressão própria ⏳ a criar pelo autor. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4). Nível 1: 3 auras/dia, uma por vez, no nível 1. Nível 2: 5 auras/dia, 2 simultâneas, até o nível 2. Nível 3: todas, até 3 simultâneas, em qualquer nível até o 3.</div>
+          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42). Provisório até ter regra própria (D-50): sobe 8 PP (1→2) e 10 PP (2→3); quem nasce Titânico compra qualquer outra aura por 4 PP. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4) e não desperta (D-59). Nível 1: 3 auras/dia, uma por vez, no nível 1. Nível 2: 5 auras/dia, 2 simultâneas, até o nível 2. Nível 3: todas, até 3 simultâneas, em qualquer nível até o 3.</div>
         </div>
       )}
       {/* Compatibilidade e custo de aura nova */}
@@ -696,41 +725,39 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
       {groupAuras&&(
         <>
           <St>{AURA_GROUPS.find(g=>g.n===selGroup)?.i} {selGroup} — Catálogo</St>
-          {selGroup==='Primordial'&&<div style={{fontSize:11,color:'var(--sub)',lineHeight:1.5,marginBottom:8}}>Arka pura, sem forma nem vontade pessoal: a mesma Arka que os Selos contêm, que escapa nos Surtos e que corre selvagem em Vestigar. Oposta ao Ícor. <b style={{color:'var(--text)'}}>Auras em desenvolvimento</b> (sem níveis definidos; ainda não podem ser escolhidas nem compradas).</div>}
+          {selGroup==='Primordial'&&<div style={{fontSize:11,color:'var(--sub)',lineHeight:1.5,marginBottom:8}}>Arka pura, sem forma nem vontade pessoal: a mesma Arka que os Selos contêm, que escapa nos Surtos e que corre selvagem em Vestigar. Oposta ao Ícor. Quatro auras conhecidas (D-55): Selamento, Dreno, Nulidade e Corrente. Pouco valem num duelo; seu peso está no grupo, no Selo, no Surto e na terra. No nível 3, todas sofrem <b style={{color:'var(--text)'}}>30% a mais de dano de técnicas de Ícor</b>. Dano de Arka = dano sem tipo elemental (Retorno de Surto, Sangria, técnicas de auras sem elemento).</div>}
           {selGroup==='Ícor'&&<div style={{fontSize:11,color:'var(--sub)',lineHeight:1.5,marginBottom:8}}>Criação livre da própria aura. A única Área com uma só aura (D-36). Só de nascença: não se compra como aura adicional (D-43).</div>}
           {groupAuras.map(aura=>{
             const c=groupColor(selGroup);
-            if(aura.dev) return (
-              <Acc key={aura.n} title={`${aura.n} — em desenvolvimento`} open>
-                <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>{aura.d} <i style={{opacity:.7}}>[níveis 1–3 em definição]</i></div>
-              </Acc>
-            );
-            const dv=DIVINE[aura.n];
             return (
               <Acc key={aura.n} title={aura.n} open>
+                {aura.nota&&<div style={{fontSize:10,color:'var(--gold)',fontStyle:'italic',marginBottom:5}}>{aura.nota}</div>}
                 {aura.l.map((lv,i)=>(
                   <div key={i} style={{padding:'7px 10px',marginBottom:5,borderRadius:4,borderLeft:`3px solid ${c}`}}>
                     <div style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:c,marginBottom:3}}>Nível {i+1}</div>
                     <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}} dangerouslySetInnerHTML={{__html:lv}}/>
                   </div>
                 ))}
-                {dv&&(
-                  <div style={{padding:'7px 10px',marginBottom:5,borderRadius:4,borderLeft:'3px solid #f4d03f'}}>
-                    <div style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:'#f4d03f',marginBottom:3}}>Nível 4 — Despertar Divino: {dv.n}</div>
-                    <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginBottom:4}}>Exige {aura.n} no nível 3 e um acontecimento de lore que o justifique (pacto, provação, relíquia), sob controle do Mestre. Sem nível mínimo de personagem e sem custo de PP (D-47). O jogador escolhe o deus da Área (panteão ⏳ D-48). Inclui as habilidades da aura base.</div>
-                    {dv.l.map((t,i)=><div key={i} style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginTop:3}}><b style={{color:'#f4d03f'}}>Estágio {i+1}:</b> {t}</div>)}
-                  </div>
-                )}
               </Acc>
             );
           })}
+          {/* Despertar Divino (nv 4): deuses e Dons da Área (D-49, D-51, PR5 Dons) */}
+          {(PANTHEON[selGroup]||[]).length>0&&(
+            <div style={{padding:'7px 10px',margin:'8px 0',borderRadius:4,borderLeft:'3px solid #f4d03f',background:'var(--card)'}}>
+              <div style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:'#f4d03f',marginBottom:3}}>Nível 4 — Despertar Divino: deuses da Área {selGroup}</div>
+              <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginBottom:4}}>Qualquer aura {selGroup} no nível 3 pode despertar: acontecimento de lore (pacto, provação, relíquia) sob controle do Mestre, sem nível mínimo e sem custo de PP (D-47, D-51). Um único Despertar por personagem (D-56). O jogador escolhe um deus da Área e recebe o Dom dele, que se soma à aura no nível 3; onde o Dom fala em “a aura”, vale a aura que despertou e o tipo de dano dela. Todos os Dons têm o mesmo peso. CD de técnica = 10 + mod DOM + proficiência. Descontos de MP de um Dom se somam aos outros, com piso de metade do custo de tabela.</div>
+              {PANTHEON[selGroup].map(d=>(
+                <div key={d.n} style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginTop:5}}><b style={{color:'#f4d03f'}}>{d.n}, {d.t}</b> <span style={{opacity:.75}}>({d.mit} · {d.dm})</span><br/><b style={{color:'var(--text)'}}>{d.dom}:</b> {d.d}</div>
+              ))}
+            </div>
+          )}
         </>
       )}
       {!selGroup&&<div style={{textAlign:'center',padding:'24px 10px',color:'var(--sub)',fontStyle:'italic',fontSize:12}}>Clique em uma Área no hexagrama para ver suas auras.</div>}
 
       {/* Character's auras */}
       <St>Auras do Personagem</St>
-      <PPBar sheet={sheet}/>
+      <PPBar sheet={sheet} onUpdate={u} isReadOnly={isReadOnly}/>
       <div style={{marginBottom:8}}><Lb>Aura Hereditária (de nascença, nível 1 na criação)</Lb>
         <select className="vtt-select" value={her?.n||''} disabled={isReadOnly} onChange={e=>setHer(e.target.value)}>
           <option value="">— Selecione —</option>
@@ -745,15 +772,24 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
       {!auras.length&&<div style={{fontSize:11,color:'var(--sub)',fontStyle:'italic',marginBottom:8}}>Nenhuma aura. Escolha a hereditária acima.</div>}
       {auras.map((x,i)=>{
         const ar=x.n==='Titânica'?'Centro':auraArea(x.n), c=groupColor(ar);
-        const nx=x.lv<3?`${PP_AURA_UP[x.lv+1]} PP`:x.lv===3?'Despertar (evento, 0 PP)':'máx.';
+        const dz=awakenedAura(auras), cf=auraConfirmed(sheet,x);
+        const nx=x.lv<3?`${PP_AURA_UP[x.lv+1]} PP`:x.lv===3?(x.n==='Titânica'?'não desperta (D-59)':dz?'Despertar já usado (D-56)':'Despertar (evento, 0 PP)'):'máx.';
+        const gods=PANTHEON[auraArea(x.n)]||[], gd=gods.find(g=>g.n===x.deus), locked=cf>=4&&!!x.deus;
         return (
           <div key={x.n} style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',background:'var(--card)',border:'1px solid var(--border)',borderLeft:`3px solid ${c}`,borderRadius:4,padding:'6px 9px',marginBottom:4}}>
             <span style={{fontWeight:600,fontSize:12,minWidth:110}}>{x.n}</span>
-            <span style={{fontSize:9,color:c}}>{ar}{x.her?' · hereditária':` · comprada (${x.pago||0} PP)`}</span>
+            <span style={{fontSize:9,color:c}}>{ar}{x.her?' · hereditária':` · comprada (${x.pago||0} PP)`}{x.lv>cf&&<b style={{color:'var(--gold)'}}> · pendente</b>}</span>
             <span style={{marginLeft:'auto'}}>{isReadOnly?<b style={{color:'var(--gold)'}}>{x.lv===4?'4 ✦':x.lv}</b>:<Nc value={x.lv===4?'4 ✦':x.lv} color="var(--gold)" onDec={()=>auraUp(i,-1)} onInc={()=>auraUp(i,1)}/>}</span>
             <span style={{fontSize:9,color:'var(--sub)',minWidth:90}}>próx.: {nx}</span>
             {x.lv>=2&&<span style={{fontSize:9,color:'#b83030'}}>licença</span>}
-            {x.lv===4&&<input className="vtt-input" placeholder="Deus do Despertar..." readOnly={isReadOnly} value={x.deus||''} onChange={e=>u({auras:auras.map((y,j)=>j===i?{...y,deus:e.target.value}:y)})} style={{width:150,fontSize:10}}/>}
+            {x.lv===4&&(
+              <select className="vtt-select" disabled={isReadOnly||locked} value={x.deus||''} onChange={e=>u({auras:auras.map((y,j)=>j===i?{...y,deus:e.target.value}:y)})} style={{maxWidth:230,fontSize:10}}>
+                <option value="">— deus da Área {ar} —</option>
+                {gods.map(g=><option key={g.n} value={g.n}>{g.n} — {g.dom}</option>)}
+                {x.deus&&!gd&&<option value={x.deus}>{x.deus} (fora do panteão)</option>}
+              </select>
+            )}
+            {x.lv===4&&gd&&<div style={{flexBasis:'100%',fontSize:10,color:'var(--sub)',lineHeight:1.5}}><b style={{color:'#f4d03f'}}>✦ {gd.n}, {gd.t} — {gd.dom}:</b> {gd.d}</div>}
           </div>
         );
       })}
@@ -762,13 +798,12 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
           <span style={{fontSize:10,color:'var(--sub)'}}>Comprar aura nova:</span>
           <select className="vtt-select" value={buySel} onChange={e=>setBuySel(e.target.value)} style={{flex:1,minWidth:150}}>
             {!her?<option value="">— escolha a hereditária primeiro —</option>
-              :her.n==='Titânica'?<option value="">— Titânica: compra de auras não definida (pergunta aberta) —</option>
               :<>
                 <option value="">— Selecione —</option>
                 {AURA_GROUPS.map(g=>{
                   const opts=(AURA_DETAILS[g.n]||[]).filter(a=>!a.dev&&!owned.includes(a.n)&&newAuraCost(auras,a.n)!=null);
                   if(!opts.length)return null;
-                  return <optgroup key={g.n} label={`${g.n} (distância ${areaDistance(auraArea(her.n),g.n)})`}>{opts.map(a=><option key={a.n} value={a.n}>{a.n} — {newAuraCost(auras,a.n)} PP</option>)}</optgroup>;
+                  return <optgroup key={g.n} label={her.n==='Titânica'?`${g.n} (nascido Titânico: 4 PP, D-50)`:`${g.n} (distância ${areaDistance(auraArea(her.n),g.n)})`}>{opts.map(a=><option key={a.n} value={a.n}>{a.n} — {newAuraCost(auras,a.n)} PP</option>)}</optgroup>;
                 })}
               </>}
           </select>
@@ -776,7 +811,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
         </div>
       )}
       <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,margin:'4px 0 10px'}}>
-        Progressão por Pontos de Progressão (PP). <b style={{color:'var(--text)'}}>Subir aura:</b> 1→2 = 8 PP, 2→3 = 10 PP; nível 2+ exige licença imperial (D-02). <b style={{color:'var(--text)'}}>Aura nova</b> (entra no nível 1): 3 / 4 / 5 / 6 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura hereditária. Titânica e Ícor (Aura Própria) só de nascença; as Primordiais estão em desenvolvimento. Sem nível mínimo de personagem. <b style={{color:'var(--text)'}}>Despertar Divino</b> (nível 4): aura no nível 3 + um acontecimento de lore, sob controle do Mestre; não custa PP; o jogador escolhe o deus da Área. <b style={{color:'var(--text)'}}>Todas as auras ficam ativas ao mesmo tempo</b> (D-29). Entre auras, vale só a maior resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP nunca baixam o custo abaixo de 50% da tabela.
+        Progressão por Pontos de Progressão (PP). <b style={{color:'var(--text)'}}>Subir aura:</b> 1→2 = 8 PP, 2→3 = 10 PP; os níveis são cumulativos (D-59); nível 2+ exige licença imperial (D-02). <b style={{color:'var(--text)'}}>Aura nova</b> (entra no nível 1): 3 / 4 / 5 / 6 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura hereditária. Titânica e Ícor (Aura Própria) só de nascença. Quem nasce Titânico compra qualquer outra aura por 4 PP e sobe a Titânica por 8/10 PP (provisório, D-50). Sem nível mínimo de personagem. <b style={{color:'var(--text)'}}>Compras definitivas</b> (D-53): só podem ser desfeitas antes de confirmadas (botão na barra de PP) ou do próximo level-up; depois, sem reembolso. <b style={{color:'var(--text)'}}>Despertar Divino</b> (nível 4): qualquer aura no nível 3 + um acontecimento de lore, sob controle do Mestre; não custa PP; <b style={{color:'var(--text)'}}>um único Despertar por personagem</b> (D-56); o jogador escolhe um deus da Área da aura e recebe o Dom dele (D-49). A Titânica não desperta (D-59). <b style={{color:'var(--text)'}}>Todas as auras ficam ativas ao mesmo tempo</b> (D-29). Entre auras, vale só a maior resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP se somam (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de 50% da tabela.
       </div>
       <div style={{marginBottom:8}}><Lb>Descrição / Manifestação</Lb>
         <textarea className="vtt-input" rows={2} placeholder="Como manifesta sua aura..." readOnly={isReadOnly} value={sheet.auraDesc||''} onChange={e=>u({auraDesc:e.target.value})} style={{resize:'vertical',lineHeight:1.5}}/>
@@ -851,6 +886,9 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
   // DevTech CRUD
   function saveDevTech(){
     if(!techForm.name.trim())return;
+    // Teto de dados das técnicas criadas (PR5-07, D-58): aviso, sem bloquear (o Mestre aprova cada técnica)
+    const md=(techForm.dmg||'').match(/(\d+)\s*d\s*8/i), cap=techDiceCap(sheetLevel(sheet));
+    if(md&&+md[1]>cap) addLog?.(`Aviso: ${md[1]}d8 passa do teto das técnicas criadas no nível ${sheetLevel(sheet)} (${cap}d8, PR5-07)`,'system');
     if(editTechId){
       u({devTechs:devTechs.map(t=>t.id===editTechId?{...techForm,id:editTechId}:t)});
       setEditTechId(null);
@@ -1115,6 +1153,7 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
       ):(
         <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:5,padding:'10px 12px',marginBottom:14}}>
           <St style={{marginTop:0}}>{editTechId?'Editar':'Nova'} Técnica</St>
+          <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginBottom:6}}>Custo pela tabela do Projetar (6 MP por d8); descontos de MP se somam, com piso de 50% da tabela. <b style={{color:'var(--text)'}}>Teto de dados</b> (PR5-07): de 2d8 até {techDiceCap(sheetLevel(sheet))}d8 no seu nível (5d8; 6d8 a partir do nível 13), qualquer que seja o número de auras; cada aura além da primeira acrescenta um tipo de dano ou um efeito, não dados; a tier Máxima dá efeito, não dados. O teto vale só para técnicas criadas, não para capacidades do Catálogo (D-58).</div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
             {[['Nome','name',''],['Custo MP','cost','Ex: 12 MP'],['Dano','dmg','Ex: 2d8 fogo'],['Alcance','range','Ex: 10m']].map(([lbl,f,ph])=>(
               <div key={f}><Lb>{lbl}</Lb><input className="vtt-input" placeholder={ph} value={techForm[f]} onChange={e=>setTechForm(x=>({...x,[f]:e.target.value}))}/></div>
@@ -1406,6 +1445,8 @@ export default function CharacterSheet({
 
   // Wrap onUpdate to also sync relevant fields to the linked token
   function update(changes) {
+    // D-53: subir de nível encerra as compras de PP do nível anterior (ficam confirmadas)
+    if ('level' in changes && changes.level > sheetLevel(sheet) && !('ppConf' in changes)) changes = { ...changes, ppConf: ppConfirmState(sheet) };
     onUpdate(changes);
     if(onTokenUpdate && linkedToken) {
       const sync={};
@@ -1421,6 +1462,12 @@ export default function CharacterSheet({
       if(Object.keys(sync).length>0) onTokenUpdate(sync);
     }
   }
+
+  // Fichas anteriores à rodada 6 (sem ppConf): as compras de PP que já existem contam como confirmadas (D-53)
+  useEffect(()=>{
+    if(!isReadOnly && sheet.ppConf===undefined) onUpdate({ ppConf: ppConfirmState(sheet) });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[sheet.id]);
 
   // Sync curHP/maxHP from linkedToken when it changes externally
   useEffect(()=>{
