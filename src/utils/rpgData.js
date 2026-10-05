@@ -575,7 +575,7 @@ export const AURA_DETAILS = {
 };
 
 // Panteão (PANTEAO, D-49, D-57) e Dons Divinos (PR5 Dons, D-59), texto do cap. 09. n, t (epíteto), mit, dm (domínio), dom (nome do Dom), d (texto)
-// Despertar Divino: qualquer aura no nv 3 + acontecimento de lore, sem PP (D-47, D-51); um só por personagem (D-56); Titânica não desperta (D-59)
+// Despertar Divino: qualquer aura no nv 3 + acontecimento de lore, sem PP (D-47, D-51); um só por personagem (D-56); quem nasce Titânico não desperta nenhuma aura (D-59, D-62)
 export const PANTHEON = {
   "Primordial": [
     {
@@ -1016,7 +1016,7 @@ export function profBonus(level) {
 }
 export function attrMod(v) { return Math.floor(((v ?? 10) - 10) / 2); }
 
-// Pontos de Progressão (PG economia; D-28, D-42, D-43, D-47, D-50, D-52, D-53)
+// Pontos de Progressão (PG economia; D-28, D-42, D-43, D-47, D-50, D-52, D-53, D-60, D-61, D-62)
 export const PP_PER_LEVEL = 3;              // nv 4–15 = 36 PP; acumulam
 export const PP_AURA_UP = { 2: 8, 3: 10 };  // 1→2 e 2→3
 export const PP_NEW_AURA = [3, 4, 5, 6];    // distância 0/1/2/3 a partir da Área da hereditária
@@ -1024,7 +1024,7 @@ export const ATTR_CAP = 20;
 export const BIRTH_ONLY_AURAS = ['Titânica', 'Aura Própria'];
 export const PP_NEW_AURA_TITANIC = 4;       // D-50 (provisório): nascido Titânico compra qualquer outra aura como distância 1
 // Custo do +1 (D-52): faixa pelo valor COMPRADO (compra de pontos + aumentos anteriores), sem raça/profissão.
-// O exemplo do canon ("FOR comprada 16, 18 com bônus → ainda paga 2 PP") fixa a leitura pelo valor antes do +1 (⏳ pergunta da rodada 6).
+// Faixa lida pelo valor comprado ANTES do +1 (D-60): 16→17 = 2 PP; 17→18 = 3; 19→20 = 4. O teto 20 olha o valor final, com raça/profissão (D-60).
 export function ppAttrCost(bought) { return bought <= 16 ? 2 : bought <= 18 ? 3 : 4; }
 export function ppEarned(level) {
   const lv = Math.max(LV_MIN, Math.min(LV_MAX, level || LV_MIN));
@@ -1041,6 +1041,10 @@ export function auraArea(name) {
   return '';
 }
 export function hereditaryAura(auras) { return (auras || []).find(x => x.her); }
+// D-62: quem nasce Titânico não desperta nenhuma aura (nem as compradas), até a Titânica ter regra própria
+export function titanicBorn(auras) { return hereditaryAura(auras)?.n === 'Titânica'; }
+// D-61: aura hereditária Primordial é possível, mas raríssima (só com aprovação do Mestre): aviso, sem bloquear
+export function rareHereditary(name) { return auraArea(name) === 'Primordial'; }
 // Custo de aura nova; null = não comprável (Titânica/Ícor só de nascença) ou fora do catálogo
 export function newAuraCost(auras, name) {
   const h = hereditaryAura(auras);
@@ -1078,7 +1082,7 @@ export function ppPending(sheet) {
   (sheet.auras || []).forEach(x => { n += Math.max(0, (x.lv || 1) - auraConfirmed(sheet, x)); });
   return n;
 }
-// Despertar Divino: um só por personagem (D-56)
+// Despertar Divino: um só por personagem (D-56); nascido Titânico não desperta (D-62, ver titanicBorn)
 export function awakenedAura(auras) { return (auras || []).find(x => x.lv === 4); }
 // Teto de dados das técnicas criadas (PR5-07, D-58): máximo do Projetar no nível (5d8; 6d8 a partir do nv 13)
 export function techDiceCap(level) { return (level || LV_MIN) >= 13 ? 6 : 5; }

@@ -61,3 +61,24 @@ test('ficha sem ppConf recebe as compras como confirmadas (D-53)', () => {
   render(<CharacterSheet sheet={old} onUpdate={onUpdate} onClose={() => {}} />);
   expect(onUpdate).toHaveBeenCalledWith({ ppConf: expect.objectContaining({ auras: { 'Água': 2 } }) });
 });
+
+test("Titânico não desperta nenhuma aura, nem as compradas (D-62)", () => {
+  const sheet = blankSheet({ level: 15, auras: [{ n: "Titânica", lv: 3, her: true }, { n: "Fogo", lv: 3, her: false, pago: 4 }], ppConf: { attrUps: {}, auras: { "Titânica": 3, Fogo: 3 } } });
+  const onUpdate = jest.fn();
+  const alerts = []; window.alert = m => alerts.push(m);
+  render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  expect(screen.getAllByText(/Titânico, D-62/)).toHaveLength(2);
+  onUpdate.mockClear();
+  const plus = screen.getAllByText("+");
+  fireEvent.click(plus[plus.length - 1]); // + da Fogo comprada (última aura da lista)
+  expect(alerts.some(m => /D-62/.test(m))).toBe(true);
+  expect(onUpdate).not.toHaveBeenCalledWith(expect.objectContaining({ auras: expect.anything() }));
+});
+
+test("hereditária Primordial: aviso de raríssima, sem bloquear (D-61)", () => {
+  const sheet = blankSheet({ level: 3, auras: [{ n: "Dreno", lv: 1, her: true }] });
+  render(<CharacterSheet sheet={sheet} onUpdate={jest.fn()} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  expect(screen.getAllByText(/raríssima — requer aprovação do Mestre/).length).toBeGreaterThan(0);
+});

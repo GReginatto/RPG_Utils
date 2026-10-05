@@ -7,7 +7,7 @@ import {
   FORT_ELEMENTS, FORT_VARIANTS, EXH_DESC, TRAINING_TIERS, ARMORS,
   PB_BASE, PB_TOTAL, PB_MAX, PB_DOUBLE, pointBuyCost, profBonus, attrMod,
   PP_PER_LEVEL, PP_AURA_UP, PP_NEW_AURA, ATTR_CAP, ppAttrCost, ppEarned, areaDistance, auraArea,
-  hereditaryAura, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
+  hereditaryAura, titanicBorn, rareHereditary, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
   ppConfirmState, attrConfirmed, auraConfirmed, ppPending, awakenedAura, techDiceCap,
 } from '../utils/rpgData';
 
@@ -242,8 +242,8 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
       setAttrs({ attrUps: { ...(sheet.attrUps||{}), [a]: n-1 } }); return;
     }
     const v = finalAttr(sheet,a)+1;
-    if (v > ATTR_CAP) { addLog?.(`Teto do atributo: ${ATTR_CAP}`,'system'); return; }
-    const bought = (sheet.attrs?.[a] ?? PB_BASE) + n, c = ppAttrCost(bought); // D-52: faixa pelo valor comprado
+    if (v > ATTR_CAP) { addLog?.(`Teto do atributo: ${ATTR_CAP} no valor final, com raça e profissão (D-60)`,'system'); return; }
+    const bought = (sheet.attrs?.[a] ?? PB_BASE) + n, c = ppAttrCost(bought); // D-52, D-60: faixa pelo valor comprado antes do +1
     if (ppLeft(sheet) < c) { addLog?.(`PP insuficientes: +1 em ${a} (comprado ${bought}) custa ${c} PP`,'system'); return; }
     setAttrs({ attrUps: { ...(sheet.attrUps||{}), [a]: n+1 } });
   }
@@ -294,7 +294,7 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
         <span style={{fontSize:10,color:'var(--sub)'}}>/ {PB_TOTAL} · base {PB_BASE}, máx. {PB_MAX}, acima de {PB_DOUBLE} custa 2</span>
       </div>
       <PPBar sheet={sheet} onUpdate={u} isReadOnly={isReadOnly}/>
-      <div style={{fontSize:10,color:'var(--sub)',textAlign:'center',marginBottom:10}}>Compra (−/+ de cima): só na criação, sem passar de 18. Depois, +1 atributo com PP (−/+ de baixo): 2 / 3 / 4 PP pelas faixas até 16 / 17–18 / 19–20 do valor <b>comprado</b>, sem os bônus de raça e de profissão (D-52: FOR comprada 16, 18 com bônus, ainda paga 2 PP); teto 20 no valor final. Uma compra com PP só pode ser desfeita antes de confirmada (D-53).</div>
+      <div style={{fontSize:10,color:'var(--sub)',textAlign:'center',marginBottom:10}}>Compra (−/+ de cima): só na criação, sem passar de 18. Depois, +1 atributo com PP (−/+ de baixo): 2 / 3 / 4 PP pelas faixas até 16 / 17–18 / 19–20 do valor <b>comprado antes do +1</b>, sem os bônus de raça e de profissão (D-52, D-60: 16→17 = 2 PP, 17→18 = 3, 19→20 = 4; FOR comprada 16, 18 com bônus, ainda paga 2 PP); teto 20 no valor final, com raça e profissão (D-60). Uma compra com PP só pode ser desfeita antes de confirmada (D-53).</div>
 
       {/* Attribute boxes */}
       <div style={{ display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4,marginBottom:12 }}>
@@ -590,7 +590,7 @@ function InventarioTab({ sheet, onUpdate, isReadOnly }) {
 
 // ── AurasTab ──────────────────────────────────────────────────────────────────
 // Hexagrama da imagem (D-32/D-40), progressão por PP (PG economia), múltiplas auras ativas (D-29),
-// Titânica e Ícor só de nascença (D-42/D-43), Titânica provisória (D-50), Despertar Divino sem PP e um só (D-47, D-51, D-56, D-59),
+// Titânica e Ícor só de nascença (D-42/D-43), Titânica provisória (D-50), Despertar Divino sem PP e um só (D-47, D-51, D-56, D-59), nascido Titânico não desperta (D-62), hereditária Primordial rara (D-61),
 // panteão e Dons (D-49, PR5), Primordiais jogáveis (D-55), compras definitivas (D-53)
 function AurasTab({ sheet, onUpdate, isReadOnly }) {
   const u = onUpdate;
@@ -606,8 +606,11 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
   const groupColor = n => AURA_GROUPS.find(g=>g.n===n)?.c || '#ff6600';
 
   function setHer(n) {
-    const rest = auras.filter(x => !x.her && x.n !== n);
+    let rest = auras.filter(x => !x.her && x.n !== n);
+    // D-62: quem nasce Titânico não desperta nenhuma aura (nem as compradas)
+    if (n === 'Titânica') rest = rest.map(x => { if (x.lv <= 3) return x; const y = { ...x, lv: 3 }; delete y.deus; return y; });
     u({ auras: n ? [{ n, lv: 1, her: true }, ...rest] : rest, auraInit: n });
+    if (n && rareHereditary(n)) window.alert(`${n}: aura Primordial de nascença é raríssima — requer aprovação do Mestre (D-61).`);
   }
   function auraUp(i, d) {
     const x = auras[i]; if (!x) return;
@@ -615,7 +618,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
     if (d > 0) {
       if (x.lv >= 4) return;
       if (x.lv === 3) {
-        if (x.n === 'Titânica') { window.alert('Titânica não desperta: sem Área e sem deus, até ter regra própria (D-59).'); return; }
+        if (titanicBorn(auras)) { window.alert('Quem nasce Titânico não desperta nenhuma aura, nem as compradas, até a Titânica ter regra própria (D-62).'); return; }
         const dz = awakenedAura(auras);
         if (dz) { window.alert(`Só um Despertar Divino por personagem (D-56): ${dz.n}${dz.deus?' sob '+dz.deus:''}.`); return; }
         const ar = auraArea(x.n), gods = PANTHEON[ar] || [];
@@ -700,7 +703,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
       {selGroup==='Titânica'&&(
         <div style={{background:'var(--card)',border:'1px solid var(--border)',borderLeft:'3px solid #ff6600',borderRadius:4,padding:'10px 12px',marginBottom:12}}>
           <div style={{fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700,color:'#ff6600',marginBottom:4}}>⬢ Titânica</div>
-          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42). Provisório até ter regra própria (D-50): sobe 8 PP (1→2) e 10 PP (2→3); quem nasce Titânico compra qualquer outra aura por 4 PP. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4) e não desperta (D-59). Nível 1: 3 auras/dia, uma por vez, no nível 1. Nível 2: 5 auras/dia, 2 simultâneas, até o nível 2. Nível 3: todas, até 3 simultâneas, em qualquer nível até o 3.</div>
+          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42). Provisório até ter regra própria (D-50): sobe 8 PP (1→2) e 10 PP (2→3); quem nasce Titânico compra qualquer outra aura por 4 PP. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4). Quem nasce Titânico não desperta nenhuma aura, nem as compradas (D-59, D-62). Nível 1: 3 auras/dia, uma por vez, no nível 1. Nível 2: 5 auras/dia, 2 simultâneas, até o nível 2. Nível 3: todas, até 3 simultâneas, em qualquer nível até o 3.</div>
         </div>
       )}
       {/* Compatibilidade e custo de aura nova */}
@@ -725,7 +728,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
       {groupAuras&&(
         <>
           <St>{AURA_GROUPS.find(g=>g.n===selGroup)?.i} {selGroup} — Catálogo</St>
-          {selGroup==='Primordial'&&<div style={{fontSize:11,color:'var(--sub)',lineHeight:1.5,marginBottom:8}}>Arka pura, sem forma nem vontade pessoal: a mesma Arka que os Selos contêm, que escapa nos Surtos e que corre selvagem em Vestigar. Oposta ao Ícor. Quatro auras conhecidas (D-55): Selamento, Dreno, Nulidade e Corrente. Pouco valem num duelo; seu peso está no grupo, no Selo, no Surto e na terra. No nível 3, todas sofrem <b style={{color:'var(--text)'}}>30% a mais de dano de técnicas de Ícor</b>. Dano de Arka = dano sem tipo elemental (Retorno de Surto, Sangria, técnicas de auras sem elemento).</div>}
+          {selGroup==='Primordial'&&<div style={{fontSize:11,color:'var(--sub)',lineHeight:1.5,marginBottom:8}}>Arka pura, sem forma nem vontade pessoal: a mesma Arka que os Selos contêm, que escapa nos Surtos e que corre selvagem em Vestigar. Oposta ao Ícor. Quatro auras conhecidas (D-55): Selamento, Dreno, Nulidade e Corrente. Nascer com uma delas é raríssimo (só com aprovação do Mestre); o caminho normal é comprar com PP (D-61). Pouco valem num duelo; seu peso está no grupo, no Selo, no Surto e na terra. No nível 3, todas sofrem <b style={{color:'var(--text)'}}>30% a mais de dano de técnicas de Ícor</b>. Dano de Arka = dano sem tipo elemental (Retorno de Surto, Sangria, técnicas de auras sem elemento).</div>}
           {selGroup==='Ícor'&&<div style={{fontSize:11,color:'var(--sub)',lineHeight:1.5,marginBottom:8}}>Criação livre da própria aura. A única Área com uma só aura (D-36). Só de nascença: não se compra como aura adicional (D-43).</div>}
           {groupAuras.map(aura=>{
             const c=groupColor(selGroup);
@@ -745,7 +748,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
           {(PANTHEON[selGroup]||[]).length>0&&(
             <div style={{padding:'7px 10px',margin:'8px 0',borderRadius:4,borderLeft:'3px solid #f4d03f',background:'var(--card)'}}>
               <div style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:'#f4d03f',marginBottom:3}}>Nível 4 — Despertar Divino: deuses da Área {selGroup}</div>
-              <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginBottom:4}}>Qualquer aura {selGroup} no nível 3 pode despertar: acontecimento de lore (pacto, provação, relíquia) sob controle do Mestre, sem nível mínimo e sem custo de PP (D-47, D-51). Um único Despertar por personagem (D-56). O jogador escolhe um deus da Área e recebe o Dom dele, que se soma à aura no nível 3; onde o Dom fala em “a aura”, vale a aura que despertou e o tipo de dano dela. Todos os Dons têm o mesmo peso. CD de técnica = 10 + mod DOM + proficiência. Descontos de MP de um Dom se somam aos outros, com piso de metade do custo de tabela.</div>
+              <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginBottom:4}}>Qualquer aura {selGroup} no nível 3 pode despertar: acontecimento de lore (pacto, provação, relíquia) sob controle do Mestre, sem nível mínimo e sem custo de PP (D-47, D-51). Um único Despertar por personagem (D-56). Quem nasce Titânico não desperta (D-62). O jogador escolhe um deus da Área e recebe o Dom dele, que se soma à aura no nível 3; onde o Dom fala em “a aura”, vale a aura que despertou e o tipo de dano dela. Todos os Dons têm o mesmo peso. CD de técnica = 10 + mod DOM + proficiência. Descontos de MP de um Dom se somam aos outros, com piso de metade do custo de tabela.</div>
               {PANTHEON[selGroup].map(d=>(
                 <div key={d.n} style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginTop:5}}><b style={{color:'#f4d03f'}}>{d.n}, {d.t}</b> <span style={{opacity:.75}}>({d.mit} · {d.dm})</span><br/><b style={{color:'var(--text)'}}>{d.dom}:</b> {d.d}</div>
               ))}
@@ -762,7 +765,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
         <select className="vtt-select" value={her?.n||''} disabled={isReadOnly} onChange={e=>setHer(e.target.value)}>
           <option value="">— Selecione —</option>
           {AURA_GROUPS.map(g=>(
-            <optgroup key={g.n} label={g.n}>
+            <optgroup key={g.n} label={g.n==='Primordial'?`${g.n} (raríssima — requer aprovação do Mestre, D-61)`:g.n}>
               {(AURA_DETAILS[g.n]||[]).filter(a=>!a.dev).map(a=><option key={a.n} value={a.n}>{a.n}</option>)}
             </optgroup>
           ))}
@@ -773,12 +776,12 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
       {auras.map((x,i)=>{
         const ar=x.n==='Titânica'?'Centro':auraArea(x.n), c=groupColor(ar);
         const dz=awakenedAura(auras), cf=auraConfirmed(sheet,x);
-        const nx=x.lv<3?`${PP_AURA_UP[x.lv+1]} PP`:x.lv===3?(x.n==='Titânica'?'não desperta (D-59)':dz?'Despertar já usado (D-56)':'Despertar (evento, 0 PP)'):'máx.';
+        const nx=x.lv<3?`${PP_AURA_UP[x.lv+1]} PP`:x.lv===3?(titanicBorn(auras)?'não desperta (Titânico, D-62)':dz?'Despertar já usado (D-56)':'Despertar (evento, 0 PP)'):'máx.';
         const gods=PANTHEON[auraArea(x.n)]||[], gd=gods.find(g=>g.n===x.deus), locked=cf>=4&&!!x.deus;
         return (
           <div key={x.n} style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',background:'var(--card)',border:'1px solid var(--border)',borderLeft:`3px solid ${c}`,borderRadius:4,padding:'6px 9px',marginBottom:4}}>
             <span style={{fontWeight:600,fontSize:12,minWidth:110}}>{x.n}</span>
-            <span style={{fontSize:9,color:c}}>{ar}{x.her?' · hereditária':` · comprada (${x.pago||0} PP)`}{x.lv>cf&&<b style={{color:'var(--gold)'}}> · pendente</b>}</span>
+            <span style={{fontSize:9,color:c}}>{ar}{x.her?' · hereditária':` · comprada (${x.pago||0} PP)`}{x.her&&ar==='Primordial'&&<b style={{color:'#b83030'}}> · raríssima — requer aprovação do Mestre (D-61)</b>}{x.lv>cf&&<b style={{color:'var(--gold)'}}> · pendente</b>}</span>
             <span style={{marginLeft:'auto'}}>{isReadOnly?<b style={{color:'var(--gold)'}}>{x.lv===4?'4 ✦':x.lv}</b>:<Nc value={x.lv===4?'4 ✦':x.lv} color="var(--gold)" onDec={()=>auraUp(i,-1)} onInc={()=>auraUp(i,1)}/>}</span>
             <span style={{fontSize:9,color:'var(--sub)',minWidth:90}}>próx.: {nx}</span>
             {x.lv>=2&&<span style={{fontSize:9,color:'#b83030'}}>licença</span>}
@@ -811,7 +814,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
         </div>
       )}
       <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,margin:'4px 0 10px'}}>
-        Progressão por Pontos de Progressão (PP). <b style={{color:'var(--text)'}}>Subir aura:</b> 1→2 = 8 PP, 2→3 = 10 PP; os níveis são cumulativos (D-59); nível 2+ exige licença imperial (D-02). <b style={{color:'var(--text)'}}>Aura nova</b> (entra no nível 1): 3 / 4 / 5 / 6 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura hereditária. Titânica e Ícor (Aura Própria) só de nascença. Quem nasce Titânico compra qualquer outra aura por 4 PP e sobe a Titânica por 8/10 PP (provisório, D-50). Sem nível mínimo de personagem. <b style={{color:'var(--text)'}}>Compras definitivas</b> (D-53): só podem ser desfeitas antes de confirmadas (botão na barra de PP) ou do próximo level-up; depois, sem reembolso. <b style={{color:'var(--text)'}}>Despertar Divino</b> (nível 4): qualquer aura no nível 3 + um acontecimento de lore, sob controle do Mestre; não custa PP; <b style={{color:'var(--text)'}}>um único Despertar por personagem</b> (D-56); o jogador escolhe um deus da Área da aura e recebe o Dom dele (D-49). A Titânica não desperta (D-59). <b style={{color:'var(--text)'}}>Todas as auras ficam ativas ao mesmo tempo</b> (D-29). Entre auras, vale só a maior resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP se somam (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de 50% da tabela.
+        Progressão por Pontos de Progressão (PP). <b style={{color:'var(--text)'}}>Subir aura:</b> 1→2 = 8 PP, 2→3 = 10 PP; os níveis são cumulativos (D-59); nível 2+ exige licença imperial (D-02). <b style={{color:'var(--text)'}}>Aura nova</b> (entra no nível 1): 3 / 4 / 5 / 6 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura hereditária. Titânica e Ícor (Aura Própria) só de nascença. Quem nasce Titânico compra qualquer outra aura por 4 PP e sobe a Titânica por 8/10 PP (provisório, D-50). Sem nível mínimo de personagem. <b style={{color:'var(--text)'}}>Compras definitivas</b> (D-53): só podem ser desfeitas antes de confirmadas (botão na barra de PP) ou do próximo level-up; depois, sem reembolso. <b style={{color:'var(--text)'}}>Despertar Divino</b> (nível 4): qualquer aura no nível 3 + um acontecimento de lore, sob controle do Mestre; não custa PP; <b style={{color:'var(--text)'}}>um único Despertar por personagem</b> (D-56); o jogador escolhe um deus da Área da aura e recebe o Dom dele (D-49). <b style={{color:'var(--text)'}}>Quem nasce Titânico não desperta nenhuma aura</b>, nem as compradas, até a Titânica ter regra própria (D-59, D-62). <b style={{color:'var(--text)'}}>Aura hereditária Primordial</b>: possível, mas raríssima — requer aprovação do Mestre; o caminho normal é comprar com PP (D-61). <b style={{color:'var(--text)'}}>Todas as auras ficam ativas ao mesmo tempo</b> (D-29). Entre auras, vale só a maior resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP se somam (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de 50% da tabela.
       </div>
       <div style={{marginBottom:8}}><Lb>Descrição / Manifestação</Lb>
         <textarea className="vtt-input" rows={2} placeholder="Como manifesta sua aura..." readOnly={isReadOnly} value={sheet.auraDesc||''} onChange={e=>u({auraDesc:e.target.value})} style={{resize:'vertical',lineHeight:1.5}}/>

@@ -1,7 +1,7 @@
 import {
   SKILLS, AURA_GROUPS, AURA_DETAILS, RACES_DATA, XP_TABLE, MILESTONES,
   pointBuyCost, profBonus, ppAttrCost, ppEarned, areaDistance, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
-  PANTHEON, GENERIC_TECHS, ppConfirmState, ppPending, attrConfirmed, auraConfirmed, awakenedAura, techDiceCap,
+  PANTHEON, GENERIC_TECHS, ppConfirmState, ppPending, attrConfirmed, auraConfirmed, awakenedAura, techDiceCap, titanicBorn, rareHereditary,
 } from './rpgData';
 
 // Casos calculados à mão a partir do canon (rodadas 5 e 6 do artífice)
@@ -54,6 +54,9 @@ describe('regras do canon', () => {
     expect(attrUpsSpent(16, 1)).toBe(2);  // exemplo do canon: FOR comprada 16 (18 com bônus) → +1 = 2 PP
     expect(attrUpsSpent(14, 4)).toBe(9);  // Guerreiro FOR comprada 14 (16 final) → final 20: 2+2+2+3
     expect(attrUpsSpent(14, 2)).toBe(4);  // 14 → 16 = 2+2
+    // D-60: 16→17 = 2; 17→18 = 3; 19→20 = 4 (valor comprado antes do +1)
+    expect([ppAttrCost(16), ppAttrCost(17), ppAttrCost(19)]).toEqual([2, 3, 4]);
+    expect(attrUpsSpent(16, 4)).toBe(2 + 3 + 3 + 4); // 16 → 20 comprado
   });
 
   test('aura nova pela distância a partir da hereditária; Titânica e Ícor só de nascença', () => {
@@ -89,6 +92,11 @@ describe('regras do canon', () => {
     expect(PANTHEON.Emissora[1].d).toMatch(/teto de dados do nível/); // Agni (D-59)
     expect(awakenedAura([{ n: 'Fogo', lv: 4 }, { n: 'Terra', lv: 3 }]).n).toBe('Fogo');
     expect(awakenedAura([{ n: 'Fogo', lv: 3 }])).toBeUndefined();
+    // D-62: nascido Titânico não desperta nenhuma aura; D-61: hereditária Primordial é aviso, não bloqueio
+    expect(titanicBorn([{ n: 'Titânica', lv: 3, her: true }, { n: 'Fogo', lv: 3, her: false, pago: 4 }])).toBe(true);
+    expect(titanicBorn([{ n: 'Fogo', lv: 3, her: true }, { n: 'Dreno', lv: 1, her: false, pago: 4 }])).toBe(false);
+    expect(rareHereditary('Nulidade')).toBe(true);
+    expect(rareHereditary('Fogo')).toBe(false);
   });
 
   test('compras definitivas (D-53)', () => {
