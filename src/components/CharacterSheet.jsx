@@ -2,24 +2,62 @@ import { useState, useEffect, useRef } from 'react';
 import { rollDice } from '../utils/dice';
 import { resizeImage } from '../utils/imageUtils';
 import {
-  ATTRS, RACES_DATA, PROFESSIONS_DATA, SKILLS,
-  AURA_GROUPS, AURA_DETAILS, XP_TABLE, GENERIC_TECHS,
-  FORT_ELEMENTS, FORT_BONUSES, FORT_SPECIAL, EXH_DESC,
+  ATTRS, ATTR_FULL, RACES_DATA, PROFESSIONS_DATA, SKILLS, SKILLS_AT_CREATION, FREE_TOOL_PROFS, SKILL_RENAMES,
+  AURA_GROUPS, AURA_DETAILS, DIVINE, XP_TABLE, LV_MIN, LV_MAX, MILESTONES, LEGACY_OPTIONS, GENERIC_TECHS,
+  FORT_ELEMENTS, FORT_VARIANTS, EXH_DESC, TRAINING_TIERS, ARMORS,
+  PB_BASE, PB_TOTAL, PB_MAX, PB_DOUBLE, pointBuyCost, profBonus, attrMod,
+  PP_PER_LEVEL, PP_AURA_UP, PP_NEW_AURA, ATTR_CAP, ppAttrCost, ppEarned, areaDistance, auraArea,
+  hereditaryAura, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
 } from '../utils/rpgData';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 function getProf(sheet) {
   return sheet.prof === 'custom'
-    ? (sheet.customProf || { m: {}, hp: '1d8', mp: '1d8', mv: '9+DEX', sk: '' })
-    : (PROFESSIONS_DATA[sheet.prof] || { m: {}, hp: '1d8', mp: '1d8', mv: '9+DEX', sk: '' });
+    ? (sheet.customProf || { m: {}, hp: '1d8', mp: '1d8', sk: '' })
+    : (PROFESSIONS_DATA[sheet.prof] || { m: {}, hp: '1d8', mp: '1d8', sk: '' });
 }
-function finalAttr(sheet, a) {
+// Valor sem os aumentos de PP (compra + profissão + raça)
+function baseFinalAttr(sheet, a) {
   const p = getProf(sheet);
-  return (sheet.attrs?.[a] ?? 6) + (p.m?.[a] ?? 0) + (RACES_DATA[sheet.race]?.bonus?.[a] ?? 0);
+  return (sheet.attrs?.[a] ?? PB_BASE) + (p.m?.[a] ?? 0) + (RACES_DATA[sheet.race]?.bonus?.[a] ?? 0);
 }
-function amod(v) { return Math.floor(((v ?? 10) - 10) / 2); }
+function finalAttr(sheet, a) { return baseFinalAttr(sheet, a) + (sheet.attrUps?.[a] ?? 0); }
+const amod = attrMod;
 function mstr(v) { const m = amod(v); return m >= 0 ? `+${m}` : `${m}`; }
 function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
+function sheetLevel(sheet) { return Math.max(LV_MIN, Math.min(LV_MAX, sheet.level || LV_MIN)); }
+function ppSpent(sheet) {
+  let c = 0;
+  ATTRS.forEach(a => { c += attrUpsSpent(baseFinalAttr(sheet, a), sheet.attrUps?.[a] ?? 0); });
+  (sheet.auras || []).forEach(x => { c += auraSpent(x); });
+  return c;
+}
+function ppLeft(sheet) { return ppEarned(sheetLevel(sheet)) - ppSpent(sheet); }
+// HP = Σ(dado + mod CON), MP = Σ(dado + mod DOM), mínimo 1 por nível (cap. 13, PB-8)
+function calcHPMP(sheet) {
+  const conMod = amod(finalAttr(sheet, 'CON')), domMod = amod(finalAttr(sheet, 'DOM'));
+  const hp = (sheet.hpDice || []).reduce((s, d) => s + Math.max(1, d + conMod), 0);
+  const mp = (sheet.mpDice || []).reduce((s, d) => s + Math.max(1, d + domMod), 0);
+  return { hp, mp, conMod, domMod };
+}
+function calcDefense(sheet) {
+  const dexMod = amod(finalAttr(sheet, 'DEX'));
+  const ar = ARMORS.find(x => x.n === sheet.armor) || ARMORS[0];
+  let ca = ar.t === 'P' ? ar.ca : ar.t === 'M' ? ar.ca + Math.min(2, dexMod) : ar.ca + dexMod;
+  if (sheet.shield) ca += 2;
+  const mv = (RACES_DATA[sheet.race]?.mv ?? 9) + (ar.mv || 0);
+  return { ca, mv, ar };
+}
+function PPBar({ sheet }) {
+  const e = ppEarned(sheetLevel(sheet)), g = ppSpent(sheet), l = e - g;
+  return (
+    <div style={{ display:'flex',alignItems:'center',justifyContent:'center',gap:10,flexWrap:'wrap',padding:'5px 14px',borderRadius:5,marginBottom:8,border:'1px solid rgba(201,169,110,.15)' }}>
+      <span style={{fontSize:11,color:'var(--sub)'}}>Pontos de Progressão:</span>
+      <span style={{fontSize:20,fontWeight:700,fontFamily:"'Cinzel',serif",color:l<0?'#b83030':'var(--gold)'}}>{l}</span>
+      <span style={{fontSize:10,color:'var(--sub)'}}>disponíveis · {e} ganhos (3 por nível do 4 ao 15) · {g} gastos{l<0&&<b style={{color:'#b83030'}}> · gasto acima do ganho</b>}</span>
+    </div>
+  );
+}
 
 // ── shared UI ─────────────────────────────────────────────────────────────────
 const NB = { width: 21, height: 21, background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--sub)', cursor: 'pointer', borderRadius: 3, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' };
@@ -73,6 +111,7 @@ function PerfilTab({ sheet, onUpdate, isReadOnly }) {
   const u = onUpdate;
   const race = sheet.race || 'Humano';
   const p = getProf(sheet);
+  const rc = RACES_DATA[race];
 
   return (
     <div>
@@ -90,9 +129,10 @@ function PerfilTab({ sheet, onUpdate, isReadOnly }) {
           return <button key={r} onClick={() => !isReadOnly && u({race:r})} style={{ padding: '4px 10px', borderRadius: 16, fontSize: 11, cursor: isReadOnly?'default':'pointer', border: `1px solid ${on?RACES_DATA[r].c:'var(--border)'}`, background: on?RACES_DATA[r].c+'20':'transparent', color: on?RACES_DATA[r].c:'var(--sub)', fontFamily: 'inherit' }}>{r}</button>;
         })}
       </div>
-      {RACES_DATA[race] && (
-        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderLeft: `3px solid ${RACES_DATA[race].c}`, borderRadius: 4, padding: '8px 10px', fontSize: 11, color: 'var(--sub)', fontStyle: 'italic', marginBottom: 10 }}>
-          {RACES_DATA[race].ab}
+      {rc && (
+        <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderLeft: `3px solid ${rc.c}`, borderRadius: 4, padding: '8px 10px', fontSize: 11, color: 'var(--sub)', marginBottom: 10 }}>
+          <span style={{fontStyle:'italic'}}>{rc.ab}</span><br/>
+          Movimento: {rc.mv} m · {rc.af ? `Afinidade de Arka: Área ${rc.af} (+2 nos testes de treino, −10% de MP nas auras dessa Área)` : 'Sem afinidade de Arka'}
         </div>
       )}
 
@@ -104,18 +144,18 @@ function PerfilTab({ sheet, onUpdate, isReadOnly }) {
         })}
       </div>
       <div style={{ fontSize: 11, color: 'var(--sub)', marginBottom: 8 }}>
-        <b style={{color:'var(--text)'}}>Perícias:</b> {p.sk||'—'} · <b style={{color:'var(--text)'}}>HP:</b> {p.hp||'1d8'}+CON · <b style={{color:'var(--text)'}}>MP:</b> {p.mp||'1d8'}+INT · <b style={{color:'var(--text)'}}>Movi:</b> {p.mv||'9+DEX'}m
+        <b style={{color:'var(--text)'}}>Perfil:</b> {p.sk||'—'} <span style={{opacity:.7}}>(lista de perícias da profissão ⏳ em definição)</span> · <b style={{color:'var(--text)'}}>HP:</b> {p.hp||'1d8'}+CON · <b style={{color:'var(--text)'}}>MP:</b> {p.mp||'1d8'}+DOM <span style={{opacity:.7}}>(por nível, mín. 1)</span>
       </div>
 
       {(sheet.prof||'custom')==='custom' && !isReadOnly && (
         <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 5, padding: '10px 12px', marginBottom: 10 }}>
           <St style={{marginTop:0}}>Editor de Profissão</St>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-            {[['Nome','name',''],['Dado HP','hp','1d8'],['Dado MP','mp','1d8'],['Locomoção','mv','9+DEX']].map(([lbl,f,ph]) => (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+            {[['Nome','name',''],['Dado HP','hp','1d8'],['Dado MP','mp','1d8']].map(([lbl,f,ph]) => (
               <div key={f}><Lb>{lbl}</Lb><input className="vtt-input" placeholder={ph} value={sheet.customProf?.[f]||''} onChange={e => u({customProf:{...(sheet.customProf||{}), [f]:e.target.value}})} /></div>
             ))}
           </div>
-          <Lb>Perícias</Lb>
+          <Lb>Perfil</Lb>
           <input className="vtt-input" style={{marginBottom:8}} value={sheet.customProf?.sk||''} onChange={e => u({customProf:{...(sheet.customProf||{}),sk:e.target.value}})} />
           <Lb>Modificadores</Lb>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
@@ -146,53 +186,89 @@ function PerfilTab({ sheet, onUpdate, isReadOnly }) {
 function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken, combatActive }) {
   const u = onUpdate;
   const p = getProf(sheet);
+  const lv = sheetLevel(sheet);
+  const prof = profBonus(lv);
 
-  const conFin = finalAttr(sheet,'CON'), intFin = finalAttr(sheet,'INT');
-  const dexFin = finalAttr(sheet,'DEX'), domFin = finalAttr(sheet,'DOM');
-  const conMod = amod(conFin), intMod = amod(intFin), dexMod = amod(dexFin), domMod = amod(domFin);
+  const dexFin = finalAttr(sheet,'DEX');
+  const dexMod = amod(dexFin);
+  const { hp: calcMaxHP, mp: calcMaxMP, conMod, domMod } = calcHPMP(sheet);
+  const { ca, mv, ar } = calcDefense(sheet);
 
   const hDie = (p.hp||'1d8').match(/(\d+)d(\d+)/);
   const hN=hDie?+hDie[1]:1, hS=hDie?+hDie[2]:8;
   const mDie = (p.mp||'1d8').match(/(\d+)d(\d+)/);
   const mN=mDie?+mDie[1]:1, mS=mDie?+mDie[2]:8;
 
-  const baseHP = hN*hS+conMod, baseMP = mN*mS+intMod;
-  const bonusHP = (sheet.hpRolls||[]).reduce((s,v)=>s+v,0);
-  const bonusMP = (sheet.mpRolls||[]).reduce((s,v)=>s+v,0);
-  const calcMaxHP = Math.max(1,baseHP+bonusHP);
-  const calcMaxMP = Math.max(0,baseMP+bonusMP);
-
-  const mvBase = parseInt((p.mv||'9+DEX').match(/(\d+)/)?.[1]||'9');
-  const movement = mvBase+dexMod;
-
-  const usedPts = ATTRS.reduce((s,a)=>s+(sheet.attrs?.[a]??6)-6,0);
-  const leftPts = 35-usedPts;
+  // Compra de pontos (C-08): custo sobre o valor já com a profissão
+  const usedPts = ATTRS.reduce((s,a)=>{const pm=p.m?.[a]??0;return s+pointBuyCost(PB_BASE+pm,(sheet.attrs?.[a]??PB_BASE)+pm);},0);
+  const leftPts = PB_TOTAL-usedPts;
   const ptColor = leftPts<0?'#b83030':leftPts===0?'#3a7a4c':'var(--gold)';
 
   const curHP = sheet.curHP??0, maxHP = sheet.maxHP||calcMaxHP;
   const curMP = sheet.curMP??0, maxMP = sheet.maxMP||calcMaxMP;
   const hpPct = maxHP>0?curHP/maxHP:0;
   const hpColor = hpPct>0.5?'#4a9a5a':hpPct>0.2?'#c47830':'#b83030';
+  const hpDice = sheet.hpDice||[], mpDice = sheet.mpDice||[];
+  const legacyRolls = !hpDice.length && (sheet.hpRolls?.length??0)>0;
 
   function emit(text) { addLog?.(text,'dice'); playSfx?.('dice'); }
 
+  // Atualiza atributos e recalcula HP/MP máximos (mod CON/DOM podem mudar)
+  function setAttrs(changes) {
+    const next = { ...sheet, ...changes };
+    const r = calcHPMP(next);
+    const extra = (next.hpDice||[]).length ? { maxHP: r.hp, maxMP: r.mp, curHP: Math.min(next.curHP??0, r.hp), curMP: Math.min(next.curMP??0, r.mp) } : {};
+    u({ ...changes, ...extra });
+  }
+  function adjBuy(a, d) {
+    const pm = p.m?.[a]??0, v = (sheet.attrs?.[a]??PB_BASE)+d;
+    if (v < PB_BASE) return;
+    if (d>0 && v+pm>PB_MAX) { addLog?.(`Máximo na criação: ${PB_MAX} (já com a profissão)`,'system'); return; }
+    setAttrs({ attrs: { ...(sheet.attrs||{}), [a]: v } });
+  }
+  function adjUp(a, d) {
+    const n = sheet.attrUps?.[a]??0;
+    if (d<0) { if (n>0) setAttrs({ attrUps: { ...(sheet.attrUps||{}), [a]: n-1 } }); return; }
+    const v = finalAttr(sheet,a)+1;
+    if (v > ATTR_CAP) { addLog?.(`Teto do atributo: ${ATTR_CAP}`,'system'); return; }
+    const c = ppAttrCost(v);
+    if (ppLeft(sheet) < c) { addLog?.(`PP insuficientes: ${a} ${v} custa ${c} PP`,'system'); return; }
+    setAttrs({ attrUps: { ...(sheet.attrUps||{}), [a]: n+1 } });
+  }
+
   function rollLevelUp() {
-    const hR = rollDice(hN,hS,conMod), mR = rollDice(mN,mS,intMod);
-    const hGain=Math.max(1,hR.total), mGain=Math.max(0,mR.total);
-    const hp2=[...(sheet.hpRolls||[]),hGain], mp2=[...(sheet.mpRolls||[]),mGain];
-    const newMaxHP=Math.max(1,baseHP+hp2.reduce((s,v)=>s+v,0));
-    const newMaxMP=Math.max(0,baseMP+mp2.reduce((s,v)=>s+v,0));
-    u({hpRolls:hp2,mpRolls:mp2,maxHP:newMaxHP,maxMP:newMaxMP,curHP:newMaxHP,curMP:newMaxMP});
-    emit(`🎲 Level ${hp2.length+1}! HP +${hGain} [${hR.rolls.join(',')}${conMod>=0?'+':''}${conMod}] · MP +${mGain}`);
+    if (hpDice.length >= LV_MAX) return;
+    const n = hpDice.length < LV_MIN ? LV_MIN - hpDice.length : 1;
+    const hd=[...hpDice], md=[...mpDice], hr=[], mr=[];
+    for (let i=0;i<n;i++){ const h=rollDice(hN,hS,0).total, m=rollDice(mN,mS,0).total; hd.push(h); md.push(m); hr.push(h); mr.push(m); }
+    const r = calcHPMP({ ...sheet, hpDice: hd, mpDice: md });
+    const newLv = hd.length;
+    u({ hpDice: hd, mpDice: md, maxHP: r.hp, maxMP: r.mp, curHP: r.hp, curMP: r.mp, ...(newLv>=LV_MIN?{level:newLv}:{}) });
+    emit(`🎲 ${n>1?`Criação (nível ${newLv})`:`Nível ${newLv}`}! HP [${hr.join(',')}] ${conMod>=0?'+':''}${conMod}/nível · MP [${mr.join(',')}] ${domMod>=0?'+':''}${domMod}/nível`);
+  }
+  function undoRoll() {
+    const hd=hpDice.slice(0,-1), md=mpDice.slice(0,-1);
+    const r = calcHPMP({ ...sheet, hpDice: hd, mpDice: md });
+    u({ hpDice: hd, mpDice: md, maxHP: r.hp, maxMP: r.mp, curHP: Math.min(curHP, r.hp), curMP: Math.min(curMP, r.mp) });
+  }
+  // Fichas antigas: nível 1 = dado máximo; hpRolls/mpRolls com o modificador já somado (MP com INT)
+  function migrateRolls() {
+    const intMod = amod(finalAttr(sheet,'INT'));
+    const cl = (v,mx) => Math.max(1,Math.min(mx,v));
+    const hd = [hS, ...(sheet.hpRolls||[]).map(g=>cl(g-conMod,hS))];
+    const md = [mS, ...(sheet.mpRolls||[]).map(g=>cl(g-intMod,mS))];
+    const r = calcHPMP({ ...sheet, hpDice: hd, mpDice: md });
+    u({ hpDice: hd, mpDice: md, maxHP: r.hp, maxMP: r.mp, curHP: r.hp, curMP: r.mp, level: Math.max(LV_MIN, hd.length) });
   }
 
   function doRest(type) {
     if (type==='short') {
-      const rec=Math.ceil(calcMaxMP*0.5), newMp=Math.min(maxMP,(curMP)+rec);
-      u({curMP:newMp}); addLog?.(`☕ ${sheet.name} descanso curto. MP: ${curMP}→${newMp}`,'heal');
+      if ((sheet.shortRests??0) >= 2) { addLog?.('Máximo de 2 descansos curtos entre descansos longos','system'); return; }
+      const rec=Math.floor(maxMP*0.5), newMp=Math.min(maxMP,curMP+rec);
+      u({curMP:newMp, shortRests:(sheet.shortRests??0)+1}); addLog?.(`☕ ${sheet.name} descanso curto (${(sheet.shortRests??0)+1}/2). MP: ${curMP}→${newMp}`,'heal');
     } else {
-      u({curHP:calcMaxHP,curMP:calcMaxMP,maxHP:calcMaxHP,maxMP:calcMaxMP});
-      addLog?.(`🛏 ${sheet.name} descanso longo. HP/MP restaurados.`,'heal');
+      u({curHP:maxHP,curMP:maxMP,shortRests:0,falls:0,exTreino:Math.max(0,(sheet.exTreino??0)-1)});
+      addLog?.(`🛏 ${sheet.name} descanso longo. HP/MP cheios, Quedas zeradas, −1 Exaustão de Arka.`,'heal');
     }
     playSfx?.('heal');
   }
@@ -200,28 +276,36 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
   return (
     <div>
       {/* Point buy indicator */}
-      <div style={{ display:'flex',alignItems:'center',justifyContent:'center',gap:10,padding:'7px 14px',borderRadius:5,marginBottom:10, background:leftPts<0?'rgba(184,48,48,.06)':'rgba(201,169,110,.04)', border:`1px solid ${leftPts<0?'rgba(184,48,48,.2)':'rgba(201,169,110,.15)'}` }}>
+      <div style={{ display:'flex',alignItems:'center',justifyContent:'center',gap:10,flexWrap:'wrap',padding:'7px 14px',borderRadius:5,marginBottom:6, background:leftPts<0?'rgba(184,48,48,.06)':'rgba(201,169,110,.04)', border:`1px solid ${leftPts<0?'rgba(184,48,48,.2)':'rgba(201,169,110,.15)'}` }}>
         <span style={{fontSize:11,color:'var(--sub)'}}>Pontos:</span>
         <span style={{fontSize:22,fontWeight:700,fontFamily:"'Cinzel',serif",color:ptColor}}>{leftPts}</span>
-        <span style={{fontSize:10,color:'var(--sub)'}}>/35</span>
+        <span style={{fontSize:10,color:'var(--sub)'}}>/ {PB_TOTAL} · base {PB_BASE}, máx. {PB_MAX}, acima de {PB_DOUBLE} custa 2</span>
       </div>
+      <PPBar sheet={sheet}/>
+      <div style={{fontSize:10,color:'var(--sub)',textAlign:'center',marginBottom:10}}>Compra (−/+ de cima): só na criação, sem passar de 18. Depois, +1 atributo com PP (−/+ de baixo): 2 PP se o resultado for até 16, 3 PP para 17–18, 4 PP para 19–20; teto 20.</div>
 
       {/* Attribute boxes */}
       <div style={{ display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4,marginBottom:12 }}>
         {ATTRS.map(a => {
-          const base=sheet.attrs?.[a]??6, fin=finalAttr(sheet,a), mod=amod(fin);
-          const pm=getProf(sheet).m?.[a]??0, rm=RACES_DATA[sheet.race]?.bonus?.[a]??0;
+          const base=sheet.attrs?.[a]??PB_BASE, fin=finalAttr(sheet,a), mod=amod(fin);
+          const pm=p.m?.[a]??0, rm=RACES_DATA[sheet.race]?.bonus?.[a]??0, ups=sheet.attrUps?.[a]??0;
           return (
             <div key={a} style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:5,padding:'6px 3px',textAlign:'center'}}>
               <div style={{fontFamily:"'Cinzel',serif",fontSize:9,color:'var(--gold)',fontWeight:700,letterSpacing:'.12em',marginBottom:3}}>{a}</div>
               <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:2}}>
-                {!isReadOnly&&<button style={NB} onClick={()=>u({attrs:{...sheet.attrs,[a]:Math.max(6,base-1)}})}>−</button>}
+                {!isReadOnly&&<button style={NB} onClick={()=>adjBuy(a,-1)}>−</button>}
                 <span style={{minWidth:20,textAlign:'center',fontWeight:700,fontSize:13}}>{base}</span>
-                {!isReadOnly&&<button style={NB} onClick={()=>u({attrs:{...sheet.attrs,[a]:Math.min(18,base+1)}})}>+</button>}
+                {!isReadOnly&&<button style={NB} onClick={()=>adjBuy(a,1)}>+</button>}
               </div>
               {(pm!==0||rm!==0)&&<div style={{fontSize:7,color:'var(--sub)',marginTop:2}}>{pm!==0&&<span style={{color:pm>0?'#3a7a4c':'#b83030'}}>P{pm>0?'+':''}{pm}</span>}{rm!==0&&<span style={{color:'#3a7a4c',marginLeft:2}}>R+{rm}</span>}</div>}
               <div style={{fontSize:17,fontWeight:700,fontFamily:"'Cinzel',serif",marginTop:2}}>{fin}</div>
               <div style={{fontSize:9,color:mod>=0?'#3a7a4c':'#b83030'}}>mod {mod>=0?'+':''}{mod}</div>
+              <div style={{fontSize:7,color:'var(--sub)'}}>custo {pointBuyCost(PB_BASE+pm,base+pm)}</div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:2,marginTop:3,fontSize:8,color:'var(--sub)'}}>
+                PP{!isReadOnly&&<button style={{...NB,width:15,height:15,fontSize:9}} onClick={()=>adjUp(a,-1)}>−</button>}
+                <span style={{color:'var(--gold)',fontWeight:700}}>+{ups}</span>
+                {!isReadOnly&&<button style={{...NB,width:15,height:15,fontSize:9}} onClick={()=>adjUp(a,1)}>+</button>}
+              </div>
             </div>
           );
         })}
@@ -229,13 +313,20 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
 
       {/* Derived stats */}
       <St>Derivados</St>
-      <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12}}>
-        <Sb label="HP Base" value={baseHP} sub={`${p.hp||'1d8'}${conMod>=0?'+':''}${conMod}`} color="#b83030"/>
-        <Sb label="MP Base" value={baseMP} sub={`${p.mp||'1d8'}${intMod>=0?'+':''}${intMod}`} color="#3a6aaa"/>
-        <Sb label="HP Total" value={calcMaxHP} sub={bonusHP?`base+${bonusHP}`:'base'} color="#b83030"/>
-        <Sb label="MP Total" value={calcMaxMP} sub={bonusMP?`base+${bonusMP}`:'base'} color="#3a6aaa"/>
-        <Sb label="Movimento" value={`${movement}m`} sub={`${mvBase}${dexMod>=0?'+':''}${dexMod}`} color="#3a7a4c"/>
-        <Sb label="Iniciativa" value={`3d8${mstr(domFin)}`} sub="DOM"/>
+      <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8}}>
+        <Sb label="HP Máx." value={calcMaxHP} sub={`${hpDice.length}×(${p.hp||'1d8'}${conMod>=0?'+':''}${conMod})`} color="#b83030"/>
+        <Sb label="MP Máx." value={calcMaxMP} sub={`${mpDice.length}×(${p.mp||'1d8'}${domMod>=0?'+':''}${domMod} DOM)`} color="#3a6aaa"/>
+        <Sb label="CA" value={ca} sub={ar.t==='P'?'pesada':ar.t==='M'?`${ar.ca}+DEX(máx 2)`:`${ar.ca}+DEX`}/>
+        <Sb label="Movimento" value={`${mv}m`} sub={`${sheet.race||'Humano'}${ar.mv?` ${ar.mv} m armadura`:ar.t==='P'?' (pesada: −1 a −2 m)':''}`} color="#3a7a4c"/>
+        <Sb label="Iniciativa" value={`3d8${mstr(dexFin)}`} sub="3d8+mod DEX"/>
+        <Sb label="Proficiência" value={`+${prof}`} sub={`nível ${lv}`}/>
+      </div>
+      <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginBottom:12}}>
+        <span style={{fontSize:10,color:'var(--sub)'}}>Armadura</span>
+        <select className="vtt-select" value={ar.n} disabled={isReadOnly} onChange={e=>u({armor:e.target.value})} style={{width:220}}>
+          {ARMORS.map(a=><option key={a.n} value={a.n}>{a.n} ({a.t==='P'?`CA ${a.ca}`:a.t==='M'?`CA ${a.ca}+DEX máx. 2`:`CA ${a.ca}+DEX`})</option>)}
+        </select>
+        <label style={{display:'flex',alignItems:'center',gap:4,fontSize:11}}><input type="checkbox" checked={!!sheet.shield} disabled={isReadOnly} onChange={e=>u({shield:e.target.checked})}/>Escudo (+2)</label>
       </div>
 
       {/* HP/MP */}
@@ -262,54 +353,61 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
       </div>
 
       {/* Level up rolls */}
-      <St>Rolagem de Level Up</St>
+      <St>Rolagens de HP e MP</St>
       <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:5,padding:'10px 12px',marginBottom:10}}>
-        <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>Nv.1 = máx do dado + mod. Cada level up seguinte, role o dado e some o modificador.</div>
+        <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>Criação (nível 3): role 3 vezes o dado de HP e o de MP. A cada nível seguinte, role mais 1 vez. Cada nível rende dado + mod CON (HP) e dado + mod DOM (MP), com mínimo de 1 por nível.</div>
         {!isReadOnly&&(
           <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}}>
-            <RBtn onClick={rollLevelUp}>🎲 Rolar Level Up</RBtn>
-            <RBtn onClick={()=>{const hp=[...(sheet.hpRolls||[])];const mp=[...(sheet.mpRolls||[])];hp.pop();mp.pop();u({hpRolls:hp,mpRolls:mp});}}>↩ Desfazer</RBtn>
-            <RBtn onClick={()=>u({hpRolls:[],mpRolls:[]})}>Resetar</RBtn>
+            <RBtn onClick={rollLevelUp}>{hpDice.length<LV_MIN?'🎲 Rolar criação (nível 3)':hpDice.length>=LV_MAX?'Nível máximo':`🎲 Rolar nível ${hpDice.length+1}`}</RBtn>
+            <RBtn onClick={undoRoll}>↩ Desfazer</RBtn>
+            <RBtn onClick={()=>u({hpDice:[],mpDice:[],hpRolls:[],mpRolls:[]})}>Resetar</RBtn>
+            {legacyRolls&&<RBtn onClick={migrateRolls} title="Converte as rolagens do formato antigo (nível 1 = dado máximo, MP com INT)">Converter rolagens antigas</RBtn>}
           </div>
         )}
-        {(sheet.hpRolls?.length??0)>0?(
+        {hpDice.length>0?(
           <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
-            {(sheet.hpRolls||[]).map((v,i)=>(
+            {hpDice.map((v,i)=>(
               <div key={i} style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:4,padding:'3px 7px',fontSize:10,textAlign:'center'}}>
-                <div style={{fontSize:8,color:'var(--sub)'}}>Nv.{i+2}</div>
-                <span style={{color:'#b83030',fontWeight:700}}>+{v}</span><span style={{color:'var(--sub)'}}> / </span><span style={{color:'#3a6aaa',fontWeight:700}}>+{(sheet.mpRolls||[])[i]??0}</span>
+                <div style={{fontSize:8,color:'var(--sub)'}}>Nv.{i+1}</div>
+                <span style={{color:'#b83030',fontWeight:700}}>+{Math.max(1,v+conMod)}</span><span style={{color:'var(--sub)'}}> / </span><span style={{color:'#3a6aaa',fontWeight:700}}>+{Math.max(1,(mpDice[i]??0)+domMod)}</span>
               </div>
             ))}
           </div>
         ):(
-          <div style={{fontSize:10,color:'var(--sub)',fontStyle:'italic'}}>Nenhuma rolagem. Nível atual: 1 (base).</div>
+          <div style={{fontSize:10,color:'var(--sub)',fontStyle:'italic'}}>Nenhuma rolagem. Role a criação: 3 rolagens de HP e de MP (nível 3).</div>
         )}
       </div>
 
-      {/* Combat stats */}
-      <St>Combate</St>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:10}}>
-        {[['CA','ac',10],['Movimento (m)','movement',9],['Bônus Prof.','profBonus',2]].map(([lbl,f,def])=>(
+      {/* Combat stats (VTT token) */}
+      <St>Combate (token)</St>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:8,marginBottom:6}}>
+        {[['CA','ac',10],['Movimento (m)','movement',9]].map(([lbl,f,def])=>(
           <div key={f}><Lb>{lbl}</Lb><input className="vtt-input" type="number" min={0} value={sheet[f]??def} readOnly={isReadOnly} onChange={e=>u({[f]:Math.max(0,parseInt(e.target.value,10)||0)})} style={{textAlign:'center'}}/></div>
         ))}
       </div>
+      {!isReadOnly&&<div style={{marginBottom:8}}><RBtn onClick={()=>u({ac:ca,movement:mv,profBonus:prof})}>Usar valores calculados (CA {ca}, {mv} m, prof. +{prof})</RBtn></div>}
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:targetToken?4:10}}>
         <span style={{fontSize:11,color:'var(--sub)',width:80}}>Iniciativa</span>
-        <span style={{color:'var(--gold)',fontWeight:700}}>3d8{mstr(domFin)}</span>
-        <RBtn onClick={()=>{const r=rollDice(3,8,domMod);emit(`⚡ ${sheet.name||'Personagem'} iniciativa: [${r.rolls.join('+')}]${mstr(domFin)} = ${r.total}`);}}>Rolar</RBtn>
+        <span style={{color:'var(--gold)',fontWeight:700}}>3d8{mstr(dexFin)}</span>
+        <RBtn onClick={()=>{const r=rollDice(3,8,dexMod);emit(`⚡ ${sheet.name||'Personagem'} iniciativa: [${r.rolls.join('+')}]${mstr(dexFin)} = ${r.total}`);}}>Rolar</RBtn>
       </div>
       {targetToken&&<div style={{fontSize:10,color:'var(--sub)',marginBottom:10}}>Alvo: <span style={{color:'var(--gold)'}}>{targetToken.name}</span> (CA {targetToken.ac})</div>}
 
       {/* Falls */}
       <St>Quedas</St>
-      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:4,flexWrap:'wrap'}}>
         <Nc value={sheet.falls??0} color="#b83030" onDec={()=>u({falls:Math.max(0,(sheet.falls??0)-1)})} onInc={()=>u({falls:Math.min(4,(sheet.falls??0)+1)})}/>
         <span style={{fontSize:10,color:'var(--sub)'}}>/4</span>
         <RBtn onClick={()=>u({falls:0})}>Reset</RBtn>
+        <RBtn onClick={()=>{const cf=finalAttr(sheet,'CON');const r=rollDice(1,20,amod(cf));const d=r.rolls[0];emit(`💀 ${sheet.name||'Personagem'} teste contra a morte: [${d}]${mstr(cf)} = ${r.total} (CD 10) ${d===20?'— 20 natural: levanta com 1 HP':d===1?'— 1 natural: 2 falhas':r.total>=10?'— sucesso':'— falha'}`);}}>Teste contra a morte</RBtn>
+      </div>
+      <div style={{fontSize:10,color:(sheet.falls??0)>=4?'#b83030':'var(--sub)',marginBottom:10}}>
+        {(sheet.falls??0)>=4?'4ª Queda: o personagem morre.':'Cair a 0 HP marca 1 Queda. Na 4ª Queda o personagem morre. Teste contra a morte: 1d20 + mod CON, CD 10. Medicina (SAB) CD 10 estabiliza com 1 HP. As Quedas zeram no descanso longo. Opcional: sobredano de 75% do HP máximo = morte (D-27).'}
       </div>
 
       {/* Rest */}
       <St>Descanso</St>
+      <div style={{fontSize:10,color:'var(--sub)',marginBottom:6}}>Curto (10 min): +50% do MP máximo; no máximo 2 entre descansos longos ({sheet.shortRests??0}/2). Longo (8 h): 100% de HP e MP, −1 Exaustão de Arka, zera as Quedas e os descansos curtos.</div>
       <div style={{display:'flex',gap:8}}>
         {[['☕ Descanso Curto','short','Recupera 50% do MP máximo (10 min)'],['🛏 Descanso Longo','long','Recupera 100% HP e MP (8h)']].map(([lbl,type,title])=>(
           <button key={type} className="tbtn" disabled={!!combatActive} title={combatActive?'Indisponível em combate':title}
@@ -324,19 +422,21 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
 // ── PericiasTab ───────────────────────────────────────────────────────────────
 function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
   const u = onUpdate;
-  const profs = sheet.proficiencies||[];
+  const profs = (sheet.proficiencies||[]).map(n => SKILL_RENAMES[n] || n);
   const custom = sheet.customProfs||[];
+  const tools = sheet.toolProfs||['',''];
+  const pb = profBonus(sheetLevel(sheet));
   const [form,setForm] = useState({n:'',a:'DEX'});
 
   function toggle(name) {
     if(isReadOnly)return;
-    const idx=profs.indexOf(name);
-    u({proficiencies:idx>=0?profs.filter(x=>x!==name):[...profs,name]});
+    u({proficiencies:profs.includes(name)?profs.filter(x=>x!==name):[...profs,name]});
   }
   function rollSkill(name,attr) {
-    const fin=finalAttr(sheet,attr), mod=amod(fin)+(profs.includes(name)?2:0);
+    const on=profs.includes(name);
+    const fin=finalAttr(sheet,attr), mod=amod(fin)+(on?pb:0);
     const r=rollDice(1,20,mod);
-    addLog?.(`🎯 ${sheet.name||'Personagem'} — ${name} (${attr}${profs.includes(name)?'+2':''}): [${r.rolls[0]}]${mod>=0?'+':''}${mod} = ${r.total}`,'dice');
+    addLog?.(`🎯 ${sheet.name||'Personagem'} — ${name} (${attr}${on?`+${pb}`:''}): [${r.rolls[0]}]${mod>=0?'+':''}${mod} = ${r.total}`,'dice');
     playSfx?.('dice');
   }
   function addCustom() {
@@ -346,24 +446,30 @@ function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
   }
 
   const allSkills=[...SKILLS,...custom.map(p=>({n:p.n,a:p.a}))];
+  const marked=SKILLS.filter(s=>profs.includes(s.n)).length;
 
   return (
     <div>
       <St>Perícias</St>
-      <div style={{fontSize:11,color:'var(--sub)',marginBottom:10}}>Clique no círculo para marcar proficiência. Bônus = mod do atributo + proficiência (+2).</div>
+      <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>Clique no círculo para marcar proficiência. Bônus = mod do atributo + proficiência (+2 nv 3–6, +3 nv 7–10, +4 nv 11–14, +5 nv 15).</div>
+      <div style={{fontSize:11,color:'var(--sub)',marginBottom:10}}><b style={{color:'var(--text)'}}>Na criação:</b> 4 perícias da lista da profissão + 2 livres (D-23). As listas por profissão ainda estão em definição: por enquanto, escolha as 6 livremente. Marcadas: <b style={{color:marked>SKILLS_AT_CREATION?'#b83030':'var(--gold)'}}>{marked}/{SKILLS_AT_CREATION}</b></div>
       {allSkills.map((sk,i)=>{
         const isC=i>=SKILLS.length, on=profs.includes(sk.n);
-        const fin=finalAttr(sheet,sk.a), mod=amod(fin), total=mod+(on?2:0);
+        const fin=finalAttr(sheet,sk.a), mod=amod(fin), total=mod+(on?pb:0);
+        const head = !isC && (i===0 || SKILLS[i-1].a!==sk.a);
         return (
-          <div key={sk.n} style={{display:'flex',alignItems:'center',gap:6,padding:'4px 6px',borderRadius:4}}>
-            <div onClick={()=>toggle(sk.n)} style={{width:16,height:16,borderRadius:'50%',border:`2px solid ${on?'var(--gold)':'var(--border)'}`,background:on?'var(--gold)':'transparent',cursor:isReadOnly?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'.2s'}}>
-              {on&&<span style={{fontSize:9,color:'var(--bg)',fontWeight:700}}>✓</span>}
+          <div key={sk.n}>
+            {head&&<div style={{fontFamily:"'Cinzel',serif",fontSize:9,color:'var(--gold)',letterSpacing:'.1em',margin:'6px 0 2px'}}>{(ATTR_FULL[sk.a]||sk.a).toUpperCase()}</div>}
+            <div style={{display:'flex',alignItems:'center',gap:6,padding:'4px 6px',borderRadius:4}}>
+              <div onClick={()=>toggle(sk.n)} style={{width:16,height:16,borderRadius:'50%',border:`2px solid ${on?'var(--gold)':'var(--border)'}`,background:on?'var(--gold)':'transparent',cursor:isReadOnly?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'.2s'}}>
+                {on&&<span style={{fontSize:9,color:'var(--bg)',fontWeight:700}}>✓</span>}
+              </div>
+              <span style={{fontSize:12,flex:1}}>{sk.n}{isC&&<span style={{fontSize:9,color:'var(--sub)',marginLeft:4}}>(custom)</span>}</span>
+              <span style={{fontSize:9,color:'var(--sub)',fontFamily:"'Cinzel',serif",width:28,textAlign:'center'}}>{sk.a}</span>
+              <span style={{fontSize:13,fontWeight:700,fontFamily:"'Cinzel',serif",width:28,textAlign:'center',color:total>=0?'#3a7a4c':'#b83030'}}>{total>=0?'+':''}{total}</span>
+              <RBtn onClick={()=>rollSkill(sk.n,sk.a)}>1d20</RBtn>
+              {isC&&!isReadOnly&&<button onClick={()=>{const nm=custom[i-SKILLS.length].n;u({customProfs:custom.filter((_,j)=>j!==i-SKILLS.length),proficiencies:profs.filter(x=>x!==nm)});}} style={{background:'none',border:'none',color:'var(--sub)',cursor:'pointer',fontSize:12}}>✕</button>}
             </div>
-            <span style={{fontSize:12,flex:1}}>{sk.n}{isC&&<span style={{fontSize:9,color:'var(--sub)',marginLeft:4}}>(custom)</span>}</span>
-            <span style={{fontSize:9,color:'var(--sub)',fontFamily:"'Cinzel',serif",width:28,textAlign:'center'}}>{sk.a}</span>
-            <span style={{fontSize:13,fontWeight:700,fontFamily:"'Cinzel',serif",width:28,textAlign:'center',color:total>=0?'#3a7a4c':'#b83030'}}>{total>=0?'+':''}{total}</span>
-            <RBtn onClick={()=>rollSkill(sk.n,sk.a)}>1d20</RBtn>
-            {isC&&!isReadOnly&&<button onClick={()=>{const nm=custom[i-SKILLS.length].n;u({customProfs:custom.filter((_,j)=>j!==i-SKILLS.length),proficiencies:profs.filter(x=>x!==nm)});}} style={{background:'none',border:'none',color:'var(--sub)',cursor:'pointer',fontSize:12}}>✕</button>}
           </div>
         );
       })}
@@ -376,6 +482,14 @@ function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
           <RBtn onClick={addCustom}>+ Add</RBtn>
         </div>
       )}
+
+      <St>Proficiências de Arma ou Ferramenta</St>
+      <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>{FREE_TOOL_PROFS} livres, além das 2 perícias livres (D-45). As proficiências de arma e armadura de cada profissão estão em definição (⏳ P-049).</div>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+        {Array.from({length:FREE_TOOL_PROFS},(_,i)=>(
+          <input key={i} className="vtt-input" style={{flex:1,minWidth:140}} placeholder={`Arma ou ferramenta ${i+1}...`} readOnly={isReadOnly} value={tools[i]||''} onChange={e=>{const t=[...tools];t[i]=e.target.value;u({toolProfs:t});}}/>
+        ))}
+      </div>
     </div>
   );
 }
@@ -415,7 +529,7 @@ function InventarioTab({ sheet, onUpdate, isReadOnly }) {
         </div>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,marginBottom:12}}>
-        {[['copper','CO (Cobre)','#b87333'],['silver','LP (Prata)','#aaa'],['gold','FC (Ouro)','#c9a96e']].map(([key,lbl,color])=>(
+        {[['copper','FC (Fagulha de Cobre)','#b87333'],['silver','LP (Lâmina de Prata)','#aaa'],['gold','CO (Coroa de Ouro)','#c9a96e']].map(([key,lbl,color])=>(
           <div key={key} style={{textAlign:'center'}}><Lb><span style={{color}}>{lbl}</span></Lb><input className="vtt-input" type="number" min={0} value={sheet[key]??0} readOnly={isReadOnly} onChange={e=>u({[key]:Math.max(0,parseInt(e.target.value,10)||0)})} style={{textAlign:'center',fontWeight:700}}/></div>
         ))}
       </div>
@@ -462,25 +576,59 @@ function InventarioTab({ sheet, onUpdate, isReadOnly }) {
 }
 
 // ── AurasTab ──────────────────────────────────────────────────────────────────
+// Hexagrama da imagem (D-32/D-40), progressão por PP (PG economia), múltiplas auras ativas (D-29),
+// Titânica e Ícor só de nascença (D-42/D-43), Despertar Divino sem PP (D-47)
 function AurasTab({ sheet, onUpdate, isReadOnly }) {
   const u = onUpdate;
   const [selGroup,setSelGroup] = useState(null);
+  const [buySel,setBuySel] = useState('');
+  // Fichas antigas (sem a lista de auras): a aura inicial vira a hereditária no nível 1 (Dracônica → Animalesca, D-06)
+  const legacy = sheet.auraInit==='Dracônica' ? 'Animalesca' : sheet.auraInit;
+  const auras = sheet.auras?.length ? sheet.auras : (legacy && (legacy==='Titânica' || auraArea(legacy)) ? [{ n: legacy, lv: 1, her: true }] : []);
+  const her = hereditaryAura(auras);
 
   const CX=130,CY=130,R=96;
   function hexPos(deg){ return { x:CX+R*Math.cos((deg-90)*Math.PI/180), y:CY+R*Math.sin((deg-90)*Math.PI/180) }; }
+  const groupColor = n => AURA_GROUPS.find(g=>g.n===n)?.c || '#ff6600';
 
-  function auraDistance(a,b){
-    const ia=AURA_GROUPS.findIndex(g=>g.n===a), ib=AURA_GROUPS.findIndex(g=>g.n===b);
-    if(ia<0||ib<0)return 0;
-    const d=Math.abs(ia-ib); return Math.min(d,6-d);
+  function setHer(n) {
+    const rest = auras.filter(x => !x.her && x.n !== n);
+    u({ auras: n ? [{ n, lv: 1, her: true }, ...rest] : rest, auraInit: n });
+  }
+  function auraUp(i, d) {
+    const x = auras[i]; if (!x) return;
+    const list = [...auras];
+    if (d > 0) {
+      if (x.lv >= 4) return;
+      if (x.lv === 3) {
+        if (x.n === 'Titânica') { window.alert('Titânica: progressão própria ainda a criar (D-42); nunca acessa as Divinas.'); return; }
+        if (!window.confirm('Despertar Divino (nível 4): exige a aura no nível 3 e um acontecimento de lore aprovado pelo Mestre. Não custa PP. Confirmar?')) return;
+        list[i] = { ...x, lv: 4, deus: x.deus || '' };
+      } else {
+        const c = PP_AURA_UP[x.lv + 1];
+        if (ppLeft(sheet) < c) { window.alert(`PP insuficientes: ${x.n} ${x.lv}→${x.lv+1} custa ${c} PP`); return; }
+        list[i] = { ...x, lv: x.lv + 1 };
+      }
+    } else if (x.lv > 1) list[i] = { ...x, lv: x.lv - 1 };
+    else if (!x.her) { if (!window.confirm(`Remover ${x.n} (devolve ${x.pago||0} PP)?`)) return; list.splice(i, 1); }
+    u({ auras: list });
+  }
+  function buyAura() {
+    if (!buySel) return;
+    const c = newAuraCost(auras, buySel);
+    if (c == null) return;
+    if (ppLeft(sheet) < c) { window.alert(`PP insuficientes: ${buySel} custa ${c} PP`); return; }
+    u({ auras: [...auras, { n: buySel, lv: 1, her: false, pago: c }] });
+    setBuySel('');
   }
 
-  const auras=selGroup&&selGroup!=='Titânica'?AURA_DETAILS[selGroup]:null;
+  const groupAuras = selGroup && selGroup !== 'Titânica' ? AURA_DETAILS[selGroup] : null;
+  const owned = auras.map(x => x.n);
 
   return (
     <div>
       <St>Hexagrama das Auras</St>
-      <div style={{fontSize:11,color:'var(--sub)',textAlign:'center',marginBottom:10}}>Clique em um grupo para ver afinidades e auras.</div>
+      <div style={{fontSize:11,color:'var(--sub)',textAlign:'center',marginBottom:10}}>Clique em uma Área para ver as auras, a compatibilidade e o custo de aura nova. Anel: Primordial – Emissora – Criadora – Ícor – Deformadora – Mental. Titânica no centro.</div>
 
       {/* Hexagram SVG */}
       <div style={{display:'flex',justifyContent:'center',marginBottom:12}}>
@@ -500,13 +648,12 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
             <span style={{fontSize:13}}>⬢</span>
             <span style={{fontSize:6,fontFamily:"'Cinzel',serif",fontWeight:700,color:'#ff6600',letterSpacing:'.04em'}}>TITÂNICA</span>
           </div>
-          {/* 6 aura nodes */}
           {AURA_GROUPS.map(g=>{
             const p=hexPos(g.ag);
             const on=selGroup===g.n;
             let borderColor=g.c+'55';
             if(selGroup&&selGroup!==g.n&&selGroup!=='Titânica'){
-              const d=auraDistance(selGroup,g.n);
+              const d=areaDistance(selGroup,g.n);
               borderColor=d<=1?'#3a7a4c':d===2?'#c9a96e':'#b83030';
             }
             if(on)borderColor=g.c;
@@ -520,65 +667,122 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
         </div>
       </div>
 
-      {/* Affinity info */}
+      {/* Titânica */}
       {selGroup==='Titânica'&&(
         <div style={{background:'var(--card)',border:'1px solid var(--border)',borderLeft:'3px solid #ff6600',borderRadius:4,padding:'10px 12px',marginBottom:12}}>
           <div style={{fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700,color:'#ff6600',marginBottom:4}}>⬢ Titânica</div>
-          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>Acesso a todos os grupos de aura (exceto Ícor) sem restrições de especialização. Nível 1: 3 auras/dia, uma por vez. Nível 2: 5 auras, 2 simultâneas. Nível 3: todas, 3 simultâneas, instantâneas.</div>
+          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42); progressão própria ⏳ a criar pelo autor. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4). Nível 1: 3 auras/dia, uma por vez, no nível 1. Nível 2: 5 auras/dia, 2 simultâneas, até o nível 2. Nível 3: todas, até 3 simultâneas, em qualquer nível até o 3.</div>
         </div>
       )}
+      {/* Compatibilidade e custo de aura nova */}
       {selGroup&&selGroup!=='Titânica'&&(()=>{
         const g=AURA_GROUPS.find(x=>x.n===selGroup);
         if(!g)return null;
         return (
           <div style={{background:'var(--card)',border:'1px solid var(--border)',borderLeft:`3px solid ${g.c}`,borderRadius:4,padding:'10px 12px',marginBottom:12}}>
-            <div style={{fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700,color:g.c,marginBottom:5}}>{g.i} {selGroup} — Custo de afinidade</div>
-            {AURA_GROUPS.filter(x=>x.n!==selGroup).map(x=>{
-              const d=auraDistance(selGroup,x.n);
-              const cost=d<=1?'1 pt':d===2?'2 pts':'3 pts';
-              const col=d<=1?'#3a7a4c':d===2?'#c9a96e':'#b83030';
-              return <div key={x.n} style={{display:'flex',justifyContent:'space-between',padding:'2px 0',borderBottom:'1px solid var(--border)',fontSize:11}}><span>{x.i} {x.n}</span><span style={{fontWeight:700,color:col}}>{cost}</span></div>;
+            <div style={{fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700,color:g.c,marginBottom:5}}>{g.i} {selGroup}</div>
+            <div style={{fontSize:10,color:'var(--sub)',marginBottom:5}}>Relação com {selGroup} e custo de uma aura nova para quem nasceu com aura de {selGroup}:</div>
+            {AURA_GROUPS.map(x=>{
+              const d=areaDistance(selGroup,x.n);
+              const rel=d===0?'Mesma Área (sinergia +15%)':d===3?'Oposta (+25% custo, 10% colateral)':d===1?'Vizinha (neutra)':'2 passos (neutra; ⏳ P-004)';
+              const col=d===0?'#3a7a4c':d===3?'#b83030':'#c9a96e';
+              return <div key={x.n} style={{display:'flex',justifyContent:'space-between',gap:6,padding:'2px 0',borderBottom:'1px solid var(--border)',fontSize:11}}><span>{x.i} {x.n}</span><span style={{fontWeight:700,color:col,textAlign:'right'}}>{rel} · {PP_NEW_AURA[d]} PP</span></div>;
             })}
           </div>
         );
       })()}
 
       {/* Aura catalog */}
-      {auras&&(
+      {groupAuras&&(
         <>
           <St>{AURA_GROUPS.find(g=>g.n===selGroup)?.i} {selGroup} — Catálogo</St>
-          {auras.map(aura=>(
-            <Acc key={aura.n} title={aura.n} open>
-              {aura.l.map((lv,i)=>{
-                const g=AURA_GROUPS.find(x=>x.n===selGroup);
-                return (
-                  <div key={i} style={{padding:'7px 10px',marginBottom:5,borderRadius:4,borderLeft:`3px solid ${g?.c||'var(--border)'}`}}>
-                    <div style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:g?.c||'var(--gold)',marginBottom:3}}>Nível {i+1}</div>
-                    <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>{lv}</div>
+          {selGroup==='Primordial'&&<div style={{fontSize:11,color:'var(--sub)',lineHeight:1.5,marginBottom:8}}>Arka pura, sem forma nem vontade pessoal: a mesma Arka que os Selos contêm, que escapa nos Surtos e que corre selvagem em Vestigar. Oposta ao Ícor. <b style={{color:'var(--text)'}}>Auras em desenvolvimento</b> (sem níveis definidos; ainda não podem ser escolhidas nem compradas).</div>}
+          {selGroup==='Ícor'&&<div style={{fontSize:11,color:'var(--sub)',lineHeight:1.5,marginBottom:8}}>Criação livre da própria aura. A única Área com uma só aura (D-36). Só de nascença: não se compra como aura adicional (D-43).</div>}
+          {groupAuras.map(aura=>{
+            const c=groupColor(selGroup);
+            if(aura.dev) return (
+              <Acc key={aura.n} title={`${aura.n} — em desenvolvimento`} open>
+                <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>{aura.d} <i style={{opacity:.7}}>[níveis 1–3 em definição]</i></div>
+              </Acc>
+            );
+            const dv=DIVINE[aura.n];
+            return (
+              <Acc key={aura.n} title={aura.n} open>
+                {aura.l.map((lv,i)=>(
+                  <div key={i} style={{padding:'7px 10px',marginBottom:5,borderRadius:4,borderLeft:`3px solid ${c}`}}>
+                    <div style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:c,marginBottom:3}}>Nível {i+1}</div>
+                    <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}} dangerouslySetInnerHTML={{__html:lv}}/>
                   </div>
-                );
-              })}
-            </Acc>
-          ))}
+                ))}
+                {dv&&(
+                  <div style={{padding:'7px 10px',marginBottom:5,borderRadius:4,borderLeft:'3px solid #f4d03f'}}>
+                    <div style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:'#f4d03f',marginBottom:3}}>Nível 4 — Despertar Divino: {dv.n}</div>
+                    <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginBottom:4}}>Exige {aura.n} no nível 3 e um acontecimento de lore que o justifique (pacto, provação, relíquia), sob controle do Mestre. Sem nível mínimo de personagem e sem custo de PP (D-47). O jogador escolhe o deus da Área (panteão ⏳ D-48). Inclui as habilidades da aura base.</div>
+                    {dv.l.map((t,i)=><div key={i} style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginTop:3}}><b style={{color:'#f4d03f'}}>Estágio {i+1}:</b> {t}</div>)}
+                  </div>
+                )}
+              </Acc>
+            );
+          })}
         </>
       )}
-      {!selGroup&&<div style={{textAlign:'center',padding:'24px 10px',color:'var(--sub)',fontStyle:'italic',fontSize:12}}>Clique em um grupo no hexagrama para ver suas auras.</div>}
+      {!selGroup&&<div style={{textAlign:'center',padding:'24px 10px',color:'var(--sub)',fontStyle:'italic',fontSize:12}}>Clique em uma Área no hexagrama para ver suas auras.</div>}
 
-      {/* Character's aura */}
+      {/* Character's auras */}
       <St>Auras do Personagem</St>
-      <div style={{marginBottom:8}}><Lb>Aura Inicial</Lb>
-        <select className="vtt-select" value={sheet.auraInit||''} disabled={isReadOnly} onChange={e=>u({auraInit:e.target.value})}>
+      <PPBar sheet={sheet}/>
+      <div style={{marginBottom:8}}><Lb>Aura Hereditária (de nascença, nível 1 na criação)</Lb>
+        <select className="vtt-select" value={her?.n||''} disabled={isReadOnly} onChange={e=>setHer(e.target.value)}>
           <option value="">— Selecione —</option>
-          {AURA_GROUPS.map(g=><option key={g.n} value={g.n}>{g.n}</option>)}
-          <option value="Titânica">Titânica</option>
-          <option value="Ícor">Ícor (Personalizada)</option>
+          {AURA_GROUPS.map(g=>(
+            <optgroup key={g.n} label={g.n}>
+              {(AURA_DETAILS[g.n]||[]).filter(a=>!a.dev).map(a=><option key={a.n} value={a.n}>{a.n}</option>)}
+            </optgroup>
+          ))}
+          <optgroup label="Centro do hexagrama"><option value="Titânica">Titânica</option></optgroup>
         </select>
+      </div>
+      {!auras.length&&<div style={{fontSize:11,color:'var(--sub)',fontStyle:'italic',marginBottom:8}}>Nenhuma aura. Escolha a hereditária acima.</div>}
+      {auras.map((x,i)=>{
+        const ar=x.n==='Titânica'?'Centro':auraArea(x.n), c=groupColor(ar);
+        const nx=x.lv<3?`${PP_AURA_UP[x.lv+1]} PP`:x.lv===3?'Despertar (evento, 0 PP)':'máx.';
+        return (
+          <div key={x.n} style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',background:'var(--card)',border:'1px solid var(--border)',borderLeft:`3px solid ${c}`,borderRadius:4,padding:'6px 9px',marginBottom:4}}>
+            <span style={{fontWeight:600,fontSize:12,minWidth:110}}>{x.n}</span>
+            <span style={{fontSize:9,color:c}}>{ar}{x.her?' · hereditária':` · comprada (${x.pago||0} PP)`}</span>
+            <span style={{marginLeft:'auto'}}>{isReadOnly?<b style={{color:'var(--gold)'}}>{x.lv===4?'4 ✦':x.lv}</b>:<Nc value={x.lv===4?'4 ✦':x.lv} color="var(--gold)" onDec={()=>auraUp(i,-1)} onInc={()=>auraUp(i,1)}/>}</span>
+            <span style={{fontSize:9,color:'var(--sub)',minWidth:90}}>próx.: {nx}</span>
+            {x.lv>=2&&<span style={{fontSize:9,color:'#b83030'}}>licença</span>}
+            {x.lv===4&&<input className="vtt-input" placeholder="Deus do Despertar..." readOnly={isReadOnly} value={x.deus||''} onChange={e=>u({auras:auras.map((y,j)=>j===i?{...y,deus:e.target.value}:y)})} style={{width:150,fontSize:10}}/>}
+          </div>
+        );
+      })}
+      {!isReadOnly&&(
+        <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',margin:'6px 0'}}>
+          <span style={{fontSize:10,color:'var(--sub)'}}>Comprar aura nova:</span>
+          <select className="vtt-select" value={buySel} onChange={e=>setBuySel(e.target.value)} style={{flex:1,minWidth:150}}>
+            {!her?<option value="">— escolha a hereditária primeiro —</option>
+              :her.n==='Titânica'?<option value="">— Titânica: compra de auras não definida (pergunta aberta) —</option>
+              :<>
+                <option value="">— Selecione —</option>
+                {AURA_GROUPS.map(g=>{
+                  const opts=(AURA_DETAILS[g.n]||[]).filter(a=>!a.dev&&!owned.includes(a.n)&&newAuraCost(auras,a.n)!=null);
+                  if(!opts.length)return null;
+                  return <optgroup key={g.n} label={`${g.n} (distância ${areaDistance(auraArea(her.n),g.n)})`}>{opts.map(a=><option key={a.n} value={a.n}>{a.n} — {newAuraCost(auras,a.n)} PP</option>)}</optgroup>;
+                })}
+              </>}
+          </select>
+          <RBtn onClick={buyAura}>Comprar</RBtn>
+        </div>
+      )}
+      <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,margin:'4px 0 10px'}}>
+        Progressão por Pontos de Progressão (PP). <b style={{color:'var(--text)'}}>Subir aura:</b> 1→2 = 8 PP, 2→3 = 10 PP; nível 2+ exige licença imperial (D-02). <b style={{color:'var(--text)'}}>Aura nova</b> (entra no nível 1): 3 / 4 / 5 / 6 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura hereditária. Titânica e Ícor (Aura Própria) só de nascença; as Primordiais estão em desenvolvimento. Sem nível mínimo de personagem. <b style={{color:'var(--text)'}}>Despertar Divino</b> (nível 4): aura no nível 3 + um acontecimento de lore, sob controle do Mestre; não custa PP; o jogador escolhe o deus da Área. <b style={{color:'var(--text)'}}>Todas as auras ficam ativas ao mesmo tempo</b> (D-29). Entre auras, vale só a maior resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP nunca baixam o custo abaixo de 50% da tabela.
       </div>
       <div style={{marginBottom:8}}><Lb>Descrição / Manifestação</Lb>
         <textarea className="vtt-input" rows={2} placeholder="Como manifesta sua aura..." readOnly={isReadOnly} value={sheet.auraDesc||''} onChange={e=>u({auraDesc:e.target.value})} style={{resize:'vertical',lineHeight:1.5}}/>
       </div>
-      <div><Lb>Auras Adicionais</Lb>
-        <textarea className="vtt-input" rows={2} placeholder="Auras adquiridas na campanha..." readOnly={isReadOnly} value={sheet.extraAuras||''} onChange={e=>u({extraAuras:e.target.value})} style={{resize:'vertical',lineHeight:1.5}}/>
+      <div><Lb>Notas sobre as auras</Lb>
+        <textarea className="vtt-input" rows={2} placeholder="Como foram conquistadas, licenças, mentores..." readOnly={isReadOnly} value={sheet.extraAuras||''} onChange={e=>u({extraAuras:e.target.value})} style={{resize:'vertical',lineHeight:1.5}}/>
       </div>
     </div>
   );
@@ -589,10 +793,12 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
   const u = onUpdate;
   const devTechs=sheet.devTechs||[];
   const attacks=sheet.attacks||[];
-  const profBonus=sheet.profBonus??2;
+  const pBonus=profBonus(sheetLevel(sheet));
 
   // Local UI state
   const [fortChecks,setFortChecks]=useState(Array(FORT_ELEMENTS.length).fill(false));
+  const [fortVars,setFortVars]=useState({});
+  const [fortExp,setFortExp]=useState(false);
   const [showNewTech,setShowNewTech]=useState(false);
   const [showNewAtk,setShowNewAtk]=useState(false);
   const [editTechId,setEditTechId]=useState(null);
@@ -605,14 +811,8 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
   function emit(text,cat='dice'){addLog?.(text,cat);playSfx?.('dice');}
 
   // Fort calculator
-  const {total:fortTotal,actions:fortActions} = (() => {
-    let total=0,count=0;
-    FORT_ELEMENTS.forEach((_,i)=>{
-      if(!fortChecks[i])return; count++;
-      if(FORT_SPECIAL[i])total+=FORT_SPECIAL[i][0]; else total+=FORT_BONUSES[i]||0;
-    });
-    return {total,actions:Math.max(0,count-1)};
-  })();
+  // Fortalecimentos (cap. 11, PB-5): teto +300%, 3 simultâneos, Votos×Limites não acumulam, Expansão conta
+  const fort = fortTotal(fortChecks, fortVars, fortExp);
 
   // Fluxo
   const fluxoActive=sheet.fluxoActive??false;
@@ -629,6 +829,7 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
   }
   function fluxoHit(){
     if(!fluxoActive)return;
+    if(fluxoDeseq>=maxPips){addLog?.(`Limite de Desequilíbrio = mod DOM (${maxPips})`,'system');return;}
     const d=fluxoDeseq+1;
     const log=[{t:`Técnica #${d+1} acertou! Deseq: ${d} (−${d} MP ou +${d} atk · −${d} Def)`,c:'#3a7a4c'},...(sheet.fluxoLog||[])];
     u({fluxoDeseq:d,fluxoLog:log});
@@ -645,7 +846,7 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
   }
 
   const domFin=finalAttr(sheet,'DOM');
-  const maxPips=Math.max(domFin,8);
+  const maxPips=Math.max(0,amod(domFin)); // Desequilíbrio máximo = mod DOM (cap. 11)
 
   // DevTech CRUD
   function saveDevTech(){
@@ -667,7 +868,7 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
   // Attack CRUD
   function rollAttack(atk){
     const attrVal=finalAttr(sheet,atk.linkedAttribute||'DOM');
-    const totalMod=amod(attrVal)+profBonus;
+    const totalMod=amod(attrVal)+pBonus;
     const r=rollDice(1,20,totalMod);
     const sign=totalMod>=0?`+${totalMod}`:`${totalMod}`;
     let suf='';
@@ -695,6 +896,31 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
   }
 
   const acCol={Padrão:'var(--gold)',Bônus:'#3a7a4c',Reação:'#3a6aaa',Livre:'var(--sub)'};
+
+  // Treino (cap. 11, D-21): tiers com sessões e CD; teste d20 + mod DOM + proficiência (+2 afinidade, PA-11);
+  // toda sessão consome 1 de Capacidade regional; Exaustão de Arka só no 1 natural
+  function newSession(){
+    const nome=window.prompt('Técnica a treinar:'); if(!nome)return;
+    const t=parseInt(window.prompt('Tier: '+TRAINING_TIERS.map((x,i)=>`${i+1} = ${x.t} (${x.s} sessões, CD ${x.cd})`).join(' · ')+' · 0 = personalizado','1'),10);
+    const tr=TRAINING_TIERS[t-1];
+    const need=tr?tr.s:(parseInt(window.prompt('Sessões necessárias:','2'),10)||2);
+    const rc=RACES_DATA[sheet.race];
+    const af=rc?.af?window.confirm(`A técnica é de uma aura da Área ${rc.af} (afinidade da raça: +2 no teste)?`):false;
+    u({sessoesTreino:[...(sheet.sessoesTreino||[]),{nome,need,done:0,id:uid(),tier:tr?tr.t:'',cd:tr?tr.cd:0,af}]});
+  }
+  function trainResult(s,ok,nat1){
+    if((sheet.arkaLocal??3)<=0){addLog?.('Capacidade regional esgotada! Mude de local.','system');return;}
+    const ss=(sheet.sessoesTreino||[]).map(x=>x.id===s.id&&ok?{...x,done:Math.min(x.need,x.done+1)}:x);
+    u({sessoesTreino:ss,arkaLocal:Math.max(0,(sheet.arkaLocal??3)-1),...(nat1?{exTreino:Math.min(5,(sheet.exTreino??0)+1)}:{})});
+  }
+  function trainRoll(s){
+    if((sheet.arkaLocal??3)<=0){addLog?.('Capacidade regional esgotada! Mude de local.','system');return;}
+    const dm=amod(finalAttr(sheet,'DOM')), bonus=dm+pBonus+(s.af?2:0);
+    const r=rollDice(1,20,bonus), d=r.rolls[0];
+    const ok=s.cd>0?r.total>=s.cd:false;
+    trainResult(s,ok,d===1);
+    emit(`📖 ${sheet.name||'Personagem'} treina ${s.nome}: [${d}] ${dm>=0?'+':''}${dm} DOM +${pBonus} prof${s.af?' +2 afinidade':''} = ${r.total}${s.cd?` vs CD ${s.cd} — ${ok?'sucesso':'falha'}`:''}${d===1?' · 1 natural: +1 Exaustão (fora do Selo: Surto)':''}`);
+  }
 
   return (
     <div>
@@ -731,14 +957,21 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
             <label key={i} style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,fontSize:11,cursor:'pointer'}}>
               <input type="checkbox" checked={fortChecks[i]} onChange={e=>{const c=[...fortChecks];c[i]=e.target.checked;setFortChecks(c);}}/>
               <span>{f.n}</span>
+              {FORT_VARIANTS[i]&&<select className="vtt-select" value={fortVars[i]||0} onChange={e=>setFortVars(v=>({...v,[i]:+e.target.value}))} style={{width:'auto',fontSize:11,padding:'1px 4px'}}>{FORT_VARIANTS[i].map(([lbl,pct],j)=><option key={j} value={j}>{lbl} (+{pct}%)</option>)}</select>}
             </label>
           ))}
+          <label style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,fontSize:11,cursor:'pointer'}}>
+            <input type="checkbox" checked={fortExp} onChange={e=>setFortExp(e.target.checked)}/>
+            <span>Expansão de Domínio (+50% de dano)</span>
+          </label>
         </div>
         <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
-          <Sb label="Bônus Total" value={`+${fortTotal}%`} color="#3a7a4c"/>
-          <Sb label="Ações Extra" value={fortActions}/>
-          <Sb label="Turnos Prep." value={Math.max(0,fortActions-1)}/>
+          <Sb label="Bônus Total" value={`+${fort.total}%`} color="#3a7a4c"/>
+          <Sb label="Ações Extra" value={fort.actions}/>
+          <Sb label="Turnos Prep." value={fort.turns}/>
         </div>
+        {fort.warn.length>0&&<div style={{fontSize:10,color:'#b83030',marginTop:6}}>{fort.warn.map((w,i)=><div key={i}>{w}</div>)}</div>}
+        <div style={{fontSize:10,color:'var(--sub)',marginTop:6}}>Limite: +300% cumulativo e 3 simultâneos; Votos e Limites de Uso não acumulam entre si; o +50% da Expansão de Domínio conta nos dois limites.</div>
       </div>
 
       {/* Fluxo de Aura */}
@@ -748,9 +981,9 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
         <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>
           <b style={{color:'var(--text)'}}>Gatilho:</b> Acertar uma técnica com dano/efeito. Consome ação bônus + MP.<br/>
           <b style={{color:'var(--text)'}}>Desequilíbrio:</b> +1 por técnica após a primeira. Persiste até próximo turno.<br/>
-          <span style={{color:'#3a7a4c'}}><b>Benefícios:</b> −1 MP/ponto (mín 1) ou +1 acerto/dano por ponto.</span><br/>
+          <span style={{color:'#3a7a4c'}}><b>Benefícios:</b> −1 MP/ponto (o custo nunca fica abaixo de 50% da tabela) ou +1 acerto/dano por ponto.</span><br/>
           <span style={{color:'#b83030'}}><b>Riscos:</b> −1 Defesa por ponto. Falha: MP dobrada, limiar crítico.</span><br/>
-          <b style={{color:'var(--text)'}}>Limite:</b> Máx técnicas = DOM ({domFin}).
+          <b style={{color:'var(--text)'}}>Limite:</b> Desequilíbrio máximo = mod DOM ({maxPips}).
         </div>
       </Acc>
 
@@ -765,12 +998,12 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
         <div style={{fontSize:9,color:'var(--sub)',marginBottom:5}}>Desequilíbrio:</div>
         <div style={{display:'flex',gap:4,flexWrap:'wrap',marginBottom:8}}>
           {Array.from({length:maxPips},(_,i)=>{
-            const on=i<fluxoDeseq, danger=on&&i>=Math.floor(maxPips*0.7);
+            const on=i<fluxoDeseq, danger=on&&i+1>=maxPips;
             return <div key={i} style={{width:20,height:20,borderRadius:3,border:`1px solid ${danger?'#b83030':on?'var(--gold)':'var(--border)'}`,background:danger?'rgba(184,48,48,.15)':on?'rgba(201,169,110,.15)':'var(--card)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontFamily:"'Cinzel',serif",fontWeight:700,color:danger?'#b83030':on?'var(--gold)':'var(--sub)'}}>{i+1}</div>;
           })}
         </div>
         <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:8}}>
-          <Sb label="Desequilíbrio" value={fluxoDeseq} color={fluxoDeseq>=Math.floor(maxPips*0.7)?'#b83030':'var(--gold)'}/>
+          <Sb label="Desequilíbrio" value={fluxoDeseq} color={maxPips>0&&fluxoDeseq>=maxPips?'#b83030':'var(--gold)'}/>
           <Sb label="Bônus MP" value={`−${fluxoDeseq}`} color="#3a7a4c"/>
           <Sb label="Bônus Atk" value={`+${fluxoDeseq}`} color="#3a7a4c"/>
           <Sb label="Pen. Def" value={`−${fluxoDeseq}`} color="#b83030"/>
@@ -788,10 +1021,10 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
 
       {/* Training sessions */}
       <St>Sessões de Treino</St>
-      <div style={{fontSize:11,color:'var(--sub)',marginBottom:8}}>Técnicas desenvolvidas em Downtime. DOM controla o aprendizado.</div>
+      <div style={{fontSize:11,color:'var(--sub)',marginBottom:8}}>Técnicas desenvolvidas em Downtime. Teste de treino: <b style={{color:'var(--text)'}}>d20 + mod DOM + proficiência</b> contra a CD do tier (+2 se a aura for da Área afim da raça). Toda sessão, com sucesso ou falha, consome 1 de Capacidade regional. Exaustão só no 1 natural (fora do Selo, o 1 natural também provoca Surto). Capacidade 0 = esgotada; recompõe-se em ciclos definidos pelo Mestre (D-21, D-22).</div>
       <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:5,padding:'10px 12px',marginBottom:10}}>
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-          <span style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:'var(--gold)'}}>ARKA DO LOCAL</span>
+          <span style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:'var(--gold)'}}>CAPACIDADE REGIONAL</span>
           <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:12}}>
             <div style={{display:'flex',alignItems:'center',gap:4}}>
               <span style={{fontSize:10,color:'var(--sub)'}}>Cap:</span>
@@ -804,18 +1037,14 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
           </div>
         </div>
         <div style={{fontSize:10,color:(sheet.arkaLocal??3)<=0?'#b83030':(sheet.arkaLocal??3)<=1?'var(--gold)':'#3a7a4c'}}>
-          {(sheet.arkaLocal??3)<=0?'⚠ ESGOTADO — Sem treino possível.':(sheet.arkaLocal??3)<=1?`⚠ Quase esgotado. Restam ${sheet.arkaLocal??3} sessões.`:`Arka disponível: ${sheet.arkaLocal??3}/${sheet.arkaCap??3}`}
+          {(sheet.arkaLocal??3)<=0?'⚠ ESGOTADA — Sem treino possível neste local.':(sheet.arkaLocal??3)<=1?`⚠ Quase esgotada. Restam ${sheet.arkaLocal??3} sessões.`:`Capacidade disponível: ${sheet.arkaLocal??3}/${sheet.arkaCap??3}`}
         </div>
       </div>
 
       <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:5,padding:'10px 12px',marginBottom:14}}>
         <div style={{display:'flex',alignItems:'center',marginBottom:8}}>
           <span style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:'var(--gold)'}}>SESSÕES</span>
-          {!isReadOnly&&<button className="tbtn" style={{marginLeft:'auto'}} onClick={()=>{
-            const nome=window.prompt('Técnica a treinar:'); if(!nome)return;
-            const need=parseInt(window.prompt('Sessões necessárias:','3'))||3;
-            u({sessoesTreino:[...(sheet.sessoesTreino||[]),{nome,need,done:0,id:uid()}]});
-          }}>+ Nova Sessão</button>}
+          {!isReadOnly&&<button className="tbtn" style={{marginLeft:'auto'}} onClick={newSession}>+ Nova Sessão</button>}
         </div>
         {!(sheet.sessoesTreino?.length)&&<div style={{padding:10,color:'var(--sub)',fontStyle:'italic',fontSize:11}}>Nenhuma técnica em treino.</div>}
         {(sheet.sessoesTreino||[]).map(s=>{
@@ -824,27 +1053,25 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
             <div key={s.id} style={{display:'flex',alignItems:'center',gap:8,background:'var(--card)',border:'1px solid var(--border)',borderRadius:5,padding:'8px 10px',marginBottom:6}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:12,fontWeight:600,color:done?'#3a7a4c':'var(--text)'}}>{s.nome}{done?' ✓':''}</div>
-                <div style={{fontSize:9,color:'var(--sub)'}}>{s.done}/{s.need} sessões</div>
+                <div style={{fontSize:9,color:'var(--sub)'}}>{s.done}/{s.need} sessões{s.tier?` · ${s.tier}, CD ${s.cd}`:''}{s.af?' · afinidade +2':''}</div>
                 <div style={{height:5,background:'var(--border)',borderRadius:3,marginTop:4,overflow:'hidden'}}><div style={{height:'100%',width:`${pct}%`,background:done?'#3a7a4c':'var(--gold)',borderRadius:3}}/></div>
               </div>
               {!isReadOnly&&<div style={{display:'flex',gap:4}}>
-                {!done&&<button className="tbtn" style={{background:'#3a7a4c',padding:'3px 8px',fontSize:9}} onClick={()=>{
-                  if((sheet.arkaLocal??3)<=0){addLog?.('Arka esgotada!','system');return;}
-                  const ss=(sheet.sessoesTreino||[]).map(x=>x.id===s.id?{...x,done:Math.min(x.need,x.done+1)}:x);
-                  u({sessoesTreino:ss,arkaLocal:Math.max(0,(sheet.arkaLocal??3)-1),exTreino:Math.min(5,(sheet.exTreino??0)+1)});
-                }}>+</button>}
-                <button style={NB} onClick={()=>u({sessoesTreino:(sheet.sessoesTreino||[]).map(x=>x.id===s.id&&x.done>0?{...x,done:x.done-1}:x)})}>↩</button>
-                <button style={{...NB,color:'#b83030'}} onClick={()=>u({sessoesTreino:(sheet.sessoesTreino||[]).filter(x=>x.id!==s.id)})}>✕</button>
+                {!done&&<button className="tbtn" style={{padding:'3px 8px',fontSize:9}} title="Rolar o teste de treino (d20 + DOM + prof.)" onClick={()=>trainRoll(s)}>🎲</button>}
+                {!done&&<button className="tbtn" style={{background:'#3a7a4c',padding:'3px 8px',fontSize:9}} title="Sessão bem-sucedida (rolada fora da ficha)" onClick={()=>trainResult(s,true,false)}>+</button>}
+                {!done&&<button style={NB} title="Sessão com falha (consome Capacidade)" onClick={()=>trainResult(s,false,false)}>✕</button>}
+                <button style={NB} title="Desfazer" onClick={()=>u({sessoesTreino:(sheet.sessoesTreino||[]).map(x=>x.id===s.id&&x.done>0?{...x,done:x.done-1}:x)})}>↩</button>
+                <button style={{...NB,color:'#b83030'}} title="Remover" onClick={()=>u({sessoesTreino:(sheet.sessoesTreino||[]).filter(x=>x.id!==s.id)})}>🗑</button>
               </div>}
             </div>
           );
         })}
       </div>
 
-      {/* Exhaustion */}
+      {/* Exaustão de Arka (cap. 15): escala única de 5 níveis */}
       <div style={{background:'var(--bg)',border:'1px solid var(--border)',borderRadius:5,padding:'10px 12px',marginBottom:14}}>
-        <div style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:'var(--gold)',marginBottom:6}}>EXAUSTÃO DE TREINO</div>
-        <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>+1 nível após cada sessão. Descanso Longo remove 1 nível.</div>
+        <div style={{fontFamily:"'Cinzel',serif",fontSize:10,fontWeight:700,color:'var(--gold)',marginBottom:6}}>EXAUSTÃO DE ARKA</div>
+        <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>+1 nível no 1 natural de um teste de treino e +1 ao usar a Expansão de Domínio. Cada Descanso Longo remove 1 nível.</div>
         <div style={{display:'flex',gap:4,marginBottom:6}}>
           {Array.from({length:5},(_,i)=>{
             const on=i<(sheet.exTreino??0);
@@ -852,9 +1079,11 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
           })}
         </div>
         <div style={{fontSize:10,color:(sheet.exTreino??0)===0?'#3a7a4c':(sheet.exTreino??0)<=2?'var(--gold)':'#b83030',lineHeight:1.5}}>
-          {EXH_DESC[Math.min(sheet.exTreino??0,4)]||'Sem exaustão de treino.'}
+          {(sheet.exTreino??0)===0?'Sem Exaustão de Arka.':EXH_DESC[Math.min(sheet.exTreino??0,5)]}
         </div>
-        {!isReadOnly&&<div style={{display:'flex',gap:6,marginTop:8}}>
+        {!isReadOnly&&<div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
+          <RBtn onClick={()=>u({exTreino:Math.min(5,(sheet.exTreino??0)+1)})}>1 natural no treino (+1)</RBtn>
+          <RBtn onClick={()=>u({exTreino:Math.min(5,(sheet.exTreino??0)+1)})}>Expansão (+1)</RBtn>
           <RBtn onClick={()=>u({exTreino:Math.max(0,(sheet.exTreino??0)-1)})}>Descanso Longo (−1)</RBtn>
           <RBtn onClick={()=>u({exTreino:0})}>Limpar</RBtn>
         </div>}
@@ -957,23 +1186,27 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
 }
 
 // ── XpTab ─────────────────────────────────────────────────────────────────────
+// XP (cap. 12 + PB-6): nível 3–15. Ganho (D-20): XP por sessão (faixa do Mestre) + XP de combate opcional
+// (fórmula do painel: 10 × nível de cada inimigo, somado, ÷ jogadores; a calibrar). Todo nível do 4 ao 15 dá +3 PP.
 function XpTab({ sheet, onUpdate, isReadOnly }) {
   const u = onUpdate;
-  const [xpCr,setXpCr]=useState(5), [xpCh,setXpCh]=useState(1), [xpPa,setXpPa]=useState(4);
+  const [xpLv,setXpLv]=useState(5), [xpPa,setXpPa]=useState(4);
   const [durAtk,setDurAtk]=useState(10), [durCur,setDurCur]=useState(20), [durArmor,setDurArmor]=useState(false);
-  const xpGain=Math.floor((xpCr*xpCh)/xpPa);
-  const lv=sheet.level??1, xp=sheet.xp??0;
-  const need=XP_TABLE[Math.min(lv,XP_TABLE.length-1)]||99999;
-  const xpPct=need>0?Math.min(100,(xp/need)*100):0;
+  const xpGain=Math.floor((10*xpLv)/xpPa);
+  const lv=sheetLevel(sheet), xp=sheet.xp??0;
+  const atMax=lv>=LV_MAX;
+  const need=atMax?0:XP_TABLE[lv-1];
+  const xpPct=atMax?100:need>0?Math.min(100,(xp/need)*100):0;
   const durLoss=durAtk*(durArmor?0.20:0.25), durRem=Math.max(0,durCur-durLoss);
+  const milestone = n => n>LV_MIN ? `+${PP_PER_LEVEL} PP${MILESTONES[n]!=='—'?` · ${MILESTONES[n]}`:''}` : MILESTONES[n];
 
   return (
     <div>
-      <St>Calculadora XP</St>
-      <div style={{fontSize:10,color:'var(--sub)',marginBottom:8}}>(NvCriatura × NvDesafio) ÷ Participantes</div>
+      <St>XP de Combate (opcional)</St>
+      <div style={{fontSize:10,color:'var(--sub)',marginBottom:8}}>10 × nível de cada inimigo, somado, ÷ jogadores (D-20; a calibrar). O XP por sessão é definido pelo Mestre.</div>
       <div style={{display:'flex',gap:16,flexWrap:'wrap',alignItems:'center',marginBottom:14}}>
-        {[['Criatura',xpCr,setXpCr],['Desafio',xpCh,setXpCh],['Jogadores',xpPa,setXpPa]].map(([lbl,val,set])=>(
-          <div key={lbl}><Lb>{lbl}</Lb><Nc value={val} onDec={()=>set(v=>Math.max(1,v-1))} onInc={()=>set(v=>Math.min(lbl==='Jogadores'?20:100,v+1))}/></div>
+        {[['Soma dos níveis dos inimigos',xpLv,setXpLv,200],['Jogadores',xpPa,setXpPa,20]].map(([lbl,val,set,mx])=>(
+          <div key={lbl}><Lb>{lbl}</Lb><Nc value={val} onDec={()=>set(v=>Math.max(1,v-1))} onInc={()=>set(v=>Math.min(mx,v+1))}/></div>
         ))}
         <Sb label="XP" value={xpGain} color="#f4d03f"/>
       </div>
@@ -982,21 +1215,45 @@ function XpTab({ sheet, onUpdate, isReadOnly }) {
       <div style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap',marginBottom:8}}>
         <div style={{display:'flex',alignItems:'center',gap:4}}>
           <span style={{fontSize:10,color:'var(--sub)'}}>Nível</span>
-          <Nc value={lv} onDec={()=>!isReadOnly&&u({level:Math.max(1,lv-1)})} onInc={()=>!isReadOnly&&u({level:Math.min(20,lv+1)})}/>
+          <Nc value={lv} onDec={()=>!isReadOnly&&u({level:Math.max(LV_MIN,lv-1)})} onInc={()=>!isReadOnly&&u({level:Math.min(LV_MAX,lv+1)})}/>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:4}}>
           <span style={{fontSize:10,color:'var(--sub)'}}>XP</span>
-          <Nc value={xp} onDec={()=>!isReadOnly&&u({xp:Math.max(0,xp-10)})} onInc={()=>!isReadOnly&&u({xp:Math.min(need,xp+10)})}/>
+          <Nc value={xp} onDec={()=>!isReadOnly&&u({xp:Math.max(0,xp-10)})} onInc={()=>!isReadOnly&&!atMax&&u({xp:Math.min(need,xp+10)})}/>
         </div>
-        {!isReadOnly&&<button className="tbtn" onClick={()=>u({xp:Math.min(need,xp+xpGain)})}>+ Adicionar</button>}
+        {!isReadOnly&&!atMax&&<button className="tbtn" onClick={()=>u({xp:Math.min(need,xp+xpGain)})}>+ Adicionar</button>}
       </div>
       <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
         <div style={{flex:1,height:9,background:'var(--border)',borderRadius:3,overflow:'hidden'}}>
           <div style={{height:'100%',width:`${xpPct}%`,borderRadius:3,background:'linear-gradient(90deg,var(--gold-dim),var(--gold))',transition:'width .3s'}}/>
         </div>
-        <span style={{fontSize:10,color:'var(--sub)',minWidth:60,textAlign:'right'}}>{xp}/{need}</span>
+        <span style={{fontSize:10,color:'var(--sub)',minWidth:60,textAlign:'right'}}>{atMax?'Nível máximo':`${xp}/${need}`}</span>
       </div>
-      {xp>=need&&<div style={{padding:6,background:'rgba(244,208,63,.06)',border:'1px solid rgba(244,208,63,.2)',borderRadius:4,fontFamily:"'Cinzel',serif",fontSize:9,color:'#f4d03f',textAlign:'center',fontWeight:700,marginBottom:10}}>✦ LEVEL UP! → Nível {lv+1}</div>}
+      {!atMax&&xp>=need&&<div style={{padding:6,background:'rgba(244,208,63,.06)',border:'1px solid rgba(244,208,63,.2)',borderRadius:4,fontFamily:"'Cinzel',serif",fontSize:9,color:'#f4d03f',textAlign:'center',fontWeight:700,marginBottom:10}}>✦ LEVEL UP! → Nível {lv+1}: {milestone(lv+1)}</div>}
+
+      <St>Marcos de Nível</St>
+      <div style={{marginBottom:8}}>
+        {Array.from({length:LV_MAX-LV_MIN+1},(_,k)=>LV_MIN+k).map(n=>{
+          const cur=n===lv, done=n<=lv;
+          return (
+            <div key={n} style={{display:'flex',gap:8,padding:'3px 6px',fontSize:11,borderBottom:'1px solid var(--border)',background:cur?'rgba(201,169,110,.08)':'transparent',color:done?'var(--text)':'var(--sub)'}}>
+              <span style={{fontFamily:"'Cinzel',serif",fontWeight:700,minWidth:34,color:cur?'var(--gold)':'inherit'}}>Nv {n}</span>
+              <span style={{minWidth:62,color:'var(--sub)'}}>{n<LV_MAX?`${XP_TABLE[n-1]} XP`:'—'}</span>
+              <span style={{minWidth:24}}>+{profBonus(n)}</span>
+              <span style={{minWidth:44,color:'var(--gold)'}}>{ppEarned(n)} PP</span>
+              <span style={{flex:1}}>{milestone(n)}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+        <span style={{fontSize:10,color:'var(--sub)'}}>Legado da Arka (nv 15):</span>
+        <select className="vtt-select" value={sheet.legado||''} disabled={isReadOnly} onChange={e=>u({legado:e.target.value})} style={{flex:1}}>
+          <option value="">— Escolha 1 —</option>
+          {LEGACY_OPTIONS.map(o=><option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
+      <div style={{fontSize:9,color:'var(--sub)',marginBottom:12}}>Colunas: nível · XP para subir ao próximo · proficiência · PP acumulados · marco. A cada nível rolam-se HP e MP (aba Atributos) e ganham-se 3 PP (gastos nas abas Atributos e Auras; acumulam).</div>
 
       <St>Durabilidade</St>
       <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:10}}>
@@ -1098,7 +1355,7 @@ function SheetHeader({ sheet, onUpdate, onClose, isReadOnly }) {
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 56px',gap:5,marginBottom:7}}>
           <input className="vtt-input" placeholder="Raça" value={sheet.race||''} readOnly={isReadOnly} onChange={e=>u({race:e.target.value})}/>
           <input className="vtt-input" placeholder="Profissão" value={sheet.prof==='custom'?sheet.customProf?.name||'Personalizado':sheet.prof||''} readOnly onChange={()=>{}}/>
-          <input className="vtt-input" type="number" min={1} max={20} value={sheet.level||1} readOnly={isReadOnly} onChange={e=>u({level:Math.max(1,Math.min(20,parseInt(e.target.value,10)||1))})} style={{textAlign:'center'}} title="Nível"/>
+          <input className="vtt-input" type="number" min={LV_MIN} max={LV_MAX} value={sheet.level||LV_MIN} readOnly={isReadOnly} onChange={e=>u({level:Math.max(LV_MIN,Math.min(LV_MAX,parseInt(e.target.value,10)||LV_MIN))})} style={{textAlign:'center'}} title="Nível (3–15)"/>
         </div>
         {/* HP */}
         <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:4}}>

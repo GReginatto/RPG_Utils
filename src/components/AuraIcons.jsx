@@ -1,11 +1,14 @@
 import { AURA_GROUPS } from '../utils/sheetBridge';
+import { auraArea } from '../utils/rpgData';
 
 export default function AuraIcons({ activeAura, style }) {
   return (
     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', ...style }}>
       {AURA_GROUPS.map(ag => {
+        // O token guarda o nome da aura (ex.: "Fogo") ou da Área; acende a Área correspondente
         const active = activeAura
           ? activeAura.toLowerCase().includes(ag.n.toLowerCase())
+            || activeAura.split('/').some(n => auraArea(n.trim()) === ag.n)
           : false;
         return (
           <div

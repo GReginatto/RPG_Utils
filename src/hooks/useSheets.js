@@ -15,7 +15,7 @@ export function makeSheet(overrides = {}) {
     name: 'Personagem',
     race: RACES[0],
     profession: PROFESSIONS[0],
-    level: 1,
+    level: 3,            // personagens começam no nível 3 (cap. 12)
     xp: 0,
     image: null,
     color: '#c9a96e',
