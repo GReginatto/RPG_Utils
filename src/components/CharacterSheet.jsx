@@ -9,13 +9,18 @@ import {
   PP_PER_LEVEL, PP_AURA_UP, PP_NEW_AURA, ATTR_CAP, ppAttrCost, ppEarned, areaDistance, auraArea,
   hereditaryAura, titanicBorn, rareHereditary, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
   ppConfirmState, attrConfirmed, auraConfirmed, ppPending, awakenedAura, techDiceCap,
+  SKILLS_FROM_PROF, PROF_RENAMES, ARMOR_CAT, skillProficient, skillProfMult, saveProficient, saveBonus, armorWithoutProf,
+  hitDiceLeft, hitDicePerRest, corpoRenovado, LEGENDARY_MAX, XP_SESSION, auraLicense,
 } from '../utils/rpgData';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
+// P-040: fichas antigas com "Arkano" usam o Canalizador
+function profKey(sheet) { return PROF_RENAMES[sheet.prof] || sheet.prof; }
 function getProf(sheet) {
-  return sheet.prof === 'custom'
+  const k = profKey(sheet);
+  return k === 'custom'
     ? (sheet.customProf || { m: {}, hp: '1d8', mp: '1d8', sk: '' })
-    : (PROFESSIONS_DATA[sheet.prof] || { m: {}, hp: '1d8', mp: '1d8', sk: '' });
+    : (PROFESSIONS_DATA[k] || { m: {}, hp: '1d8', mp: '1d8', sk: '' });
 }
 // Valor sem os aumentos de PP (compra + profissão + raça)
 function baseFinalAttr(sheet, a) {
@@ -37,9 +42,11 @@ function ppLeft(sheet) { return ppEarned(sheetLevel(sheet)) - ppSpent(sheet); }
 // HP = Σ(dado + mod CON), MP = Σ(dado + mod DOM), mínimo 1 por nível (cap. 13, PB-8)
 function calcHPMP(sheet) {
   const conMod = amod(finalAttr(sheet, 'CON')), domMod = amod(finalAttr(sheet, 'DOM'));
-  const hp = (sheet.hpDice || []).reduce((s, d) => s + Math.max(1, d + conMod), 0);
+  // Corpo Renovado (Rejuvenescimento 3, R9-3): +1 HP máximo por nível de personagem
+  const crn = corpoRenovado(sheet.auras) && (sheet.hpDice || []).length ? sheetLevel(sheet) : 0;
+  const hp = (sheet.hpDice || []).reduce((s, d) => s + Math.max(1, d + conMod), 0) + crn;
   const mp = (sheet.mpDice || []).reduce((s, d) => s + Math.max(1, d + domMod), 0);
-  return { hp, mp, conMod, domMod };
+  return { hp, mp, conMod, domMod, crn };
 }
 function calcDefense(sheet) {
   const dexMod = amod(finalAttr(sheet, 'DEX'));
@@ -148,12 +155,22 @@ function PerfilTab({ sheet, onUpdate, isReadOnly }) {
       <St>Profissão</St>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 6 }}>
         {[...Object.keys(PROFESSIONS_DATA),'custom'].map(key => {
-          const on = (sheet.prof||'custom') === key;
+          const on = (profKey(sheet)||'custom') === key;
           return <button key={key} onClick={() => !isReadOnly && u({prof:key})} style={{ padding: '4px 10px', borderRadius: 16, fontSize: 11, cursor: isReadOnly?'default':'pointer', border: `1px solid ${on?'var(--gold-dim)':'var(--border)'}`, background: on?'rgba(201,169,110,.1)':'transparent', color: on?'var(--gold)':'var(--sub)', fontFamily: 'inherit' }}>{key==='custom'?'✎ Personalizado':key}</button>;
         })}
       </div>
-      <div style={{ fontSize: 11, color: 'var(--sub)', marginBottom: 8 }}>
-        <b style={{color:'var(--text)'}}>Perfil:</b> {p.sk||'—'} <span style={{opacity:.7}}>(lista de perícias da profissão ⏳ em definição)</span> · <b style={{color:'var(--text)'}}>HP:</b> {p.hp||'1d8'}+CON · <b style={{color:'var(--text)'}}>MP:</b> {p.mp||'1d8'}+DOM <span style={{opacity:.7}}>(por nível, mín. 1)</span>
+      <div style={{ fontSize: 11, color: 'var(--sub)', marginBottom: 8, lineHeight: 1.5 }}>
+        {p.per ? (<>
+          <b style={{color:'var(--text)'}}>HP:</b> {p.hp}+CON · <b style={{color:'var(--text)'}}>MP:</b> {p.mp}+DOM <span style={{opacity:.7}}>(por nível, mín. 1)</span><br/>
+          <b style={{color:'var(--text)'}}>Perícias (escolha 4):</b> {p.per.join(', ')}<br/>
+          <b style={{color:'var(--text)'}}>Armaduras:</b> {p.arm.map(t=>ARMOR_CAT[t]).join(', ')}{p.esc?' e escudo':''} · <b style={{color:'var(--text)'}}>Armas:</b> {p.armas}<br/>
+          <b style={{color:'var(--text)'}}>Testes de resistência:</b> {p.res.join(' e ')} · <b style={{color:'var(--text)'}}>Riqueza inicial:</b> {p.co} CO
+          {!isReadOnly&&<button className="tbtn" style={{fontSize:9,padding:'1px 6px',marginLeft:4}} onClick={()=>{ if((sheet.gold||0)&&!window.confirm(`Trocar as ${sheet.gold} CO atuais pela riqueza inicial (${p.co} CO)?`))return; u({gold:p.co}); }}>receber</button>}
+          <span style={{opacity:.7}}> (+ kit básico de viagem grátis)</span>
+          {(p.ex||[]).map(([n,t])=><div key={n}><b style={{color:'var(--gold)'}}>{n}:</b> {t}</div>)}
+        </>) : (<>
+          <b style={{color:'var(--text)'}}>Perfil:</b> {p.sk||'—'} · <b style={{color:'var(--text)'}}>HP:</b> {p.hp||'1d8'}+CON · <b style={{color:'var(--text)'}}>MP:</b> {p.mp||'1d8'}+DOM <span style={{opacity:.7}}>(por nível, mín. 1)</span>
+        </>)}
       </div>
 
       {(sheet.prof||'custom')==='custom' && !isReadOnly && (
@@ -273,17 +290,30 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
     u({ hpDice: hd, mpDice: md, maxHP: r.hp, maxMP: r.mp, curHP: r.hp, curMP: r.mp, level: Math.max(LV_MIN, hd.length) });
   }
 
+  // Dados de vida (P-029, D-66, D-71): estoque = nível; até metade do nível (para cima) por descanso curto; cada dado = resultado + mod CON
+  const hdLeft = hitDiceLeft(lv, sheet.hdUsed), hdRest = hitDicePerRest(lv);
   function doRest(type) {
     if (type==='short') {
       if ((sheet.shortRests??0) >= 2) { addLog?.('Máximo de 2 descansos curtos entre descansos longos','system'); return; }
-      const rec=Math.floor(maxMP*0.5), newMp=Math.min(maxMP,curMP+rec);
-      u({curMP:newMp, shortRests:(sheet.shortRests??0)+1}); addLog?.(`☕ ${sheet.name} descanso curto (${(sheet.shortRests??0)+1}/2). MP: ${curMP}→${newMp}`,'heal');
+      const mx=Math.min(hdLeft,hdRest); let n=0;
+      if (mx>0) { const r=window.prompt(`Quantos dados de vida (${p.hp||'1d8'} + mod CON) gastar? 0 a ${mx} (restam ${hdLeft} de ${lv})`, String(mx)); if (r===null) return; n=Math.max(0,Math.min(mx,parseInt(r,10)||0)); }
+      const rolls=[]; let cura=0;
+      for (let i=0;i<n;i++){ const d=rollDice(1,hS,0).total; rolls.push(d); cura+=Math.max(0,d+conMod); }
+      const rec=Math.floor(maxMP*0.5), newMp=Math.min(maxMP,curMP+rec), newHp=Math.min(maxHP,curHP+cura);
+      u({curMP:newMp, curHP:newHp, hdUsed:(sheet.hdUsed??0)+n, shortRests:(sheet.shortRests??0)+1});
+      addLog?.(`☕ ${sheet.name} descanso curto (${(sheet.shortRests??0)+1}/2). MP: ${curMP}→${newMp}${n?` · ${n} dado(s) de vida [${rolls.join(',')}] ${conMod>=0?'+':''}${conMod} CON cada: HP ${curHP}→${newHp}`:''}`,'heal');
     } else {
-      u({curHP:maxHP,curMP:maxMP,shortRests:0,falls:0,exTreino:Math.max(0,(sheet.exTreino??0)-1)});
-      addLog?.(`🛏 ${sheet.name} descanso longo. HP/MP cheios, Quedas zeradas, −1 Exaustão de Arka.`,'heal');
+      u({curHP:maxHP,curMP:maxMP,shortRests:0,hdUsed:0,falls:0,exTreino:Math.max(0,(sheet.exTreino??0)-1)});
+      addLog?.(`🛏 ${sheet.name} descanso longo. HP/MP cheios, dados de vida recuperados, Quedas zeradas, −1 Exaustão de Arka.`,'heal');
     }
     playSfx?.('heal');
   }
+  function rollReaction(a, nm) {
+    const m=amod(finalAttr(sheet,a)), r=rollDice(1,20,m);
+    addLog?.(`🛡 ${sheet.name||'Personagem'} — ${nm} (${a}): [${r.rolls[0]}]${m>=0?'+':''}${m} = ${r.total}${nm==='Aparar'&&r.rolls[0]===20?' · 20 natural: vantagem no próximo ataque contra o atacante':''}`,'dice');
+    playSfx?.('dice');
+  }
+  const awakened = awakenedAura(sheet.auras), alUsed = sheet.acaoLend ?? 0;
 
   return (
     <div>
@@ -327,13 +357,14 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
       {/* Derived stats */}
       <St>Derivados</St>
       <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8}}>
-        <Sb label="HP Máx." value={calcMaxHP} sub={`${hpDice.length}×(${p.hp||'1d8'}${conMod>=0?'+':''}${conMod})`} color="#b83030"/>
+        <Sb label="HP Máx." value={calcMaxHP} sub={`${hpDice.length}×(${p.hp||'1d8'}${conMod>=0?'+':''}${conMod})${calcHPMP(sheet).crn?` +${calcHPMP(sheet).crn} Corpo Renovado`:''}`} color="#b83030"/>
         <Sb label="MP Máx." value={calcMaxMP} sub={`${mpDice.length}×(${p.mp||'1d8'}${domMod>=0?'+':''}${domMod} DOM)`} color="#3a6aaa"/>
         <Sb label="CA" value={ca} sub={ar.t==='P'?'pesada':ar.t==='M'?`${ar.ca}+DEX(máx 2)`:`${ar.ca}+DEX`}/>
         <Sb label="Movimento" value={`${mv}m`} sub={`${sheet.race||'Humano'}${ar.mv?` ${ar.mv} m armadura`:ar.t==='P'?' (pesada: −1 a −2 m)':''}`} color="#3a7a4c"/>
         <Sb label="Iniciativa" value={`3d8${mstr(dexFin)}`} sub="3d8+mod DEX"/>
         <Sb label="Proficiência" value={`+${prof}`} sub={`nível ${lv}`}/>
       </div>
+      {(()=>{ const w=armorWithoutProf(profKey(sheet), p, ar.n, sheet.shield); return w ? <div style={{fontSize:10,color:'#b83030',marginBottom:6}}>Sem proficiência em {w}: desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX (P-049).</div> : null; })()}
       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginBottom:12}}>
         <span style={{fontSize:10,color:'var(--sub)'}}>Armadura</span>
         <select className="vtt-select" value={ar.n} disabled={isReadOnly} onChange={e=>u({armor:e.target.value})} style={{width:220}}>
@@ -420,13 +451,30 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
 
       {/* Rest */}
       <St>Descanso</St>
-      <div style={{fontSize:10,color:'var(--sub)',marginBottom:6}}>Curto (10 min): +50% do MP máximo; no máximo 2 entre descansos longos ({sheet.shortRests??0}/2). Longo (8 h): 100% de HP e MP, −1 Exaustão de Arka, zera as Quedas e os descansos curtos.</div>
+      <div style={{fontSize:10,color:'var(--sub)',marginBottom:6}}>Curto (10 min): +50% do MP máximo e gasto de dados de vida: estoque = nível; até metade do nível (para cima) por descanso curto, cada dado = resultado + mod CON (P-029, D-71). No máximo 2 entre descansos longos ({sheet.shortRests??0}/2). Dados de vida: {hdLeft}/{lv} (até {hdRest} por descanso curto). Longo (8 h): 100% de HP e MP, devolve os dados de vida, −1 Exaustão de Arka, zera as Quedas e os descansos curtos.</div>
       <div style={{display:'flex',gap:8}}>
         {[['☕ Descanso Curto','short','Recupera 50% do MP máximo (10 min)'],['🛏 Descanso Longo','long','Recupera 100% HP e MP (8h)']].map(([lbl,type,title])=>(
           <button key={type} className="tbtn" disabled={!!combatActive} title={combatActive?'Indisponível em combate':title}
             onClick={()=>window.confirm(`${title}. Confirmar?`)&&doRest(type)}
             style={{flex:1,fontSize:11,opacity:combatActive?0.4:1}}>{lbl}</button>
         ))}
+      </div>
+
+      {/* Reações e combate (cap. 13; R10-3, D-78, P-030, D-68, R11-2) */}
+      <St>Reações e Combate</St>
+      <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.5}}>
+        <div style={{marginBottom:4}}>Uma reação por rodada: Proteger, ataque de oportunidade, Esquiva, Aparar e Contra-Ataque disputam a mesma. Esquiva, Aparar e Contra-Ataque valem só contra ataques com arma; contra técnicas, use o Proteger.</div>
+        <div><b style={{color:'var(--text)'}}>Esquiva</b> (reação): contra ataque com arma que acertou, antes do dano: 1d20 + mod DEX contra o total do ataque; igualou ou superou, não sofre dano. <RBtn onClick={()=>rollReaction('DEX','Esquiva')}>1d20</RBtn></div>
+        <div><b style={{color:'var(--text)'}}>Aparar</b> (reação): só contra corpo a corpo, empunhando arma corpo a corpo: 1d20 + mod FOR contra o total do ataque; 20 natural = vantagem no próximo ataque contra o atacante. <RBtn onClick={()=>rollReaction('FOR','Aparar')}>1d20</RBtn></div>
+        <div><b style={{color:'var(--text)'}}>Contra-Ataque</b> (reação): acertado em corpo a corpo, empunhando arma corpo a corpo, recebe o dano inteiro e faz 1 ataque com arma contra o atacante, com desvantagem.</div>
+        <div><b style={{color:'var(--text)'}}>Desengajar</b> (ação): afasta-se sem provocar ataque de oportunidade. <b style={{color:'var(--text)'}}>Flanquear</b>: vantagem no corpo a corpo com aliado do lado oposto do alvo, a até 1,5 m.</div>
+        <div style={{marginTop:4}}><b style={{color:'var(--text)'}}>Cobertura</b> (D-78): meia +2 de CA; três quartos +5; total = não pode ser alvo direto. <b style={{color:'var(--text)'}}>Dificuldades</b> (P-030): fácil 10 · média 14 · difícil 18 · muito difícil 22. <b style={{color:'var(--text)'}}>Rodada</b> = 6 s.</div>
+        <div style={{marginTop:6}}>
+          {awakened ? (<>
+            <b style={{color:'#f4d03f'}}>✦ Ação Lendária</b> ({awakened.n} desperta): 1 por rodada, no fim do turno de outra criatura; 1 ataque ou 1 Projetar Básico (até 12 MP, pago normalmente); não gasta a reação. Usadas neste combate: <b style={{color:'var(--text)'}}>{alUsed}/{LEGENDARY_MAX}</b>
+            {!isReadOnly&&<> <RBtn onClick={()=>{ if(alUsed>=LEGENDARY_MAX){addLog?.(`Máximo de ${LEGENDARY_MAX} Ações Lendárias por combate (R11-2)`,'system');return;} u({acaoLend:alUsed+1}); }}>Usar</RBtn> <RBtn onClick={()=>u({acaoLend:0})}>Novo combate</RBtn></>}
+          </>) : <><b style={{color:'var(--text)'}}>Ação Lendária</b>: só para quem fez o Despertar Divino (1 por rodada, máx. 2 por combate).</>}
+        </div>
       </div>
     </div>
   );
@@ -436,6 +484,8 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
 function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
   const u = onUpdate;
   const profs = (sheet.proficiencies||[]).map(n => SKILL_RENAMES[n] || n);
+  const sh = { ...sheet, prof: profKey(sheet), proficiencies: profs };
+  const P = getProf(sheet), lista = P.per || [];
   const custom = sheet.customProfs||[];
   const tools = sheet.toolProfs||['',''];
   const pb = profBonus(sheetLevel(sheet));
@@ -446,11 +496,24 @@ function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
     u({proficiencies:profs.includes(name)?profs.filter(x=>x!==name):[...profs,name]});
   }
   function rollSkill(name,attr) {
-    const on=profs.includes(name);
-    const fin=finalAttr(sheet,attr), mod=amod(fin)+(on?pb:0);
+    const mu=skillProfMult(sh,name);
+    const fin=finalAttr(sheet,attr), mod=amod(fin)+mu*pb;
     const r=rollDice(1,20,mod);
-    addLog?.(`🎯 ${sheet.name||'Personagem'} — ${name} (${attr}${on?`+${pb}`:''}): [${r.rolls[0]}]${mod>=0?'+':''}${mod} = ${r.total}`,'dice');
+    addLog?.(`🎯 ${sheet.name||'Personagem'} — ${name} (${attr}${mu?`+${mu*pb}`:''}): [${r.rolls[0]}]${mod>=0?'+':''}${mod} = ${r.total}`,'dice');
     playSfx?.('dice');
+  }
+  // Testes de resistência (P-030, R10-5): d20 + mod + prof se proficiente; Anão +2 em CON
+  function saveVal(a) { return saveBonus(P, sheet.race, a, amod(finalAttr(sheet,a)), pb); }
+  function rollSave(a) {
+    const m=saveVal(a), r=rollDice(1,20,m);
+    addLog?.(`🛡 ${sheet.name||'Personagem'} — resistência de ${a}: [${r.rolls[0]}]${m>=0?'+':''}${m} = ${r.total}`,'dice');
+    playSfx?.('dice');
+  }
+  function toggleCustomSave(a) {
+    if(isReadOnly||profKey(sheet)!=='custom')return;
+    const cur=sheet.customProf?.res||[];
+    if(!cur.includes(a)&&cur.length>=2){ addLog?.('Cada profissão é proficiente em 2 testes de resistência','system'); return; }
+    u({customProf:{...(sheet.customProf||{}),res:cur.includes(a)?cur.filter(x=>x!==a):[...cur,a]}});
   }
   function addCustom() {
     if(!form.n.trim())return;
@@ -460,15 +523,39 @@ function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
 
   const allSkills=[...SKILLS,...custom.map(p=>({n:p.n,a:p.a}))];
   const marked=SKILLS.filter(s=>profs.includes(s.n)).length;
+  const fromList=SKILLS.filter(s=>profs.includes(s.n)&&lista.includes(s.n)).length;
+  const isDipl=profKey(sheet)==='Diplomata', isExpl=profKey(sheet)==='Explorador';
 
   return (
     <div>
+      <St>Testes de Resistência</St>
+      <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>1d20 + mod do atributo + proficiência, se proficiente. Cada profissão é proficiente em 2 (R10-5); Anão: +2 em CON. Veneno e doença: CON; explosões e armadilhas: DEX; empurrões e agarrões: FOR; medo e influência mental: SAB.{profKey(sheet)==='custom'&&' Profissão personalizada: clique para marcar.'}</div>
+      <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:4}}>
+        {ATTRS.map(a=>{ const on=saveProficient(P,a), v=saveVal(a); return (
+          <div key={a} onClick={()=>toggleCustomSave(a)} style={{background:'var(--card)',border:`1px solid ${on?'var(--gold-dim)':'var(--border)'}`,borderRadius:5,padding:'4px 8px',textAlign:'center',minWidth:58,cursor:profKey(sheet)==='custom'&&!isReadOnly?'pointer':'default'}}>
+            <div style={{fontSize:8,color:'var(--sub)',fontFamily:"'Cinzel',serif",letterSpacing:'.1em'}}>{a}{on?' ●':''}</div>
+            <div style={{fontSize:15,fontWeight:700,fontFamily:"'Cinzel',serif",color:v>=0?'#3a7a4c':'#b83030'}}>{v>=0?'+':''}{v}</div>
+            <RBtn onClick={e=>{e.stopPropagation();rollSave(a);}} style={{fontSize:8,padding:'0 5px'}}>1d20</RBtn>
+          </div>); })}
+      </div>
       <St>Perícias</St>
-      <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>Clique no círculo para marcar proficiência. Bônus = mod do atributo + proficiência (+2 nv 3–6, +3 nv 7–10, +4 nv 11–14, +5 nv 15).</div>
-      <div style={{fontSize:11,color:'var(--sub)',marginBottom:10}}><b style={{color:'var(--text)'}}>Na criação:</b> 4 perícias da lista da profissão + 2 livres (D-23). As listas por profissão ainda estão em definição: por enquanto, escolha as 6 livremente. Marcadas: <b style={{color:marked>SKILLS_AT_CREATION?'#b83030':'var(--gold)'}}>{marked}/{SKILLS_AT_CREATION}</b></div>
+      <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>Clique no círculo para marcar proficiência. Bônus = mod do atributo + proficiência (+2 nv 3–6, +3 nv 7–10, +4 nv 11–14, +5 nv 15). ◆ = perícia da lista da profissão.</div>
+      <div style={{fontSize:11,color:'var(--sub)',marginBottom:10}}><b style={{color:'var(--text)'}}>Na criação:</b> 4 perícias da lista da profissão + 2 livres, de qualquer atributo (P-060). Marcadas: <b style={{color:marked>SKILLS_AT_CREATION?'#b83030':'var(--gold)'}}>{marked}/{SKILLS_AT_CREATION}</b>{lista.length>0&&<> · da lista da profissão: <b style={{color:marked>=SKILLS_AT_CREATION&&fromList<SKILLS_FROM_PROF?'#b83030':'var(--gold)'}}>{fromList}</b> (mín. {SKILLS_FROM_PROF})</>}</div>
+      {isDipl&&(
+        <div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap',fontSize:11,marginBottom:8}}>
+          <span style={{color:'var(--gold)'}}>Especialista (Diplomata):</span><span style={{color:'var(--sub)'}}>Persuasão e</span>
+          <select className="vtt-select" value={sheet.especialista||''} disabled={isReadOnly} onChange={e=>u({especialista:e.target.value})} style={{width:190}}>
+            <option value="">— 1 perícia da lista —</option>
+            {lista.filter(n=>n!=='Persuasão').map(n=><option key={n} value={n}>{n}</option>)}
+          </select>
+          <span style={{color:'var(--sub)',fontSize:10}}>proficiência dobrada (precisa ser proficiente)</span>
+        </div>
+      )}
       {allSkills.map((sk,i)=>{
-        const isC=i>=SKILLS.length, on=profs.includes(sk.n);
-        const fin=finalAttr(sheet,sk.a), mod=amod(fin), total=mod+(on?pb:0);
+        const isC=i>=SKILLS.length, on=skillProficient(sh,sk.n), mu=skillProfMult(sh,sk.n);
+        const fin=finalAttr(sheet,sk.a), mod=amod(fin), total=mod+mu*pb;
+        // Olho de Falcão (Explorador, D-77): proficiência dobrada em Percepção fora de combate
+        const falcao = isExpl && sk.n==='Percepção' && on;
         const head = !isC && (i===0 || SKILLS[i-1].a!==sk.a);
         return (
           <div key={sk.n}>
@@ -477,7 +564,7 @@ function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
               <div onClick={()=>toggle(sk.n)} style={{width:16,height:16,borderRadius:'50%',border:`2px solid ${on?'var(--gold)':'var(--border)'}`,background:on?'var(--gold)':'transparent',cursor:isReadOnly?'default':'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'.2s'}}>
                 {on&&<span style={{fontSize:9,color:'var(--bg)',fontWeight:700}}>✓</span>}
               </div>
-              <span style={{fontSize:12,flex:1}}>{sk.n}{isC&&<span style={{fontSize:9,color:'var(--sub)',marginLeft:4}}>(custom)</span>}</span>
+              <span style={{fontSize:12,flex:1}}>{!isC&&lista.includes(sk.n)&&<span style={{color:'var(--gold)',fontSize:9}}>◆ </span>}{sk.n}{mu===2&&<span style={{fontSize:9,color:'var(--gold)'}}> ×2</span>}{on&&!profs.includes(sk.n)&&<span style={{fontSize:9,color:'var(--gold)'}}> (Especialista)</span>}{falcao&&<span style={{fontSize:9,color:'var(--gold)'}} title="Olho de Falcão"> fora de combate: {total+pb>=0?'+':''}{total+pb}</span>}{isC&&<span style={{fontSize:9,color:'var(--sub)',marginLeft:4}}>(custom)</span>}</span>
               <span style={{fontSize:9,color:'var(--sub)',fontFamily:"'Cinzel',serif",width:28,textAlign:'center'}}>{sk.a}</span>
               <span style={{fontSize:13,fontWeight:700,fontFamily:"'Cinzel',serif",width:28,textAlign:'center',color:total>=0?'#3a7a4c':'#b83030'}}>{total>=0?'+':''}{total}</span>
               <RBtn onClick={()=>rollSkill(sk.n,sk.a)}>1d20</RBtn>
@@ -497,7 +584,7 @@ function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
       )}
 
       <St>Proficiências de Arma ou Ferramenta</St>
-      <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>{FREE_TOOL_PROFS} livres, além das 2 perícias livres (D-45). As proficiências de arma e armadura de cada profissão estão em definição (⏳ P-049).</div>
+      <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>{P.armas&&<><b style={{color:'var(--text)'}}>Da profissão:</b> armas {P.armas.toLowerCase()}; armaduras {P.arm.map(t=>ARMOR_CAT[t]).join(', ')}{P.esc?' e escudo':''} (P-049). </>}Mais {FREE_TOOL_PROFS} livres de arma ou ferramenta, nunca categoria de armadura (D-45). Arma sem proficiência: não soma a proficiência ao ataque. Armadura sem proficiência: desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX.</div>
       <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
         {Array.from({length:FREE_TOOL_PROFS},(_,i)=>(
           <input key={i} className="vtt-input" style={{flex:1,minWidth:140}} placeholder={`Arma ou ferramenta ${i+1}...`} readOnly={isReadOnly} value={tools[i]||''} onChange={e=>{const t=[...tools];t[i]=e.target.value;u({toolProfs:t});}}/>
@@ -703,7 +790,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
       {selGroup==='Titânica'&&(
         <div style={{background:'var(--card)',border:'1px solid var(--border)',borderLeft:'3px solid #ff6600',borderRadius:4,padding:'10px 12px',marginBottom:12}}>
           <div style={{fontFamily:"'Cinzel',serif",fontSize:13,fontWeight:700,color:'#ff6600',marginBottom:4}}>⬢ Titânica</div>
-          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42). Provisório até ter regra própria (D-50): sobe 8 PP (1→2) e 10 PP (2→3); quem nasce Titânico compra qualquer outra aura por 4 PP. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4). Quem nasce Titânico não desperta nenhuma aura, nem as compradas (D-59, D-62). Nível 1: 3 auras/dia, uma por vez, no nível 1. Nível 2: 5 auras/dia, 2 simultâneas, até o nível 2. Nível 3: todas, até 3 simultâneas, em qualquer nível até o 3.</div>
+          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42). Provisório até ter regra própria (D-50): sobe 8 PP (1→2) e 10 PP (2→3); quem nasce Titânico compra qualquer outra aura por 4 PP. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4). Quem nasce Titânico não desperta nenhuma aura, nem as compradas (D-59, D-62). Nível 1: 3 auras/dia, uma por vez, no nível 1. Nível 2: 5 auras/dia, 2 simultâneas, até o nível 2. Nível 3: todas, até 3 simultâneas, em qualquer nível até o 3. Leitura provisória (P-056): pode emprestar auras Primordiais já vistas em uso; os limites de 1/2/3 auras simultâneas valem só para as emprestadas (as compradas com PP ficam todas ativas, D-29).</div>
         </div>
       )}
       {/* Compatibilidade e custo de aura nova */}
@@ -716,10 +803,11 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
             <div style={{fontSize:10,color:'var(--sub)',marginBottom:5}}>Relação com {selGroup} e custo de uma aura nova para quem nasceu com aura de {selGroup}:</div>
             {AURA_GROUPS.map(x=>{
               const d=areaDistance(selGroup,x.n);
-              const rel=d===0?'Mesma Área (sinergia +15%)':d===3?'Oposta (+25% custo, 10% colateral)':d===1?'Vizinha (neutra)':'2 passos (neutra; ⏳ P-004)';
+              const rel=d===0?'Mesma Área (−15% MP)':d===3?'Oposta (+25% MP, 10% colateral)':d===1?'Vizinha (neutra)':'2 passos (neutra)';
               const col=d===0?'#3a7a4c':d===3?'#b83030':'#c9a96e';
               return <div key={x.n} style={{display:'flex',justifyContent:'space-between',gap:6,padding:'2px 0',borderBottom:'1px solid var(--border)',fontSize:11}}><span>{x.i} {x.n}</span><span style={{fontWeight:700,color:col,textAlign:'right'}}>{rel} · {PP_NEW_AURA[d]} PP</span></div>;
             })}
+            <div style={{fontSize:10,color:'var(--sub)',marginTop:5,lineHeight:1.5}}><b style={{color:'var(--text)'}}>Compatibilidade</b> (P-004, numa técnica que combina auras): todas da mesma Área = −15% de MP (soma com os outros descontos, piso de 50%); vizinhas ou a 2 passos = neutras; alguma oposta = +25% de MP e 10% de colateral (1d6 de dano de Arka no usuário e fim do Fluxo). Não acumula com o Fortalecimento Técnica em Conjunto.</div>
           </div>
         );
       })()}
@@ -784,7 +872,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
             <span style={{fontSize:9,color:c}}>{ar}{x.her?' · hereditária':` · comprada (${x.pago||0} PP)`}{x.her&&ar==='Primordial'&&<b style={{color:'#b83030'}}> · raríssima — requer aprovação do Mestre (D-61)</b>}{x.lv>cf&&<b style={{color:'var(--gold)'}}> · pendente</b>}</span>
             <span style={{marginLeft:'auto'}}>{isReadOnly?<b style={{color:'var(--gold)'}}>{x.lv===4?'4 ✦':x.lv}</b>:<Nc value={x.lv===4?'4 ✦':x.lv} color="var(--gold)" onDec={()=>auraUp(i,-1)} onInc={()=>auraUp(i,1)}/>}</span>
             <span style={{fontSize:9,color:'var(--sub)',minWidth:90}}>próx.: {nx}</span>
-            {x.lv>=2&&<span style={{fontSize:9,color:'#b83030'}}>licença</span>}
+            {x.lv>=2&&<span style={{fontSize:9,color:'#b83030'}} title="Território imperial (R10-6)">licença {auraLicense(x.lv)}</span>}
             {x.lv===4&&(
               <select className="vtt-select" disabled={isReadOnly||locked} value={x.deus||''} onChange={e=>u({auras:auras.map((y,j)=>j===i?{...y,deus:e.target.value}:y)})} style={{maxWidth:230,fontSize:10}}>
                 <option value="">— deus da Área {ar} —</option>
@@ -814,7 +902,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
         </div>
       )}
       <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,margin:'4px 0 10px'}}>
-        Progressão por Pontos de Progressão (PP). <b style={{color:'var(--text)'}}>Subir aura:</b> 1→2 = 8 PP, 2→3 = 10 PP; os níveis são cumulativos (D-59); nível 2+ exige licença imperial (D-02). <b style={{color:'var(--text)'}}>Aura nova</b> (entra no nível 1): 3 / 4 / 5 / 6 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura hereditária. Titânica e Ícor (Aura Própria) só de nascença. Quem nasce Titânico compra qualquer outra aura por 4 PP e sobe a Titânica por 8/10 PP (provisório, D-50). Sem nível mínimo de personagem. <b style={{color:'var(--text)'}}>Compras definitivas</b> (D-53): só podem ser desfeitas antes de confirmadas (botão na barra de PP) ou do próximo level-up; depois, sem reembolso. <b style={{color:'var(--text)'}}>Despertar Divino</b> (nível 4): qualquer aura no nível 3 + um acontecimento de lore, sob controle do Mestre; não custa PP; <b style={{color:'var(--text)'}}>um único Despertar por personagem</b> (D-56); o jogador escolhe um deus da Área da aura e recebe o Dom dele (D-49). <b style={{color:'var(--text)'}}>Quem nasce Titânico não desperta nenhuma aura</b>, nem as compradas, até a Titânica ter regra própria (D-59, D-62). <b style={{color:'var(--text)'}}>Aura hereditária Primordial</b>: possível, mas raríssima — requer aprovação do Mestre; o caminho normal é comprar com PP (D-61). <b style={{color:'var(--text)'}}>Todas as auras ficam ativas ao mesmo tempo</b> (D-29). Entre auras, vale só a maior resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP se somam (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de 50% da tabela.
+        Progressão por Pontos de Progressão (PP). <b style={{color:'var(--text)'}}>Subir aura:</b> 1→2 = 8 PP, 2→3 = 10 PP; os níveis são cumulativos (D-59); em território imperial, nível 2 exige a licença Intermediária (30 CO) e nível 3 a Avançada (250 CO, exige a Intermediária) (R10-6, D-66). <b style={{color:'var(--text)'}}>Aura nova</b> (entra no nível 1): 3 / 4 / 5 / 6 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura hereditária. Titânica e Ícor (Aura Própria) só de nascença. Quem nasce Titânico compra qualquer outra aura por 4 PP e sobe a Titânica por 8/10 PP (provisório, D-50). Sem nível mínimo de personagem. <b style={{color:'var(--text)'}}>Compras definitivas</b> (D-53): só podem ser desfeitas antes de confirmadas (botão na barra de PP) ou do próximo level-up; depois, sem reembolso. <b style={{color:'var(--text)'}}>Despertar Divino</b> (nível 4): qualquer aura no nível 3 + um acontecimento de lore, sob controle do Mestre; não custa PP; <b style={{color:'var(--text)'}}>um único Despertar por personagem</b> (D-56); o jogador escolhe um deus da Área da aura e recebe o Dom dele (D-49). <b style={{color:'var(--text)'}}>Quem nasce Titânico não desperta nenhuma aura</b>, nem as compradas, até a Titânica ter regra própria (D-59, D-62). <b style={{color:'var(--text)'}}>Aura hereditária Primordial</b>: possível, mas raríssima — requer aprovação do Mestre; o caminho normal é comprar com PP (D-61). <b style={{color:'var(--text)'}}>Todas as auras ficam ativas ao mesmo tempo</b> (D-29). Entre auras, vale só a maior resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP se somam (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de 50% da tabela.
       </div>
       <div style={{marginBottom:8}}><Lb>Descrição / Manifestação</Lb>
         <textarea className="vtt-input" rows={2} placeholder="Como manifesta sua aura..." readOnly={isReadOnly} value={sheet.auraDesc||''} onChange={e=>u({auraDesc:e.target.value})} style={{resize:'vertical',lineHeight:1.5}}/>
@@ -850,7 +938,8 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
 
   // Fort calculator
   // Fortalecimentos (cap. 11, PB-5): teto +300%, 3 simultâneos, Votos×Limites não acumulam, Expansão conta
-  const fort = fortTotal(fortChecks, fortVars, fortExp);
+  const [fortLeg,setFortLeg]=useState(false);
+  const fort = fortTotal(fortChecks, fortVars, fortExp, fortLeg);
 
   // Fluxo
   const fluxoActive=sheet.fluxoActive??false;
@@ -858,7 +947,7 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
 
   function toggleFluxo(){
     if(!fluxoActive){
-      const log=[{t:'Fluxo iniciado! Ação bônus consumida.',c:'#3a7a4c'},...(sheet.fluxoLog||[])];
+      const log=[{t:'Fluxo iniciado (acertou técnica de aura; sem custo de ação).',c:'#3a7a4c'},...(sheet.fluxoLog||[])];
       u({fluxoActive:true,fluxoDeseq:0,fluxoLog:log});
     } else {
       const log=[{t:'Fluxo encerrado.',c:'var(--sub)'},...(sheet.fluxoLog||[])];
@@ -869,18 +958,19 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
     if(!fluxoActive)return;
     if(fluxoDeseq>=maxPips){addLog?.(`Limite de Desequilíbrio = mod DOM (${maxPips})`,'system');return;}
     const d=fluxoDeseq+1;
-    const log=[{t:`Técnica #${d+1} acertou! Deseq: ${d} (−${d} MP ou +${d} atk · −${d} Def)`,c:'#3a7a4c'},...(sheet.fluxoLog||[])];
+    const log=[{t:`Técnica #${d+1} (mesma Área). Deseq: ${d} (cada ponto: −1 MP ou +1 ataque e dano · −${d} CA)`,c:'#3a7a4c'},...(sheet.fluxoLog||[])];
     u({fluxoDeseq:d,fluxoLog:log});
   }
   function fluxoMiss(){
     if(!fluxoActive)return;
-    const log=[{t:`FALHOU! Fluxo interrompido. Desequilíbrio ${fluxoDeseq} persiste.`,c:'#b83030'},...(sheet.fluxoLog||[])];
-    u({fluxoActive:false,fluxoLog:log});
+    // Falha crítica (cap. 11): perde todo o Desequilíbrio; a técnica falhada custa o dobro
+    const log=[{t:`Falha crítica: perde todo o Desequilíbrio (${fluxoDeseq} → 0); a técnica falhada custa o dobro de MP.`,c:'#b83030'},...(sheet.fluxoLog||[])];
+    u({fluxoDeseq:0,fluxoLog:log});
   }
   function fluxoEnd(){
     if(!fluxoActive)return;
-    const log=[{t:`Encerrado voluntariamente. Deseq ${fluxoDeseq} persiste até próx. turno.`,c:'var(--gold)'},...(sheet.fluxoLog||[])];
-    u({fluxoActive:false,fluxoLog:log});
+    const log=[{t:`Fluxo encerrado, sem penalidade: Desequilíbrio ${fluxoDeseq} → 0.`,c:'var(--gold)'},...(sheet.fluxoLog||[])];
+    u({fluxoActive:false,fluxoDeseq:0,fluxoLog:log});
   }
 
   const domFin=finalAttr(sheet,'DOM');
@@ -1005,14 +1095,18 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
             <input type="checkbox" checked={fortExp} onChange={e=>setFortExp(e.target.checked)}/>
             <span>Expansão de Domínio (+50% de dano)</span>
           </label>
+          <label style={{display:'flex',alignItems:'center',gap:6,marginBottom:4,fontSize:11,cursor:'pointer'}}>
+            <input type="checkbox" checked={fortLeg} onChange={e=>setFortLeg(e.target.checked)}/>
+            <span>Legado Arka Desperta (+50%, fora dos limites)</span>
+          </label>
         </div>
         <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
           <Sb label="Bônus Total" value={`+${fort.total}%`} color="#3a7a4c"/>
-          <Sb label="Ações Extra" value={fort.actions}/>
-          <Sb label="Turnos Prep." value={fort.turns}/>
+          <Sb label="Multiplicador" value={`×${String(Math.round(fort.mult*100)/100).replace('.',',')}`}/>
+          <Sb label="Simultâneos" value={`${fort.count}/3`}/>
         </div>
         {fort.warn.length>0&&<div style={{fontSize:10,color:'#b83030',marginTop:6}}>{fort.warn.map((w,i)=><div key={i}>{w}</div>)}</div>}
-        <div style={{fontSize:10,color:'var(--sub)',marginTop:6}}>Limite: +300% cumulativo e 3 simultâneos; Votos e Limites de Uso não acumulam entre si; o +50% da Expansão de Domínio conta nos dois limites.</div>
+        <div style={{fontSize:10,color:'var(--sub)',marginTop:6}}>Os bônus se somam e o total multiplica o dano base (+25% e +100% = ×2,25), sem custo extra de preparo (P-015). Limite: +300% cumulativo e 3 simultâneos; Votos e Limites de Uso não acumulam entre si; o +50% da Expansão de Domínio conta nos dois limites. O Legado Arka Desperta fica fora (teto efetivo +350%, P-055).</div>
       </div>
 
       {/* Fluxo de Aura */}
@@ -1020,11 +1114,11 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
       <div style={{fontSize:11,color:'var(--sub)',marginBottom:8}}>Encadeamento de técnicas. Cada acerto aumenta o Desequilíbrio.</div>
       <Acc title="Regras do Fluxo">
         <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>
-          <b style={{color:'var(--text)'}}>Gatilho:</b> Acertar uma técnica com dano/efeito. Consome ação bônus + MP.<br/>
-          <b style={{color:'var(--text)'}}>Desequilíbrio:</b> +1 por técnica após a primeira. Persiste até próximo turno.<br/>
-          <span style={{color:'#3a7a4c'}}><b>Benefícios:</b> −1 MP/ponto (o custo nunca fica abaixo de 50% da tabela) ou +1 acerto/dano por ponto.</span><br/>
-          <span style={{color:'#b83030'}}><b>Riscos:</b> −1 Defesa por ponto. Falha: MP dobrada, limiar crítico.</span><br/>
-          <b style={{color:'var(--text)'}}>Limite:</b> Desequilíbrio máximo = mod DOM ({maxPips}).
+          <b style={{color:'var(--text)'}}>Gatilho:</b> acertar uma técnica de aura num alvo; não custa ação (P-014).<br/>
+          <b style={{color:'var(--text)'}}>Continuação:</b> a próxima técnica de qualquer aura da mesma Área: +1 Desequilíbrio.<br/>
+          <span style={{color:'#3a7a4c'}}><b>Bônus por ponto:</b> −1 MP (entra nos descontos, piso de 50% da tabela) OU +1 no ataque e no dano.</span><br/>
+          <span style={{color:'#b83030'}}><b>Penalidade:</b> −1 de CA por ponto. <b>Falha crítica:</b> perde todo o Desequilíbrio; a técnica falhada custa o dobro.</span><br/>
+          <b style={{color:'var(--text)'}}>Limite:</b> Desequilíbrio máximo = mod DOM ({maxPips}). <b style={{color:'var(--text)'}}>Encerramento:</b> voluntário, sem penalidade; zera ao encerrar ou no fim do combate. Técnica com aura de Área oposta: 10% de colateral que termina o Fluxo (P-004).
         </div>
       </Acc>
 
@@ -1047,12 +1141,12 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
           <Sb label="Desequilíbrio" value={fluxoDeseq} color={maxPips>0&&fluxoDeseq>=maxPips?'#b83030':'var(--gold)'}/>
           <Sb label="Bônus MP" value={`−${fluxoDeseq}`} color="#3a7a4c"/>
           <Sb label="Bônus Atk" value={`+${fluxoDeseq}`} color="#3a7a4c"/>
-          <Sb label="Pen. Def" value={`−${fluxoDeseq}`} color="#b83030"/>
+          <Sb label="Pen. CA" value={`−${fluxoDeseq}`} color="#b83030"/>
         </div>
         {!isReadOnly&&<div style={{display:'flex',gap:6,marginBottom:8}}>
-          <button className="tbtn" onClick={fluxoHit} style={{background:'#3a7a4c'}}>✓ Acertou</button>
-          <button className="tbtn" onClick={fluxoMiss} style={{background:'#b83030'}}>✕ Errou</button>
-          <button className="tbtn" onClick={fluxoEnd}>Encerrar</button>
+          <button className="tbtn" onClick={fluxoHit} style={{background:'#3a7a4c'}}>✓ Continuou (mesma Área)</button>
+          <button className="tbtn" onClick={fluxoMiss} style={{background:'#b83030'}}>✕ Falha crítica</button>
+          <button className="tbtn" onClick={fluxoEnd}>Encerrar / fim do combate</button>
         </div>}
         <div style={{maxHeight:100,overflowY:'auto',fontSize:10,color:'var(--sub)'}}>
           {!(sheet.fluxoLog?.length)&&<div style={{padding:6,fontStyle:'italic'}}>Nenhum fluxo registrado.</div>}
@@ -1233,19 +1327,33 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
 function XpTab({ sheet, onUpdate, isReadOnly }) {
   const u = onUpdate;
   const [xpLv,setXpLv]=useState(5), [xpPa,setXpPa]=useState(4);
-  const [durAtk,setDurAtk]=useState(10), [durCur,setDurCur]=useState(20), [durArmor,setDurArmor]=useState(false);
+  const [durAtk,setDurAtk]=useState(10), [durCur,setDurCur]=useState(10), [durArmor,setDurArmor]=useState(false);
+  const [xpFat,setXpFat]=useState(1);
+  const xs = XP_SESSION[sheetLevel(sheet)];
   const xpGain=Math.floor((10*xpLv)/xpPa);
   const lv=sheetLevel(sheet), xp=sheet.xp??0;
   const atMax=lv>=LV_MAX;
   const need=atMax?0:XP_TABLE[lv-1];
   const xpPct=atMax?100:need>0?Math.min(100,(xp/need)*100):0;
-  const durLoss=durAtk*(durArmor?0.20:0.25), durRem=Math.max(0,durCur-durLoss);
+  // Durabilidade opcional (apêndice; D-76, D-79): arma −0,25 por ataque (−1 por Aparar); armadura −1 por crítico sofrido; escudo −1 por Aparar ou Proteger
+  const durLoss=durAtk*(durArmor?1:0.25), durRem=Math.max(0,durCur-durLoss);
   const milestone = n => n>LV_MIN ? `+${PP_PER_LEVEL} PP${MILESTONES[n]!=='—'?` · ${MILESTONES[n]}`:''}` : MILESTONES[n];
 
   return (
     <div>
+      <St>XP por Sessão</St>
+      <div style={{fontSize:10,color:'var(--sub)',marginBottom:6}}>Ao fim de cada sessão, o Mestre concede XP na faixa do nível atual (R9-4): típico numa sessão comum, mínimo numa curta ou parada, máximo num marco da história. Com XP de combate, a faixa vale 80% (70% com 3+ lutas por sessão).</div>
+      {xs ? (
+        <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:14}}>
+          <span style={{fontSize:10,color:'var(--sub)'}}>Nível {sheetLevel(sheet)}:</span>
+          {['mínimo','típico','máximo'].map((nm,i)=>{ const v=Math.round(xs[i]*xpFat); return <button key={nm} className="tbtn" disabled={isReadOnly||lv>=LV_MAX} onClick={()=>u({xp:Math.min(XP_TABLE[lv-1],xp+v)})}>+{v} ({nm})</button>; })}
+          <select className="vtt-select" value={xpFat} onChange={e=>setXpFat(+e.target.value)} style={{width:'auto',fontSize:11}}>
+            <option value={1}>sem XP de combate</option><option value={0.8}>com XP de combate (×0,8)</option><option value={0.7}>3+ lutas por sessão (×0,7)</option>
+          </select>
+        </div>
+      ) : <div style={{fontSize:11,color:'var(--sub)',fontStyle:'italic',marginBottom:14}}>Nível máximo: sem XP por sessão.</div>}
       <St>XP de Combate (opcional)</St>
-      <div style={{fontSize:10,color:'var(--sub)',marginBottom:8}}>10 × nível de cada inimigo, somado, ÷ jogadores (D-20; a calibrar). O XP por sessão é definido pelo Mestre.</div>
+      <div style={{fontSize:10,color:'var(--sub)',marginBottom:8}}>10 × nível de cada inimigo, somado, ÷ jogadores (D-20).</div>
       <div style={{display:'flex',gap:16,flexWrap:'wrap',alignItems:'center',marginBottom:14}}>
         {[['Soma dos níveis dos inimigos',xpLv,setXpLv,200],['Jogadores',xpPa,setXpPa,20]].map(([lbl,val,set,mx])=>(
           <div key={lbl}><Lb>{lbl}</Lb><Nc value={val} onDec={()=>set(v=>Math.max(1,v-1))} onInc={()=>set(v=>Math.min(mx,v+1))}/></div>
@@ -1273,7 +1381,7 @@ function XpTab({ sheet, onUpdate, isReadOnly }) {
       </div>
       {!atMax&&xp>=need&&<div style={{padding:6,background:'rgba(244,208,63,.06)',border:'1px solid rgba(244,208,63,.2)',borderRadius:4,fontFamily:"'Cinzel',serif",fontSize:9,color:'#f4d03f',textAlign:'center',fontWeight:700,marginBottom:10}}>✦ LEVEL UP! → Nível {lv+1}: {milestone(lv+1)}</div>}
 
-      <St>Marcos de Nível</St>
+      <St>Benefícios de Nível</St>
       <div style={{marginBottom:8}}>
         {Array.from({length:LV_MAX-LV_MIN+1},(_,k)=>LV_MIN+k).map(n=>{
           const cur=n===lv, done=n<=lv;
@@ -1283,6 +1391,7 @@ function XpTab({ sheet, onUpdate, isReadOnly }) {
               <span style={{minWidth:62,color:'var(--sub)'}}>{n<LV_MAX?`${XP_TABLE[n-1]} XP`:'—'}</span>
               <span style={{minWidth:24}}>+{profBonus(n)}</span>
               <span style={{minWidth:44,color:'var(--gold)'}}>{ppEarned(n)} PP</span>
+              <span style={{minWidth:74,color:'var(--sub)'}} title="XP por sessão: mínimo–típico–máximo (R9-4)">{XP_SESSION[n]?XP_SESSION[n].join('–'):'—'}</span>
               <span style={{flex:1}}>{milestone(n)}</span>
             </div>
           );
@@ -1295,17 +1404,18 @@ function XpTab({ sheet, onUpdate, isReadOnly }) {
           {LEGACY_OPTIONS.map(o=><option key={o} value={o}>{o}</option>)}
         </select>
       </div>
-      <div style={{fontSize:9,color:'var(--sub)',marginBottom:12}}>Colunas: nível · XP para subir ao próximo · proficiência · PP acumulados · marco. A cada nível rolam-se HP e MP (aba Atributos) e ganham-se 3 PP (gastos nas abas Atributos e Auras; acumulam).</div>
+      <div style={{fontSize:9,color:'var(--sub)',marginBottom:12}}>Colunas: nível · XP para subir ao próximo · proficiência · PP acumulados · XP por sessão (mín.–típico–máx.) · benefício de nível. A cada nível rolam-se HP e MP (aba Atributos) e ganham-se 3 PP (gastos nas abas Atributos e Auras; acumulam).</div>
 
-      <St>Durabilidade</St>
+      <St>Durabilidade (regra opcional)</St>
+      <div style={{fontSize:10,color:'var(--sub)',marginBottom:6}}>Apêndice (P-034, R10-7, D-76, D-79): tudo começa com durabilidade 10. Arma: −0,25 por ataque e −1 por Aparar. Armadura: −1 por acerto crítico sofrido. Escudo: −1 por Aparar com escudo (a arma também perde 1) e −1 por todo Proteger de quem o carrega. Com 0, a arma causa 1 + mod; armadura ou escudo se perde. Ferreiros reparam.</div>
       <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:10}}>
-        {[[false,'Arma (×0.25)'],[true,'Armadura (×0.20)']].map(([isArmor,lbl])=>(
+        {[[false,'Arma (−0,25/ataque)'],[true,'Armadura ou escudo (−1/evento)']].map(([isArmor,lbl])=>(
           <button key={lbl} onClick={()=>setDurArmor(isArmor)} style={{padding:'4px 10px',borderRadius:16,fontSize:11,cursor:'pointer',border:`1px solid ${durArmor===isArmor?'var(--gold-dim)':'var(--border)'}`,background:durArmor===isArmor?'rgba(201,169,110,.1)':'transparent',color:durArmor===isArmor?'var(--gold)':'var(--sub)',fontFamily:'inherit'}}>{lbl}</button>
         ))}
       </div>
       <div style={{display:'flex',gap:16,alignItems:'center',flexWrap:'wrap'}}>
         <div style={{display:'flex',flexDirection:'column',gap:6}}>
-          <div style={{display:'flex',alignItems:'center',gap:4}}><span style={{fontSize:9,color:'var(--sub)',minWidth:40}}>Ataques</span><Nc value={durAtk} onDec={()=>setDurAtk(v=>Math.max(0,v-1))} onInc={()=>setDurAtk(v=>Math.min(200,v+1))}/></div>
+          <div style={{display:'flex',alignItems:'center',gap:4}}><span style={{fontSize:9,color:'var(--sub)',minWidth:40}}>{durArmor?'Eventos':'Ataques'}</span><Nc value={durAtk} onDec={()=>setDurAtk(v=>Math.max(0,v-1))} onInc={()=>setDurAtk(v=>Math.min(200,v+1))}/></div>
           <div style={{display:'flex',alignItems:'center',gap:4}}><span style={{fontSize:9,color:'var(--sub)',minWidth:40}}>Atual</span><Nc value={durCur} onDec={()=>setDurCur(v=>Math.max(0,v-1))} onInc={()=>setDurCur(v=>Math.min(200,v+1))}/></div>
         </div>
         <div style={{display:'flex',gap:8}}>
@@ -1396,7 +1506,7 @@ function SheetHeader({ sheet, onUpdate, onClose, isReadOnly }) {
         <input className="vtt-input" value={sheet.name||''} readOnly={isReadOnly} onChange={e=>u({name:e.target.value})} style={{fontWeight:700,fontSize:15,marginBottom:4,color:'var(--gold)'}}/>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 56px',gap:5,marginBottom:7}}>
           <input className="vtt-input" placeholder="Raça" value={sheet.race||''} readOnly={isReadOnly} onChange={e=>u({race:e.target.value})}/>
-          <input className="vtt-input" placeholder="Profissão" value={sheet.prof==='custom'?sheet.customProf?.name||'Personalizado':sheet.prof||''} readOnly onChange={()=>{}}/>
+          <input className="vtt-input" placeholder="Profissão" value={sheet.prof==='custom'?sheet.customProf?.name||'Personalizado':profKey(sheet)||''} readOnly onChange={()=>{}}/>
           <input className="vtt-input" type="number" min={LV_MIN} max={LV_MAX} value={sheet.level||LV_MIN} readOnly={isReadOnly} onChange={e=>u({level:Math.max(LV_MIN,Math.min(LV_MAX,parseInt(e.target.value,10)||LV_MIN))})} style={{textAlign:'center'}} title="Nível (3–15)"/>
         </div>
         {/* HP */}
@@ -1469,6 +1579,8 @@ export default function CharacterSheet({
   // Fichas anteriores à rodada 6 (sem ppConf): as compras de PP que já existem contam como confirmadas (D-53)
   useEffect(()=>{
     if(!isReadOnly && sheet.ppConf===undefined) onUpdate({ ppConf: ppConfirmState(sheet) });
+    // P-040: "Arkano" passou a se chamar "Canalizador"
+    if(!isReadOnly && PROF_RENAMES[sheet.prof]) onUpdate({ prof: PROF_RENAMES[sheet.prof] });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[sheet.id]);
 

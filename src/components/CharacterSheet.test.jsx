@@ -15,7 +15,7 @@ function renderAllTabs(sheet) {
 test('ficha nova abre todas as abas', () => {
   renderAllTabs(blankSheet({ name: 'Teste', prof: 'Guerreiro', level: 10, auras: [{ n: 'Fogo', lv: 1, her: true }] }));
   fireEvent.click(screen.getAllByText('XP')[0]);
-  expect(screen.getByText(/Marcos de Nível/i)).toBeInTheDocument();
+  expect(screen.getByText(/Benefícios de Nível/i)).toBeInTheDocument(); // P-041
   fireEvent.click(screen.getAllByText('Perícias')[0]);
   expect(screen.getByText('Pressão de Aura')).toBeInTheDocument();
 });
@@ -81,4 +81,30 @@ test("hereditária Primordial: aviso de raríssima, sem bloquear (D-61)", () => 
   render(<CharacterSheet sheet={sheet} onUpdate={jest.fn()} onClose={() => {}} />);
   fireEvent.click(screen.getAllByText("Auras")[0]);
   expect(screen.getAllByText(/raríssima — requer aprovação do Mestre/).length).toBeGreaterThan(0);
+});
+
+test("rodada 8: perícias e resistências por profissão, Especialista do Diplomata, Canalizador", () => {
+  const sheet = blankSheet({ prof: "Diplomata", level: 3, attrs: { FOR: 8, DEX: 8, CON: 8, SAB: 8, INT: 8, CAR: 8, DOM: 8 }, proficiencies: ["Enganação"], especialista: "Enganação" });
+  render(<CharacterSheet sheet={sheet} onUpdate={jest.fn()} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Perfil")[0]);
+  expect(screen.getAllByText(/Inspirar:/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/140 CO/).length).toBeGreaterThan(0);
+  fireEvent.click(screen.getAllByText("Perícias")[0]);
+  expect(screen.getByText("Testes de Resistência")).toBeInTheDocument();
+  expect(screen.getAllByText(/Especialista/).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/×2/).length).toBe(2); // Persuasão e Enganação
+});
+
+test("rodada 8: ficha com Arkano vira Canalizador (P-040)", () => {
+  const onUpdate = jest.fn();
+  render(<CharacterSheet sheet={blankSheet({ id: "a1", prof: "Arkano", ppConf: null })} onUpdate={onUpdate} onClose={() => {}} />);
+  expect(onUpdate).toHaveBeenCalledWith({ prof: "Canalizador" });
+});
+
+test("rodada 8: Ação Lendária só para quem despertou, máx. 2 por combate", () => {
+  const sheet = blankSheet({ level: 15, acaoLend: 2, auras: [{ n: "Fogo", lv: 4, her: true, deus: "Agni" }], ppConf: { attrUps: {}, auras: { Fogo: 4 } } });
+  render(<CharacterSheet sheet={sheet} onUpdate={jest.fn()} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Atributos")[0]);
+  expect(screen.getByText("2/2")).toBeInTheDocument();
+  expect(screen.getAllByText(/Cobertura/).length).toBeGreaterThan(0);
 });
