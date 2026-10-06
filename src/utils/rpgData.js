@@ -1,5 +1,5 @@
-// RPG data constants — gerados a partir de utils/crepusculo-ficha-v5.html (canon de 2026-10-05, rodadas 5 e 6 do artífice).
-// Fonte única dos dados de jogo usados na CharacterSheet. Regras: livro/canon.md (decisões D-21…D-59, PG e PR5).
+// RPG data constants — gerados a partir de utils/crepusculo-ficha-v5.html (canon de 2026-10-06, rodadas 5 a 8 do artífice).
+// Fonte única dos dados de jogo usados na CharacterSheet. Regras: livro/canon.md (decisões D-21…D-79, PG, PR5, P-0xx aprovadas, R9–R12).
 // Para regenerar: extrair as constantes da ficha HTML (mesmos nomes entre parênteses).
 
 export const ATTRS = [
@@ -11,7 +11,7 @@ export const ATTRS = [
   "CAR",
   "DOM"
 ];
-// "Dominação" × "Domínio": nome do atributo ⏳ P-039 (mantido como na ficha)
+// P-039: DOM = Domínio
 export const ATTR_FULL = {
   "FOR": "Força",
   "DEX": "Destreza",
@@ -19,7 +19,7 @@ export const ATTR_FULL = {
   "SAB": "Sabedoria",
   "INT": "Inteligência",
   "CAR": "Carisma",
-  "DOM": "Dominação"
+  "DOM": "Domínio"
 };
 
 // Raças (RACES): movimento por raça (9 m; anão 7 m); afinidade = 1 Área (D-37); efeito PA-11 (+2 treino, −10% MP)
@@ -46,7 +46,10 @@ export const RACES_DATA = {
     },
     "mv": 7,
     "af": "Emissora",
-    "ab": "Imunidade a venenos, +2 resistência, visão no escuro. Fraqueza: -2m movimento.",
+    "ab": "Imunidade a venenos, +2 em testes de resistência de CON, visão no escuro. Fraqueza: -2m movimento.",
+    "res": {
+      "CON": 2
+    },
     "c": "#b07840"
   },
   "Demônio": {
@@ -69,7 +72,9 @@ export const RACES_DATA = {
   }
 };
 
-// Profissões (PP da ficha): bônus/penalidades, dado de HP e de MP (MP = dado + mod DOM). sk = perfil (listas de perícias ⏳ E4-01)
+// Profissões (PP da ficha, cap. 12): m = bônus/penalidades; hp/mp = dados por nível (D-72; D-73: Guardião MP 1d4);
+// per = 8 perícias da profissão, escolhe 4 (P-060); arm = armaduras L/M/P, esc = escudo, armas (P-049); res = 2 testes de resistência (R10-5);
+// co = riqueza inicial em CO (R9-1, D-65); ex = capacidades exclusivas (R10-2, D-71, D-74, D-77). P-040: "Arkano" → "Canalizador".
 export const PROFESSIONS_DATA = {
   "Guerreiro": {
     "m": {
@@ -80,7 +85,28 @@ export const PROFESSIONS_DATA = {
     },
     "hp": "1d12",
     "mp": "1d4",
-    "sk": "Armas marciais, armaduras pesadas, atletismo"
+    "per": [
+      "Atletismo",
+      "Vigor Bruto",
+      "Fôlego",
+      "Intimidação",
+      "Percepção",
+      "Sobrevivência",
+      "Condução",
+      "Pontaria Mecânica"
+    ],
+    "arm": [
+      "L",
+      "M",
+      "P"
+    ],
+    "esc": true,
+    "armas": "Simples, marciais e de fogo",
+    "res": [
+      "FOR",
+      "DOM"
+    ],
+    "co": 100
   },
   "Explorador": {
     "m": {
@@ -92,7 +118,33 @@ export const PROFESSIONS_DATA = {
     },
     "hp": "1d8",
     "mp": "1d6",
-    "sk": "Furtividade, sobrevivência, percepção"
+    "per": [
+      "Acrobacia",
+      "Furtividade",
+      "Sobrevivência",
+      "Percepção",
+      "Navegação",
+      "Trato Animal",
+      "Atletismo",
+      "Prestidigitação"
+    ],
+    "arm": [
+      "L",
+      "M"
+    ],
+    "esc": false,
+    "armas": "Simples, marciais à distância e de fogo",
+    "res": [
+      "DEX",
+      "INT"
+    ],
+    "co": 95,
+    "ex": [
+      [
+        "Olho de Falcão",
+        "+2 nos ataques à distância, que causam crítico com 19–20; ignora meia cobertura. Fora de combate, proficiência dobrada em Percepção (D-74, D-77)."
+      ]
+    ]
   },
   "Estudioso": {
     "m": {
@@ -103,7 +155,26 @@ export const PROFESSIONS_DATA = {
     },
     "hp": "1d6",
     "mp": "1d10",
-    "sk": "Arcanismo, história, investigação"
+    "per": [
+      "Teoria da Arka",
+      "História",
+      "Investigação",
+      "Alquimia",
+      "Engenharia a Vapor",
+      "Lei e Licenças",
+      "Navegação",
+      "Medicina"
+    ],
+    "arm": [
+      "L"
+    ],
+    "esc": false,
+    "armas": "Simples e pistola",
+    "res": [
+      "INT",
+      "SAB"
+    ],
+    "co": 120
   },
   "Diplomata": {
     "m": {
@@ -115,9 +186,38 @@ export const PROFESSIONS_DATA = {
     },
     "hp": "1d6",
     "mp": "1d8",
-    "sk": "Persuasão, enganação, intuição"
+    "per": [
+      "Persuasão",
+      "Enganação",
+      "Intuição",
+      "Etiqueta das Linhagens",
+      "Barganha",
+      "Lei e Licenças",
+      "História",
+      "Atuação"
+    ],
+    "arm": [
+      "L"
+    ],
+    "esc": false,
+    "armas": "Simples, espadas leves (rapieira, espada curta) e pistola",
+    "res": [
+      "DEX",
+      "CAR"
+    ],
+    "co": 140,
+    "ex": [
+      [
+        "Inspirar",
+        "ação bônus, 1×/turno, sem limite diário. Um aliado a até 18 m que possa ver ou ouvir o Diplomata tem vantagem no próximo teste de ataque (com arma ou de Arka) ou de resistência até o início do próximo turno do Diplomata; se esse ataque acertar, soma o mod CAR do Diplomata ao dano. Não funciona em si mesmo, nem se o Diplomata estiver Atordoado ou Inconsciente. Fora de combate, vale para um teste de perícia de um aliado."
+      ],
+      [
+        "Especialista",
+        "dobra o bônus de proficiência em Persuasão e em mais 1 perícia da lista do Diplomata. Se ele não escolheu Persuasão, o Especialista lhe dá a proficiência nela."
+      ]
+    ]
   },
-  "Arkano": {
+  "Canalizador": {
     "m": {
       "DOM": 3,
       "INT": 2,
@@ -127,7 +227,26 @@ export const PROFESSIONS_DATA = {
     },
     "hp": "1d6",
     "mp": "1d12",
-    "sk": "Canalização de Arka, arcanismo, meditação"
+    "per": [
+      "Teoria da Arka",
+      "Canalização",
+      "Pressão de Aura",
+      "Sentir Arka",
+      "Concentração",
+      "Vontade",
+      "História",
+      "Alquimia"
+    ],
+    "arm": [
+      "L"
+    ],
+    "esc": false,
+    "armas": "Simples e pistola",
+    "res": [
+      "CON",
+      "DOM"
+    ],
+    "co": 90
   },
   "Guardião": {
     "m": {
@@ -139,8 +258,29 @@ export const PROFESSIONS_DATA = {
       "CAR": -1
     },
     "hp": "1d12",
-    "mp": "1d8",
-    "sk": "Defesa, resistência, proteção de aliados"
+    "mp": "1d4",
+    "per": [
+      "Atletismo",
+      "Vigor Bruto",
+      "Fôlego",
+      "Vontade",
+      "Percepção",
+      "Intuição",
+      "Intimidação",
+      "Sentir Arka"
+    ],
+    "arm": [
+      "L",
+      "M",
+      "P"
+    ],
+    "esc": true,
+    "armas": "Simples, marciais e de fogo",
+    "res": [
+      "FOR",
+      "CON"
+    ],
+    "co": 80
   },
   "Curandeiro": {
     "m": {
@@ -152,11 +292,31 @@ export const PROFESSIONS_DATA = {
     },
     "hp": "1d8",
     "mp": "1d10",
-    "sk": "Medicina, herbologia, cura por Arka"
+    "per": [
+      "Medicina",
+      "Alquimia",
+      "Intuição",
+      "Persuasão",
+      "Trato Animal",
+      "Sentir Arka",
+      "Concentração",
+      "Sobrevivência"
+    ],
+    "arm": [
+      "L",
+      "M"
+    ],
+    "esc": true,
+    "armas": "Simples e pistola",
+    "res": [
+      "SAB",
+      "CAR"
+    ],
+    "co": 110
   }
 };
 
-// Perícias (DP): 31 perícias (D-23, D-46). Criação: 4 da profissão + 2 livres (listas ⏳) → por ora 6 livres; + 2 proficiências livres de arma/ferramenta (D-45)
+// Perícias (DP): 31 perícias (D-23, D-46). Criação: 4 da lista da profissão + 2 livres (P-060); + 2 proficiências livres de arma/ferramenta, nunca armadura (D-45, P-049)
 export const SKILLS = [
   {
     "n": "Atletismo",
@@ -284,6 +444,9 @@ export const SKILLS = [
   }
 ];
 export const SKILLS_AT_CREATION = 6;
+export const SKILLS_FROM_PROF = 4;
+export const PROF_RENAMES = { Arkano: 'Canalizador' }; // P-040
+export const ARMOR_CAT = { L: 'leves', M: 'médias', P: 'pesadas' };
 export const FREE_TOOL_PROFS = 2;
 export const SKILL_RENAMES = {
   "Adestrar Animais": "Trato Animal",
@@ -442,15 +605,15 @@ export const AURA_DETAILS = {
       "l": [
         "Restaura objetos pequenos (até 30 cm) a seu estado original sem conhecer sua estrutura, e objetos médios (até 1 metro) se conhecer seu funcionamento. Cura até 2d6 pontos de vida em ferimentos recentes (menos de 1 hora) em outras pessoas ou em si mesmo. Pode ser usado 3 vezes por dia.",
         "Restaura objetos de tamanho médio (até 1,5 metros) sem conhecer sua estrutura interna. Cura até 4d8 pontos de vida em ferimentos de até 24 horas e pode estabilizar personagens caídos em combate, impedindo a morte por 1 hora. Pode ser usado 5 vezes por dia.",
-        "Restaura objetos grandes (até 3 metros) conhecendo apenas parcialmente seu funcionamento. Cura até 8d8 pontos de vida em ferimentos de até 3 dias, e pode reviver pessoas mortas há menos de 10 minutos, desde que o corpo esteja relativamente intacto. Pode ser usado 7 vezes por dia."
+        "Restaura objetos grandes (até 3 metros) conhecendo apenas parcialmente seu funcionamento. Cura até 8d8 pontos de vida em ferimentos de até 3 dias, e pode reviver pessoas mortas há menos de 10 minutos, desde que o corpo esteja relativamente intacto. Pode ser usado 7 vezes por dia. <b>Corpo Renovado</b> (passivo): o HP máximo do usuário aumenta em 1 por nível de personagem. Ele é imune a doenças naturais, não envelhece enquanto a aura estiver no nível 3 e, com 0 HP, faz os testes contra a morte com vantagem."
       ]
     },
     {
       "n": "Animalesca",
       "l": [
-        "Aprimora os sentidos (visão, audição, olfato) em 100%, concedendo +5 em testes de Percepção. Aumenta uma característica física (velocidade, força ou agilidade) em 50%, concedendo +3 no atributo correspondente. Pode se comunicar telepaticamente com animais em um raio de 10 metros e manifestar partes animais (garras, presas, etc.) em membros pequenos por até 1 hora, 3 vezes ao dia.",
-        "Transforma-se completamente em um animal não-mítico de tamanho pequeno ou médio por até 3 horas, adquirindo todas as suas capacidades físicas. Pode manifestar partes de animais míticos menores (como garras de grifo ou escamas de basilisco) em até 30% do corpo por 1 hora, 2 vezes ao dia.",
-        "Transforma-se em qualquer animal não mítico que tenha observado por pelo menos 10 minutos, independentemente do tamanho, por até 12 horas. As transformações mantêm a consciência e inteligência originais.<br><br><b>Forma de Besta Lendária:</b> uma vez por dia, o usuário se transforma por até 1 hora numa besta lendária e, a cada transformação, escolhe uma das duas formas abaixo. Em qualquer delas, mantém a capacidade de fala e inteligência originais.<br><b>Dragão</b> (a antiga aura Dracônica): dragão de 5 metros de comprimento; escolhe um elemento (fogo, gelo, ácido ou eletricidade). Ganha Força 20, CA natural de 18, imunidade ao elemento escolhido e sopro dracônico desse elemento de 10 metros, causando 8d6 de dano (recarrega a cada 1d4 turnos).<br><b>Animal mítico menor</b> (grifo jovem, pequeno basilisco, hidra jovem): adquire as capacidades físicas dele (voo, olhar, cabeças, veneno). Os números da forma são definidos com o Mestre e nunca superam os do dragão: Força até 20, CA natural até 18 e um ataque especial de até 8d6 (recarga de 1d4 turnos)."
+        "Aprimora os sentidos (visão, audição, olfato) em 100%, concedendo +5 em testes de Percepção. Aumenta uma característica física: +3 em FOR ou em DEX, ou +3 m de movimento. Pode se comunicar telepaticamente com animais em um raio de 10 metros e manifestar partes animais (garras, presas, etc.) em membros pequenos por até 1 hora, 3 vezes ao dia.",
+        "Transforma-se completamente em um animal não mítico de tamanho pequeno ou médio por até 3 horas, adquirindo todas as suas capacidades físicas. Pode manifestar partes de animais míticos menores (como garras de grifo ou escamas de basilisco) em até 30% do corpo por 1 hora, 2 vezes ao dia. Cada manifestação traz uma parte, por exemplo: <b>escamas</b>, +2 de CA (soma com armadura e escudo, não com a CA natural da Forma de Besta Lendária); ou <b>asas</b>, voo com deslocamento igual ao do usuário, que precisa terminar o turno em solo ou num apoio firme, senão cai. Manifestar escamas e asas ao mesmo tempo gasta as 2 manifestações do dia. Escamas e asas são passivas: não custam MP.",
+        "Transforma-se em qualquer animal não mítico que tenha observado por pelo menos 10 minutos, independentemente do tamanho, por até 12 horas. As transformações mantêm a consciência e inteligência originais.<br><br><b>Forma de Besta Lendária (Nível 3):</b> O ápice da Animalesca. Uma vez por dia, o usuário se transforma por até 1 hora numa besta lendária e, a cada transformação, escolhe uma das duas opções abaixo. Em qualquer delas, mantém a capacidade de fala e inteligência originais.<br><br><b>Dragão:</b> a antiga aura Dracônica. O usuário se transforma completamente em um dragão de 5 metros de comprimento e escolhe um elemento (fogo, gelo, ácido ou eletricidade). Nesta forma, ganha Força 20, CA natural de 18, imunidade ao elemento escolhido e sopro dracônico desse elemento de 10 metros, causando 8d6 de dano (recarrega a cada 1d4 turnos).<br><br><b>Animal mítico menor:</b> o usuário se transforma em um animal mítico menor, como um grifo jovem, um pequeno basilisco ou uma hidra jovem. A forma tem perfil fixo: Força 18, CA natural de 16 e um ataque especial de 6d6 (recarrega a cada 1d4 turnos), sem imunidade elemental. Ganha ainda uma capacidade da criatura escolhida: <b>voo</b> de 18 metros (grifo); <b>olhar</b> que deixa o alvo Enraizado por 1 turno, com teste de CON contra a CD de técnica (basilisco); ou <b>1 mordida extra</b> de 1d8 por turno (hidra)."
       ]
     },
     {
@@ -486,23 +649,23 @@ export const AURA_DETAILS = {
       "l": [
         "Cria pequenas chamas douradas com propriedades purificadoras em um raio de até 5 metros. Estas chamas causam 2d6 de dano a criaturas das trevas ou podem purificar alvos afetados por maldições menores, restaurando 1d8 pontos de vida. A luz gerada ilumina uma área de 10 metros de raio e dura até 10 minutos. Possui 25% de resistência a danos de trevas.",
         "Controla com facilidade a luz sagrada em um raio de até 15 metros, criando chamas douradas mais brilhantes que causam 4d6 de dano a criaturas das trevas e dissipam maldições de nível médio. A luz gerada pode cegar temporariamente oponentes (teste de Constituição ou ficam cegos por 1d4 turnos) e ilumina uma área de 30 metros de raio por até 1 hora. Possui 50% de resistência a danos de trevas.",
-        "Domínio total sobre a luz divina em um raio de até 50 metros. Cria chamas douradas intensas que causam 8d6 de dano a criaturas das trevas, bane a escuridão mágica instantaneamente e quebra maldições poderosas. Pode criar explosões de luz que causam 6d8 de dano em uma área de 10 metros de raio. Possui 100% de imunidade a danos de trevas, mas sofre 30% a mais de dano de ataques caóticos."
+        "Domínio total sobre a luz divina em um raio de até 50 metros. Cria chamas douradas intensas que causam 8d6 de dano a criaturas das trevas, bane a escuridão mágica instantaneamente e quebra maldições poderosas. Pode criar explosões de luz que causam 4d8 de dano em uma área de 5 metros de raio (24 MP). <b>Halo</b> (passivo): à vontade, o usuário emite luz forte em 10 metros de raio. Ataques corpo a corpo contra ele sofrem −1 (−2 se o atacante for criatura das trevas, distorcida ou morto-vivo). Ele é imune à condição Cego causada por luz e enxerga através de escuridão mágica de nível inferior. Possui 100% de imunidade a danos de trevas, mas sofre 30% a mais de dano de ataques caóticos."
       ]
     },
     {
       "n": "Trevas",
       "l": [
-        "Cria áreas de escuridão intensa de até 5 metros de raio, obscurecendo completamente a visão normal. Criaturas dentro da área sofrem -5 em testes de Percepção e Ataque. A escuridão dura até 10 minutos e pode ser dissipada por luz mágica de nível equivalente. Possui 25% de resistência a danos de luz.",
-        "Amplia a escuridão para áreas de até 15 metros de raio, criando uma atmosfera opressora que causa desconforto psicológico (-2 em testes de Vontade) a criaturas não acostumadas às trevas. Pode solidificar sombras para criar barreiras temporárias (30 PV, duração de 10 minutos) ou tentáculos que restringem movimento. Possui 50% de resistência a danos de luz.",
-        "Controle absoluto sobre as trevas em um raio de até 50 metros. Cria escuridão total que anula mesmo fontes mágicas de luz de nível inferior. Criaturas na área devem fazer um teste de Vontade ou sofrem efeito de medo. Pode criar construtos de sombra sólida (100 PV) que obedecem a comandos simples por até 1 hora. Possui 100% de imunidade a danos de trevas, mas sofre 50% a mais de dano de ataques de luz."
+        "Cria áreas de escuridão intensa de até 5 metros de raio, obscurecendo completamente a visão normal. Criaturas dentro da área sofrem −5 em testes de Percepção e Ataque. A escuridão dura até 10 minutos e pode ser dissipada por luz mágica de nível equivalente. Possui 25% de resistência a danos de trevas.",
+        "Amplia a escuridão para áreas de até 15 metros de raio, criando uma atmosfera opressora que causa desconforto psicológico (−2 em testes de Vontade) a criaturas não acostumadas às trevas. Pode solidificar sombras para criar barreiras temporárias (30 HP, duração de 10 minutos) ou tentáculos que restringem movimento. Possui 50% de resistência a danos de trevas.",
+        "Controle absoluto sobre as trevas em um raio de até 50 metros. Cria escuridão total que anula mesmo fontes mágicas de luz de nível inferior. Criaturas na área devem fazer um teste de Vontade ou ficam Amedrontadas. Pode criar construtos de sombra sólida (100 HP) que obedecem a comandos simples por até 1 hora. Possui 100% de imunidade a danos de trevas, mas sofre 50% a mais de dano de ataques de luz."
       ]
     },
     {
       "n": "Realidade",
       "l": [
-        "Cria pequenas distorções na realidade em um raio de até 5 metros. Pode gerar ilusões simples que afetam um sentido (visão, audição, etc.) e alterar sutilmente propriedades físicas (como fazer um objeto parecer mais pesado ou leve). As distorções duram até 10 minutos e podem ser percebidas com um teste de Percepção com dificuldade média.",
-        "Cria ilusões complexas em um raio de até 15 metros que afetam todos os sentidos simultaneamente. Pode distorcer a percepção em uma área maior, alterando como as pessoas interpretam o ambiente (fazendo uma porta parecer uma parede, por exemplo). As ilusões duram até 1 hora e requerem um teste de Percepção com dificuldade alta para serem identificadas.",
-        "Controle significativo sobre a realidade em um raio de até 30 metros. Pode criar ilusões praticamente indistinguíveis da realidade, modificar leis físicas localmente (alterar a gravidade, permitir que objetos atravessem paredes, etc.) e criar pequenos bolsões de realidade alternativa (até 10 metros de diâmetro) onde as regras são diferentes. Estes efeitos duram até 24 horas e só podem ser detectados por criaturas com habilidades especiais de percepção da realidade."
+        "Cria pequenas distorções na realidade em um raio de até 5 metros. Altera uma propriedade física (peso, atrito ou dureza) de um objeto de até 10 kg por até 10 minutos: a pedra fica leve como pena, o chão liso como gelo, a corda dura como ferro. A Realidade não cria ilusões: o que ela muda, muda de fato.",
+        "As alterações passam a afetar um objeto de até 100 kg ou uma área de 3 metros de raio, por até 10 minutos.",
+        "Controle significativo sobre a realidade em um raio de até 30 metros. Pode modificar leis físicas localmente (alterar a gravidade, permitir que objetos atravessem paredes, etc.) e criar pequenos bolsões de realidade alternativa (até 10 metros de diâmetro) onde as regras são diferentes. Estes efeitos duram até 24 horas e só podem ser detectados por criaturas com habilidades especiais de percepção da realidade."
       ]
     },
     {
@@ -525,8 +688,8 @@ export const AURA_DETAILS = {
       "n": "Temporal",
       "l": [
         "Realiza manipulações temporais sutis em um raio de até 3 metros. Pode acelerar ou retardar o tempo em até 50% em uma área pequena ou em um corpo, afetando processos naturais (como decomposição, crescimento) ou a velocidade percebida de ações. Os efeitos duram até 1 minuto e afetam apenas um alvo por vez.",
-        "Manipula o tempo em um raio de até 10 metros. Pode acelerar o tempo (2x mais rápido), retardá-lo (até 75% mais lento) ou pausá-lo completamente por até 10 segundos em uma área de até 5 metros de diâmetro. Pode criar distorções temporais que fazem com que eventos ocorram fora de sequência e realizar pequenos saltos no tempo (até 5 minutos, afetando apenas o próprio usuário). Pode afetar até 3 alvos simultaneamente.",
-        "Controle avançado sobre o tempo em um raio de até 30 metros. Pode prender objetos ou seres de até 500 kg em estase temporal por até 1 hora, prever eventos até 30 segundos no futuro com 80% de precisão, e manipular o fluxo temporal em uma área de até 20 metros de diâmetro. Pode criar bolsões onde o tempo flui diferentemente (10x mais rápido ou lento) por até 10 minutos."
+        "Manipula o tempo em um raio de até 10 metros. Pode acelerar o tempo (2x mais rápido), retardá-lo (até 75% mais lento) ou pausá-lo completamente para um único alvo por 1 rodada. Pode criar distorções temporais que fazem com que eventos ocorram fora de sequência e realizar pequenos saltos no tempo (até 5 minutos, afetando apenas o próprio usuário). Acelerar e retardar podem afetar até 3 alvos simultaneamente.",
+        "Controle avançado sobre o tempo em um raio de até 30 metros. Pode prender um único objeto ou ser de até 500 kg em estase temporal por até 1 minuto (10 rodadas), com concentração; um ser preso faz um novo teste de CON no início de cada turno dele e se liberta com sucesso. Pode prever os instantes seguintes, recebendo vantagem no próximo teste, e manipular o fluxo temporal em uma área de até 20 metros de diâmetro. Pode criar bolsões onde o tempo flui diferentemente (10x mais rápido ou lento) por até 10 minutos."
       ]
     }
   ],
@@ -766,28 +929,28 @@ export const GENERIC_TECHS = [
     "desc": "Concentra a aura na palma da mão e lança como projétil contra um oponente.",
     "cost": "6 MP (mín) — 30 MP (máx por ataque) · A partir do nível 13: até 36 MP",
     "dmg": "1d8 por cada 6 MP utilizado, até 5d8 (30 MP) · Nível 13+: 6d8 (36 MP)",
-    "range": "Curto (≤10m): sem penalidade · Médio (10–30m): −2 acerto · Longo (30–50m): −5 acerto",
-    "extra": "Tipo de dano: o de uma das auras do personagem, escolhida pelo jogador a cada disparo; usuários da mesma aura podem ser imunes um ao outro. Efeito pós-disparo (1d4 turnos): Fogo: 1d4 queimadura/turno · Água: −2 movimento · Terra: −2 esquiva · Vento: −2 próx. ataque · Outros: padrão similar"
+    "range": "10 m, +10 m a cada 6 MP acima de 6 (máximo 50 m): 6 MP = 10 m · 12 MP = 20 m · 18 MP = 30 m · 24 MP = 40 m · 30 MP ou mais = 50 m (P-017)",
+    "extra": "Tipo de dano: o de uma das auras do personagem, escolhida pelo jogador a cada disparo; usuários da mesma aura podem ser imunes um ao outro. Licença: livre até 12 MP (2d8); acima disso, exige licença em território imperial (P-054). Efeito pós-disparo (acima de 18 MP, D-81), pelo tipo de dano escolhido: Fogo = Queimadura · Água = Encharcado · Terra = Derrubado (resistência de FOR) · Vento = −2 no próximo ataque do alvo · Sombria = Cego 1 turno · Nebulosa = −2 no ataque do alvo · outras auras: o Mestre escolhe uma condição leve coerente"
   },
   {
     "n": "Manifestar",
     "tag": "Todas as Auras",
     "tagC": "#2ecc71",
     "desc": "Manifesta algo no plano físico ou mental. Permanece enquanto MP estiver reservada.",
-    "cost": "Pequeno (≤0,5m³): 15 MP · Médio (≤2m³): 25 MP · Grande (≤5m³): 45 MP",
-    "dmg": "Ofensivo: 1d8 por 15 MP investidos",
-    "range": "Manifestação: até 20m · Distância máx: 50m do criador",
-    "extra": "Objetos complexos exigem teste de DOM. Manifestações ofensivas têm dano limitado. Duração enquanto MP reservada (ação livre para liberar)."
+    "cost": "MP reservado enquanto existir: objetos simples 5–10 MP · médios 10–25 MP · grandes/complexos 25–45 MP (P-016)",
+    "dmg": "Construto que causa dano segue a tabela do Projetar: 6 MP por d8",
+    "range": "Toque (simples) · 10 m (médios) · 20 m (grandes/complexos)",
+    "extra": "Desfaz-se quando o usuário quer ou quando perde a concentração. Licença: Manifestar de objetos simples é livre; acima disso, exige licença em território imperial (P-054)."
   },
   {
     "n": "Proteger",
     "tag": "Todas as Auras",
     "tagC": "#3498db",
     "desc": "Usa energia da aura como reação para se defender de outro efeito de aura.",
-    "cost": "% do MP gasto pelo atacante · Total: 100% · Parcial: 50% (mín 5 MP) (⏳ P-018) · Reflexivo: 150% · Contra técnica gratuita ou com desconto (ex.: a técnica bônus da Expansão): custo de tabela da técnica (6 MP por d8)",
-    "dmg": "Total: bloqueia 100% · Reflexivo: retorna 25% do efeito ao atacante",
-    "range": "Reação, 1×/rodada · Teste: d20 + mod SAB + proficiência contra CD 10 + mod DOM do atacante",
-    "extra": "Apenas contra efeitos de aura (não físicos). Requer mão livre. Não funciona inconsciente/incapacitado."
+    "cost": "% do MP gasto pelo atacante · Total: 100% · Parcial: 50% · Reflexivo: 150% (P-018) · Contra técnica gratuita ou com desconto (técnica bônus da Expansão, Ressonância, Técnica Assinatura): custo de tabela da técnica, 6 MP por d8 (P-053)",
+    "dmg": "Total: bloqueia 100% · Parcial: mitiga 50% · Reflexivo: reflete 25% ao atacante",
+    "range": "Reação, 1×/rodada (divide a reação com Esquiva, Aparar, Contra-Ataque e ataque de oportunidade) · Teste: d20 + mod SAB + proficiência contra CD 10 + mod DOM do atacante",
+    "extra": "Vale só contra Arka (técnicas e capacidades de aura), nunca contra armas, nem as de fogo. Não exige mão livre. Sempre livre de licença (P-054). Se o teste falhar, o MP é pago e a reação é gasta (D-82). Não funciona Incapacitado ou Inconsciente."
   },
   {
     "n": "Expansão de Domínio",
@@ -797,7 +960,7 @@ export const GENERIC_TECHS = [
     "cost": "50% do MP máximo (não recuperável no combate) · Ativar gasta a ação do turno",
     "dmg": "Escolha 2 de 4: vantagem nos ataques · +50% de dano (conta como Fortalecimento no limite de +300% e de 3 simultâneos) · 1 técnica extra grátis por turno, como ação bônus, de no máximo 3d8 · resistências do alvo pela metade",
     "range": "Raio: 10 m · Duração: concentração, máx. 3 turnos",
-    "extra": "1×/dia; +1 nível de Exaustão de Arka após o uso. 1 Expansão por personagem. Domínios opostos se anulam. Legado da Arka (nv 15) pode remover a Exaustão (1×/dia)."
+    "extra": "1×/dia; +1 nível de Exaustão de Arka após o uso. 1 Expansão por personagem. Expansões que se encontram (P-059): teste oposto de DOM (1d20 + mod DOM + proficiência); quem vence mantém a sua, e o perdedor perde a dele, com MP e Exaustão já pagos; se as auras forem de Áreas opostas no hexagrama, as duas se anulam sem teste. Legado da Arka (nv 15) pode remover a Exaustão (1×/dia)."
   }
 ];
 
@@ -824,8 +987,8 @@ export const FORT_ELEMENTS = [
   },
   {
     "n": "Técnica em Conjunto",
-    "ef": "Compatíveis: +75% · Neutras: +50% · Opostas: +25%",
-    "req": "Dois jogadores combinam auras"
+    "ef": "Mesma Área: +75% · Neutras: +50% · Opostas: +25%",
+    "req": "Dois usuários combinam auras; não acumula com o −15% de MP da mesma Área"
   },
   {
     "n": "Votos",
@@ -871,7 +1034,7 @@ export const FORT_VARIANTS = {
   ],
   "4": [
     [
-      "Compatíveis",
+      "Mesma Área",
       75
     ],
     [
@@ -1087,8 +1250,9 @@ export function awakenedAura(auras) { return (auras || []).find(x => x.lv === 4)
 // Teto de dados das técnicas criadas (PR5-07, D-58): máximo do Projetar no nível (5d8; 6d8 a partir do nv 13)
 export function techDiceCap(level) { return (level || LV_MIN) >= 13 ? 6 : 5; }
 
-// Fortalecimentos (cap. 11, PB-5): soma simples (⏳ P-015), teto +300% e 3 simultâneos; Votos (5) e Limites (7) não acumulam
-export function fortTotal(checks, variants, expansion) {
+// Fortalecimentos (cap. 11, PB-5, P-015): os bônus se somam e o total multiplica o dano base, sem custo de preparo;
+// teto +300% e 3 simultâneos; Votos (5) e Limites (7) não acumulam; Legado Arka Desperta (+50%) fica fora dos limites (P-055)
+export function fortTotal(checks, variants, expansion, legacy = false) {
   let count = 0, total = 0; const vals = {}; const warn = [];
   FORT_ELEMENTS.forEach((_, i) => {
     if (!checks[i]) return;
@@ -1100,8 +1264,40 @@ export function fortTotal(checks, variants, expansion) {
   if (expansion) { count++; total += 50; }
   if (count > FORT_MAX_N) warn.push(`Máximo de ${FORT_MAX_N} fortalecimentos simultâneos (${count} marcados).`);
   if (total > FORT_CAP) { warn.push(`Limite de +${FORT_CAP}% atingido (soma: +${total}%).`); total = FORT_CAP; }
-  return { total, count, actions: Math.max(0, count - 1), turns: Math.max(0, count - 2), warn };
+  if (legacy) total += 50;
+  return { total, count, mult: 1 + total / 100, warn };
 }
+
+// ── Rodada 8: perícias, resistências, armaduras, descanso, Ação Lendária, XP por sessão ──
+// Perícias (P-060, D-71, D-77): Diplomata tem Persuasão pelo Especialista; Especialista dobra Persuasão e +1 perícia da lista
+export function skillProficient(sheet, n) { return (sheet.proficiencies || []).includes(n) || (sheet.prof === 'Diplomata' && n === 'Persuasão'); }
+export function skillProfMult(sheet, n) {
+  if (!skillProficient(sheet, n)) return 0;
+  if (sheet.prof === 'Diplomata' && (n === 'Persuasão' || (sheet.especialista && n === sheet.especialista))) return 2;
+  return 1;
+}
+// Testes de resistência (P-030, R10-5): d20 + mod + prof se a profissão é proficiente; Anão +2 em CON (cap. 07)
+export function saveProficient(prof, a) { return (prof?.res || []).includes(a); }
+export function saveBonus(prof, race, a, mod, pb) { return mod + (saveProficient(prof, a) ? pb : 0) + (RACES_DATA[race]?.res?.[a] ?? 0); }
+// Armadura sem proficiência (P-049): desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX
+export function armorWithoutProf(profKey, prof, armorName, shield) {
+  if (profKey === 'custom' || !prof?.arm) return '';
+  const ar = ARMORS.find(x => x.n === armorName); const f = [];
+  if (ar && ar.t !== 'N' && !prof.arm.includes(ar.t)) f.push('armadura ' + { L: 'leve', M: 'média', P: 'pesada' }[ar.t]);
+  if (shield && !prof.esc) f.push('escudo');
+  return f.join(' e ');
+}
+// Dados de vida (P-029, D-66, D-71): estoque = nível; até metade do nível (para cima) por descanso curto; o longo devolve tudo
+export function hitDiceLeft(level, used) { return Math.max(0, (level || LV_MIN) - (used || 0)); }
+export function hitDicePerRest(level) { return Math.ceil((level || LV_MIN) / 2); }
+// Corpo Renovado (Rejuvenescimento 3, passivo, R9-3): +1 HP máximo por nível de personagem
+export function corpoRenovado(auras) { return (auras || []).some(x => x.n === 'Rejuvenescimento' && x.lv >= 3); }
+// Ação Lendária de jogador (D-68, R11-2): quem despertou; 1 por rodada, máx. 2 por combate
+export const LEGENDARY_MAX = 2;
+// XP por sessão (R9-4): [mínimo, típico, máximo] pelo nível atual; com XP de combate ×0,8 (×0,7 com 3+ lutas)
+export const XP_SESSION = { 3: [130, 160, 190], 4: [170, 210, 250], 5: [220, 275, 330], 6: [290, 360, 430], 7: [380, 470, 560], 8: [460, 580, 700], 9: [540, 670, 800], 10: [640, 800, 960], 11: [660, 820, 980], 12: [730, 910, 1090], 13: [800, 1000, 1200], 14: [800, 1000, 1200] };
+// Licença por nível de aura em território imperial (R10-6, D-66)
+export function auraLicense(lv) { return lv >= 3 ? 'Avançada' : lv >= 2 ? 'Intermediária' : ''; }
 
 // Blank sheet with all companion + VTT fields
 export function blankSheet(overrides = {}) {
@@ -1121,7 +1317,8 @@ export function blankSheet(overrides = {}) {
     customProfs: [],    // [{ n, a }]
     toolProfs: ['', ''],
     // HP / MP: dado bruto por nível (criação = 3 rolagens)
-    curHP: 0, maxHP: 0, curMP: 0, maxMP: 0, falls: 0, shortRests: 0,
+    curHP: 0, maxHP: 0, curMP: 0, maxMP: 0, falls: 0, shortRests: 0, hdUsed: 0,
+    especialista: '', acaoLend: 0,
     hpDice: [], mpDice: [], hpRolls: [], mpRolls: [],
     armor: 'Sem armadura', shield: false,
     // Auras: [{ n, lv, her, pago, deus }]

@@ -1,7 +1,7 @@
 import {
   SKILLS, AURA_GROUPS, AURA_DETAILS, RACES_DATA, XP_TABLE, MILESTONES,
   pointBuyCost, profBonus, ppAttrCost, ppEarned, areaDistance, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
-  PANTHEON, GENERIC_TECHS, ppConfirmState, ppPending, attrConfirmed, auraConfirmed, awakenedAura, techDiceCap, titanicBorn, rareHereditary,
+  PANTHEON, GENERIC_TECHS, PROFESSIONS_DATA, skillProfMult, saveBonus, armorWithoutProf, hitDiceLeft, hitDicePerRest, corpoRenovado, XP_SESSION, auraLicense, ATTR_FULL, ppConfirmState, ppPending, attrConfirmed, auraConfirmed, awakenedAura, techDiceCap, titanicBorn, rareHereditary,
 } from './rpgData';
 
 // Casos calculados à mão a partir do canon (rodadas 5 e 6 do artífice)
@@ -125,5 +125,40 @@ describe('regras do canon', () => {
     const w = fortTotal([true, true, false, true], {}, true);
     expect(w.count).toBe(4);
     expect(w.warn.join(' ')).toMatch(/Máximo de 3/);
+  });
+
+  test("rodada 8: profissões (P-060, P-049, R10-5, R9-1, D-65, D-73, P-040)", () => {
+    expect(Object.keys(PROFESSIONS_DATA)).toEqual(["Guerreiro", "Explorador", "Estudioso", "Diplomata", "Canalizador", "Guardião", "Curandeiro"]);
+    expect(Object.values(PROFESSIONS_DATA).every(p => p.per.length === 8 && p.res.length === 2)).toBe(true);
+    expect(Object.values(PROFESSIONS_DATA).map(p => p.co)).toEqual([100, 95, 120, 140, 90, 80, 110]);
+    expect(PROFESSIONS_DATA["Guardião"].mp).toBe("1d4");
+    expect(ATTR_FULL.DOM).toBe("Domínio");
+    expect(PROFESSIONS_DATA.Explorador.ex[0][1]).toMatch(/Percepção/); // D-77
+  });
+
+  test("rodada 8: Especialista, resistências e armadura sem proficiência", () => {
+    const d = { prof: "Diplomata", proficiencies: ["Enganação"], especialista: "Enganação" };
+    expect(["Persuasão", "Enganação", "Intuição", "Barganha"].map(n => skillProfMult(d, n))).toEqual([2, 2, 0, 0]);
+    expect(skillProfMult({ prof: "Guerreiro", proficiencies: ["Atletismo"] }, "Atletismo")).toBe(1);
+    // Anão Guardião, CON 11 (mod 0), prof +2: 0 + 2 + 2 (raça) = 4; DEX sem proficiência
+    expect(saveBonus(PROFESSIONS_DATA["Guardião"], "Anão", "CON", 0, 2)).toBe(4);
+    expect(saveBonus(PROFESSIONS_DATA["Guardião"], "Anão", "DEX", -2, 2)).toBe(-2);
+    expect(armorWithoutProf("Estudioso", PROFESSIONS_DATA.Estudioso, "Cota de malha", true)).toBe("armadura média e escudo");
+    expect(armorWithoutProf("Curandeiro", PROFESSIONS_DATA.Curandeiro, "Cota de malha", true)).toBe("");
+  });
+
+  test("rodada 8: dados de vida, Corpo Renovado, XP por sessão, licenças", () => {
+    expect([hitDiceLeft(3, 0), hitDicePerRest(3), hitDicePerRest(7), hitDiceLeft(7, 4)]).toEqual([3, 2, 4, 3]);
+    expect(corpoRenovado([{ n: "Rejuvenescimento", lv: 3 }])).toBe(true);
+    expect(corpoRenovado([{ n: "Rejuvenescimento", lv: 2 }])).toBe(false);
+    expect(XP_SESSION[3]).toEqual([130, 160, 190]);
+    expect(XP_SESSION[15]).toBeUndefined();
+    expect([auraLicense(1), auraLicense(2), auraLicense(3)]).toEqual(["", "Intermediária", "Avançada"]);
+  });
+
+  test("rodada 8: fortalecimentos somam e multiplicam; Legado fora do teto (P-015, P-055)", () => {
+    const r = fortTotal([true, false, false, false, false, true], {}, false); // Sinais +25 + Votos +100
+    expect([r.total, r.mult]).toEqual([125, 2.25]);
+    expect(fortTotal([false, false, true, false, false, false, false, true], { 2: 2, 7: 2 }, false, true).total).toBe(350);
   });
 });
