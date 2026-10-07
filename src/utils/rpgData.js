@@ -1,4 +1,4 @@
-// RPG data constants — gerados a partir de utils/crepusculo-ficha-v5.html (canon de 2026-10-06, rodadas 5 a 8 do artífice).
+// RPG data constants — gerados a partir de utils/crepusculo-ficha-v5.html (canon de 2026-10-06, rodadas 5 a 9 do artífice).
 // Fonte única dos dados de jogo usados na CharacterSheet. Regras: livro/canon.md (decisões D-21…D-79, PG, PR5, P-0xx aprovadas, R9–R12).
 // Para regenerar: extrair as constantes da ficha HTML (mesmos nomes entre parênteses).
 
@@ -23,12 +23,13 @@ export const ATTR_FULL = {
 };
 
 // Raças (RACES): movimento por raça (9 m; anão 7 m); afinidade = 1 Área (D-37); efeito PA-11 (+2 treino, −10% MP)
+// Rodada 9: Humano — Adaptação (P-083) e +1 à escolha (sheet.humAttr); Anjo — planagem (P-084); Demônio — Fúria Ancestral (R13-5)
 export const RACES_DATA = {
   "Humano": {
     "bonus": {},
     "mv": 9,
     "af": "",
-    "ab": "Adaptação: 2×/dia pode rerolar um teste de atributo. +1 em um atributo à escolha.",
+    "ab": "Adaptação: 2×/dia pode rerrolar um teste de atributo, de perícia ou de resistência (não ataques nem testes de treino) e fica com o novo resultado. +1 em um atributo à escolha.",
     "c": "#c9a96e"
   },
   "Elfo": {
@@ -58,7 +59,7 @@ export const RACES_DATA = {
     },
     "mv": 9,
     "af": "Emissora",
-    "ab": "+3 dano com fogo, 50% resistência a fogo. Fraqueza: -2 CAR com não-demônios.",
+    "ab": "50% de resistência a fogo. Fúria Ancestral: 1×/descanso curto, ação bônus, por 3 rodadas: o primeiro acerto em cada turno, com arma ou técnica, causa +1d6 de dano a um alvo, do mesmo tipo do ataque. Fraqueza: −2 CAR em interações com não-demônios.",
     "c": "#c43030"
   },
   "Anjo": {
@@ -67,7 +68,7 @@ export const RACES_DATA = {
     },
     "mv": 9,
     "af": "Deformadora",
-    "ab": "Escudo de absorção: 15 pts, 1×/dia. Fraqueza: 150% dano de Trevas.",
+    "ab": "Escudo de absorção: 15 pts, 1×/dia. Planagem: se puder abrir as asas, não sofre dano de queda e avança 1 m na horizontal a cada 1 m de queda; não ganha altura. Fraqueza: 150% dano de Trevas.",
     "c": "#f0e68c"
   }
 };
@@ -133,7 +134,7 @@ export const PROFESSIONS_DATA = {
       "M"
     ],
     "esc": false,
-    "armas": "Simples, marciais à distância e de fogo",
+    "armas": "Simples, marciais à distância (arco longo, besta pesada, tridente) e de fogo",
     "res": [
       "DEX",
       "INT"
@@ -901,25 +902,10 @@ export const XP_TABLE = [
   0
 ];
 export const LV_MIN = 3, LV_MAX = 15;
-export const MILESTONES = {
-  "3": "Início da campanha (aura hereditária no nv 1)",
-  "4": "—",
-  "5": "Second Wind (25% do MP, 1×/combate)",
-  "6": "—",
-  "7": "Técnica Assinatura (−25% de custo)",
-  "8": "—",
-  "9": "Second Wind 2×/combate",
-  "10": "Técnica Máxima disponível",
-  "11": "2ª Técnica Assinatura",
-  "12": "—",
-  "13": "+1 dado no Projetar máximo e no teto das técnicas criadas (6d8 por 36 MP)",
-  "14": "—",
-  "15": "Legado da Arka (escolha 1)"
-};
-export const LEGACY_OPTIONS = [
-  "Expansão de Domínio sem Exaustão, 1×/dia",
-  "Fortalecimento permanente de +50% (não ocupa slot)"
-];
+// D-89: o nível não dá benefício além de HP/MP, PP e proficiência. Saíram Second Wind, Técnica Assinatura por nível,
+// Técnica Máxima no nv 10, 6d8 no nv 13 e Legado da Arka (R13-2, R13-3, R13-4, R13-6): MILESTONES e LEGACY_OPTIONS foram removidos.
+// Ferramentas (P-080, cap. 12): proficiência soma ao teste; perícia + ferramenta do mesmo teste = vantagem
+export const TOOLS = ["kit de alquimia", "ferramentas de ferreiro", "ferramentas de ladrão", "instrumentos de navegação", "ferramentas de engenheiro a vapor", "kit de herbalismo e medicina", "kit de disfarce", "instrumento musical"];
 
 export const GENERIC_TECHS = [
   {
@@ -927,10 +913,10 @@ export const GENERIC_TECHS = [
     "tag": "Todas as Auras",
     "tagC": "#9b59b6",
     "desc": "Concentra a aura na palma da mão e lança como projétil contra um oponente.",
-    "cost": "6 MP (mín) — 30 MP (máx por ataque) · A partir do nível 13: até 36 MP",
-    "dmg": "1d8 por cada 6 MP utilizado, até 5d8 (30 MP) · Nível 13+: 6d8 (36 MP)",
+    "cost": "6 MP (mín) — 30 MP (máx por ataque), em qualquer nível (R13-2)",
+    "dmg": "1d8 por cada 6 MP utilizado, até 5d8 (30 MP)",
     "range": "10 m, +10 m a cada 6 MP acima de 6 (máximo 50 m): 6 MP = 10 m · 12 MP = 20 m · 18 MP = 30 m · 24 MP = 40 m · 30 MP ou mais = 50 m (P-017)",
-    "extra": "Tipo de dano: o de uma das auras do personagem, escolhida pelo jogador a cada disparo; usuários da mesma aura podem ser imunes um ao outro. Licença: livre até 12 MP (2d8); acima disso, exige licença em território imperial (P-054). Efeito pós-disparo (acima de 18 MP, D-81), pelo tipo de dano escolhido: Fogo = Queimadura · Água = Encharcado · Terra = Derrubado (resistência de FOR) · Vento = −2 no próximo ataque do alvo · Sombria = Cego 1 turno · Nebulosa = −2 no ataque do alvo · outras auras: o Mestre escolhe uma condição leve coerente"
+    "extra": "Tipo de dano: o de uma das auras do personagem, escolhida pelo jogador a cada disparo; usuários da mesma aura podem ser imunes um ao outro. Licença: livre até 12 MP (2d8); acima disso, exige licença em território imperial (P-054). Efeito pós-disparo (acima de 18 MP, D-81), pelo tipo de dano escolhido: Fogo = Queimadura · Água = Encharcado · Terra = Derrubado (resistência de FOR) · Vento = −2 no próximo ataque do alvo · Sombria = Cego 1 turno · Nebulosa = −2 no próximo ataque do alvo · outras auras: o Mestre escolhe uma condição leve coerente"
   },
   {
     "n": "Manifestar",
@@ -960,7 +946,7 @@ export const GENERIC_TECHS = [
     "cost": "50% do MP máximo (não recuperável no combate) · Ativar gasta a ação do turno",
     "dmg": "Escolha 2 de 4: vantagem nos ataques · +50% de dano (conta como Fortalecimento no limite de +300% e de 3 simultâneos) · 1 técnica extra grátis por turno, como ação bônus, de no máximo 3d8 · resistências do alvo pela metade",
     "range": "Raio: 10 m · Duração: concentração, máx. 3 turnos",
-    "extra": "1×/dia; +1 nível de Exaustão de Arka após o uso. 1 Expansão por personagem. Expansões que se encontram (P-059): teste oposto de DOM (1d20 + mod DOM + proficiência); quem vence mantém a sua, e o perdedor perde a dele, com MP e Exaustão já pagos; se as auras forem de Áreas opostas no hexagrama, as duas se anulam sem teste. Legado da Arka (nv 15) pode remover a Exaustão (1×/dia)."
+    "extra": "1×/dia; +1 nível de Exaustão de Arka após o uso. 1 Expansão por personagem. Expansões que se encontram (P-059): teste oposto de DOM (1d20 + mod DOM + proficiência); quem vence mantém a sua, e o perdedor perde a dele, com MP e Exaustão já pagos; se as auras forem de Áreas opostas no hexagrama, as duas se anulam sem teste."
   }
 ];
 
@@ -978,7 +964,7 @@ export const FORT_ELEMENTS = [
   {
     "n": "Tempo de Carga",
     "ef": "1 turno: +50% · 2 turnos: +100% · 3 turnos: +200%",
-    "req": "Metade da velocidade durante carga"
+    "req": "Movimento pela metade durante a carga; a técnica sai no fim do último turno de carga (P-078)"
   },
   {
     "n": "Consumíveis Mágicos",
@@ -1142,17 +1128,20 @@ export const ARMORS = [
   {
     "n": "Cota de anéis",
     "ca": 14,
-    "t": "P"
+    "t": "P",
+    "mv": -1
   },
   {
     "n": "Cota de talas",
     "ca": 15,
-    "t": "P"
+    "t": "P",
+    "mv": -1
   },
   {
     "n": "Placas completas",
     "ca": 18,
-    "t": "P"
+    "t": "P",
+    "mv": -2
   },
   {
     "n": "Armadura a vapor",
@@ -1163,8 +1152,8 @@ export const ARMORS = [
 ];
 
 // ── Regras (funções puras) ────────────────────────────────────────────────────
-// Compra de pontos (C-08): base 8, 35 pontos, máx. 18 na criação, cada ponto acima de 14 custa 2.
-// A profissão é aplicada antes da compra: custo e teto contam sobre o valor já com a profissão.
+// Compra de pontos (C-08, P-079): base 8, 35 pontos, cada ponto acima de 14 custa 2. Compra de 8 a 18 SEM bônus;
+// raça e profissão somam depois; o valor final vai de 5 a 20 já na criação.
 export const PB_BASE = 8, PB_TOTAL = 35, PB_MAX = 18, PB_DOUBLE = 14;
 export function pointBuyCost(from, to) {
   if (to < from) return to - from;
@@ -1179,19 +1168,23 @@ export function profBonus(level) {
 }
 export function attrMod(v) { return Math.floor(((v ?? 10) - 10) / 2); }
 
-// Pontos de Progressão (PG economia; D-28, D-42, D-43, D-47, D-50, D-52, D-53, D-60, D-61, D-62)
-export const PP_PER_LEVEL = 3;              // nv 4–15 = 36 PP; acumulam
-export const PP_AURA_UP = { 2: 8, 3: 10 };  // 1→2 e 2→3
-export const PP_NEW_AURA = [3, 4, 5, 6];    // distância 0/1/2/3 a partir da Área da hereditária
+// Pontos de Progressão — reforma da progressão (D-89, R13-1; D-28, D-42, D-43, D-47, D-52, D-53, D-60, D-61, D-62)
+// 1 PP por nível do 4 ao 15 + 1 extra nos níveis 5, 10 e 15 (15 no total); acumulam; só atributos e auras.
+export const PP_EXTRA_LEVELS = [5, 10, 15];
+export function ppAtLevel(n) { return n > LV_MIN && n <= LV_MAX ? 1 + (PP_EXTRA_LEVELS.includes(n) ? 1 : 0) : 0; }
+export const PP_AURA_UP = { 2: 3, 3: 4 };   // 1→2 e 2→3 (R13-1)
+export const PP_NEW_AURA = [1, 2, 2, 3];    // distância 0/1/2/3 a partir da Área da aura de nascença (R13-1)
 export const ATTR_CAP = 20;
 export const BIRTH_ONLY_AURAS = ['Titânica', 'Aura Própria'];
-export const PP_NEW_AURA_TITANIC = 4;       // D-50 (provisório): nascido Titânico compra qualquer outra aura como distância 1
-// Custo do +1 (D-52): faixa pelo valor COMPRADO (compra de pontos + aumentos anteriores), sem raça/profissão.
-// Faixa lida pelo valor comprado ANTES do +1 (D-60): 16→17 = 2 PP; 17→18 = 3; 19→20 = 4. O teto 20 olha o valor final, com raça/profissão (D-60).
-export function ppAttrCost(bought) { return bought <= 16 ? 2 : bought <= 18 ? 3 : 4; }
+export const PP_NEW_AURA_TITANIC = 2;       // R13-1 (provisório): nascido Titânico compra qualquer outra aura por 2 PP; sobe a Titânica por 3 e 4
+export const PP_ECO = 2;                    // versão da economia gravada na ficha (sem campo = antiga, 3 PP/nível)
+// Custo do +1 (D-52, D-60, R13-1): faixa pelo valor COMPRADO antes do +1, sem raça/profissão: até 18 = 1 PP; 19→20 = 2 PP.
+// O teto 20 olha o valor final, com raça/profissão.
+export function ppAttrCost(bought) { return bought <= 18 ? 1 : 2; }
 export function ppEarned(level) {
   const lv = Math.max(LV_MIN, Math.min(LV_MAX, level || LV_MIN));
-  return PP_PER_LEVEL * (lv - LV_MIN);
+  let c = 0; for (let n = LV_MIN + 1; n <= lv; n++) c += ppAtLevel(n);
+  return c;
 }
 export function areaDistance(a, b) {
   const ia = AURA_GROUPS.findIndex(g => g.n === a), ib = AURA_GROUPS.findIndex(g => g.n === b);
@@ -1247,12 +1240,12 @@ export function ppPending(sheet) {
 }
 // Despertar Divino: um só por personagem (D-56); nascido Titânico não desperta (D-62, ver titanicBorn)
 export function awakenedAura(auras) { return (auras || []).find(x => x.lv === 4); }
-// Teto de dados das técnicas criadas (PR5-07, D-58): máximo do Projetar no nível (5d8; 6d8 a partir do nv 13)
-export function techDiceCap(level) { return (level || LV_MIN) >= 13 ? 6 : 5; }
+// Teto de dados das técnicas criadas (PR5-07, D-58, R13-2): 5d8 fixo, o máximo do Projetar em qualquer nível
+export function techDiceCap() { return 5; }
 
 // Fortalecimentos (cap. 11, PB-5, P-015): os bônus se somam e o total multiplica o dano base, sem custo de preparo;
-// teto +300% e 3 simultâneos; Votos (5) e Limites (7) não acumulam; Legado Arka Desperta (+50%) fica fora dos limites (P-055)
-export function fortTotal(checks, variants, expansion, legacy = false) {
+// teto +300% e 3 simultâneos; Votos (5) e Limites (7) não acumulam. O Legado da Arka saiu do jogo (R13-6).
+export function fortTotal(checks, variants, expansion) {
   let count = 0, total = 0; const vals = {}; const warn = [];
   FORT_ELEMENTS.forEach((_, i) => {
     if (!checks[i]) return;
@@ -1264,7 +1257,6 @@ export function fortTotal(checks, variants, expansion, legacy = false) {
   if (expansion) { count++; total += 50; }
   if (count > FORT_MAX_N) warn.push(`Máximo de ${FORT_MAX_N} fortalecimentos simultâneos (${count} marcados).`);
   if (total > FORT_CAP) { warn.push(`Limite de +${FORT_CAP}% atingido (soma: +${total}%).`); total = FORT_CAP; }
-  if (legacy) total += 50;
   return { total, count, mult: 1 + total / 100, warn };
 }
 
@@ -1280,8 +1272,10 @@ export function skillProfMult(sheet, n) {
 export function saveProficient(prof, a) { return (prof?.res || []).includes(a); }
 export function saveBonus(prof, race, a, mod, pb) { return mod + (saveProficient(prof, a) ? pb : 0) + (RACES_DATA[race]?.res?.[a] ?? 0); }
 // Armadura sem proficiência (P-049): desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX
+// Profissão montada (P-094): usa o pacote de armaduras/armas escolhido (prof.pac = uma das 7)
 export function armorWithoutProf(profKey, prof, armorName, shield) {
-  if (profKey === 'custom' || !prof?.arm) return '';
+  if (profKey === 'custom') prof = PROFESSIONS_DATA[prof?.pac];
+  if (!prof?.arm) return '';
   const ar = ARMORS.find(x => x.n === armorName); const f = [];
   if (ar && ar.t !== 'N' && !prof.arm.includes(ar.t)) f.push('armadura ' + { L: 'leve', M: 'média', P: 'pesada' }[ar.t]);
   if (shield && !prof.esc) f.push('escudo');
@@ -1290,6 +1284,10 @@ export function armorWithoutProf(profKey, prof, armorName, shield) {
 // Dados de vida (P-029, D-66, D-71): estoque = nível; até metade do nível (para cima) por descanso curto; o longo devolve tudo
 export function hitDiceLeft(level, used) { return Math.max(0, (level || LV_MIN) - (used || 0)); }
 export function hitDicePerRest(level) { return Math.ceil((level || LV_MIN) / 2); }
+// Dado de vida no descanso curto: resultado + mod CON, no mínimo 1 HP por dado (P-091)
+export function hitDieHeal(roll, conMod) { return Math.max(1, roll + conMod); }
+// Vestigar (P-089): o descanso recupera 75% do HP/MP que recuperaria (arredondado para baixo)
+export function restGain(cur, max, gain, vestigar) { const g = Math.max(0, Math.min(max - cur, gain)); return vestigar ? Math.floor(g * 0.75) : g; }
 // Corpo Renovado (Rejuvenescimento 3, passivo, R9-3): +1 HP máximo por nível de personagem
 export function corpoRenovado(auras) { return (auras || []).some(x => x.n === 'Rejuvenescimento' && x.lv >= 3); }
 // Ação Lendária de jogador (D-68, R11-2): quem despertou; 1 por rodada, máx. 2 por combate
@@ -1298,6 +1296,65 @@ export const LEGENDARY_MAX = 2;
 export const XP_SESSION = { 3: [130, 160, 190], 4: [170, 210, 250], 5: [220, 275, 330], 6: [290, 360, 430], 7: [380, 470, 560], 8: [460, 580, 700], 9: [540, 670, 800], 10: [640, 800, 960], 11: [660, 820, 980], 12: [730, 910, 1090], 13: [800, 1000, 1200], 14: [800, 1000, 1200] };
 // Licença por nível de aura em território imperial (R10-6, D-66)
 export function auraLicense(lv) { return lv >= 3 ? 'Avançada' : lv >= 2 ? 'Intermediária' : ''; }
+
+// ── Rodada 9 (D-84…D-89, R13, P-067…P-097) ──
+// Bônus de raça com o +1 do Humano (cap. 07): sheet.humAttr
+export function raceBonus(sheet, a) { return (RACES_DATA[sheet.race]?.bonus?.[a] ?? 0) + (sheet.race === 'Humano' && sheet.humAttr === a ? 1 : 0); }
+// Profissão montada com o Mestre (D-84, D-85; régua P-094): devolve a lista de avisos (vazia = dentro da régua). Não bloqueia.
+export const PROF_DICE = ['1d4', '1d6', '1d8', '1d10', '1d12'];
+export function dieSteps(d) { const m = String(d || '').match(/d(\d+)/); return { 4: 0, 6: 1, 8: 2, 10: 3, 12: 4 }[m ? +m[1] : 0]; }
+export function profRuler(cp) {
+  const w = [], m = cp?.m || {}; let pos = 0, neg = 0, np = 0; const out = [];
+  ATTRS.forEach(a => { const v = m[a] || 0; if (v > 0) { pos += v; np++; } if (v < 0) neg -= v; if (v > 3 || v < -3) out.push(`${a} ${v > 0 ? '+' : ''}${v}`); });
+  if (out.length) w.push(`nenhum atributo passa de +3 nem de −3 (${out.join(', ')})`);
+  if (pos !== neg) w.push(`bônus e penalidades devem somar zero (bônus +${pos}, penalidades −${neg})`);
+  else if (!((pos === 3 && np <= 2) || (pos === 5 && np <= 3))) w.push(`modificadores: +3/−3 (bônus em até 2 atributos) ou +5/−5 (bônus em até 3); agora +${pos}/−${neg} com bônus em ${np}`);
+  const dh = dieSteps(cp?.hp), dm = dieSteps(cp?.mp);
+  if (dh === undefined || dm === undefined) w.push('dados de HP e MP: use d4, d6, d8, d10 ou d12');
+  else {
+    const dg = dh + dm;
+    if (cp.exc) { if (dg !== 3) w.push(`com capacidade exclusiva, os dados somam 3 degraus (agora ${dg})`); }
+    else if (pos === 3 && dg !== 4) w.push(`sem exclusiva e com +3/−3, os dados somam 4 degraus (agora ${dg})`);
+    else if (pos === 5 && (dg < 4 || dg > 5)) w.push(`sem exclusiva e com +5/−5, os dados somam 4 ou 5 degraus (agora ${dg})`);
+    else if (pos !== 3 && pos !== 5 && (dg < 3 || dg > 5)) w.push(`os dados somam de 3 a 5 degraus (agora ${dg})`);
+  }
+  if ((cp?.per || []).length !== 8) w.push(`lista de 8 perícias (agora ${(cp?.per || []).length})`);
+  if ((cp?.res || []).length !== 2) w.push(`proficiência em 2 testes de resistência, de atributos diferentes (agora ${(cp?.res || []).length})`);
+  if (!PROFESSIONS_DATA[cp?.pac]) w.push('escolha o pacote de armaduras e armas de uma das 7 profissões');
+  return w;
+}
+// Aura de nascença fixa (P-097): trava quando as compras são confirmadas; só o Mestre destrava (sheet.herLivre)
+export function heritageLocked(sheet) { const h = hereditaryAura(sheet.auras); return !!h && !sheet.herLivre && sheet.ppConf?.auras?.[h.n] !== undefined; }
+// Técnica Assinatura (R13-4): marco de treino/história, sem pontos; técnica treinada, −25% de MP, fixa, máx. 2
+export const SIGNATURE_MAX = 2;
+// Conversão de ficha salva na economia antiga de PP (D-89): devolve as mudanças (reembolso + aviso) ou null se não havia compras
+export function convertOldPP(sheet) {
+  if ((sheet.ppEco ?? 0) >= PP_ECO) return null;
+  const her = hereditaryAura(sheet.auras), lista = [];
+  ATTRS.forEach(a => { const n = sheet.attrUps?.[a] ?? 0; if (n) lista.push(`${a} +${n}`); });
+  (sheet.auras || []).forEach(x => { if (!x.her || x.lv > 1) lista.push(`${x.n} nível ${x.lv}${x.her ? ' (nascença)' : ' (comprada)'}${x.deus ? `, Despertar sob ${x.deus}` : ''}`); });
+  if (!lista.length) return { ppEco: PP_ECO };
+  const zero = {}; ATTRS.forEach(a => { zero[a] = 0; });
+  const auras = her ? [{ n: her.n, lv: 1, her: true }] : [];
+  return {
+    ppEco: PP_ECO, attrUps: { ...zero }, auras,
+    ppConf: { attrUps: { ...zero }, auras: her ? { [her.n]: 1 } : {} },
+    ppAntigo: `Compras da economia antiga, reembolsadas: ${lista.join('; ')}. Agora: 1 PP por nível (+1 nos níveis 5, 10 e 15); +1 atributo 1 PP (2 de 19 para 20); aura 1→2 = 3, 2→3 = 4; aura nova 1/2/2/3. Um Despertar Divino anterior volta quando a aura chegar de novo ao nível 3, com o Mestre.`,
+  };
+}
+// Lembretes condicionais (P-095): não entram nos números
+export function sheetReminders(sheet) {
+  const l = [], au = sheet.auras || [], dz = awakenedAura(au);
+  if (au.some(x => x.n === 'Luz' && x.lv >= 3)) l.push('Halo (Luz 3): ataques corpo a corpo contra você sofrem −1 (−2 se o atacante for criatura das trevas, distorcida ou morto-vivo)');
+  if (dz?.deus === 'Xing Tian') l.push('Xing Tian: regenera 3 HP por rodada enquanto tiver ao menos 1 HP; imune a venenos e doenças naturais');
+  if (au.some(x => auraArea(x.n) === 'Primordial' && x.lv >= 3)) l.push('Primordial no nível 3: sofre 30% a mais de dano de técnicas de Ícor');
+  if (sheet.race === 'Anjo') l.push('Anjo: recebe 150% de dano de Trevas');
+  if (sheet.race === 'Demônio') l.push('Demônio: 50% de resistência a fogo');
+  return l;
+}
+// Escamas da Animalesca 2+ (P-095): +2 de CA com o botão ligado; Hachiman: +10 m de movimento
+export function scalesAvailable(auras) { return (auras || []).some(x => x.n === 'Animalesca' && x.lv >= 2); }
+export function hachimanBonus(auras) { return awakenedAura(auras)?.deus === 'Hachiman' ? 10 : 0; }
 
 // Blank sheet with all companion + VTT fields
 export function blankSheet(overrides = {}) {
@@ -1308,8 +1365,8 @@ export function blankSheet(overrides = {}) {
     name: '', player: '', age: '', gender: '', origin: '', alignment: '',
     appearance: '', personality: '', background: '', motivation: '', notes: '',
     // Race / Profession
-    race: 'Humano', prof: 'custom',
-    customProf: { name: 'Personalizado', m: {}, hp: '1d8', mp: '1d8', sk: '' },
+    race: 'Humano', humAttr: '', prof: 'custom',
+    customProf: { name: 'Profissão montada', m: {}, hp: '1d8', mp: '1d8', sk: '', per: [], res: [], pac: '', exc: false, exd: '', co: 0 },
     // Attributes: compra (base 8) + aumentos com PP
     attrs: { FOR: 8, DEX: 8, CON: 8, SAB: 8, INT: 8, CAR: 8, DOM: 8 },
     attrUps: { FOR: 0, DEX: 0, CON: 0, SAB: 0, INT: 0, CAR: 0, DOM: 0 },
@@ -1324,10 +1381,12 @@ export function blankSheet(overrides = {}) {
     // Auras: [{ n, lv, her, pago, deus }]
     auraInit: '', auraDesc: '', extraAuras: '', auras: [],
     ppConf: null,       // compras de PP confirmadas (D-53); null = nada confirmado ainda
+    ppEco: PP_ECO, ppAntigo: '', herLivre: false, // economia D-89; aviso da conversão; aura de nascença destravada (P-097)
+    escamas: false, vestigar: false, furiaUsada: false, adaptUsos: 0, tonicoUsado: false, // P-095, P-089, R13-5, P-083, E15-02
     // Inventory / Gold
     gold: 0, inventory: [],
     // XP / Level
-    xp: 0, level: LV_MIN, legado: '',
+    xp: 0, level: LV_MIN,
     // Fluxo
     fluxoDeseq: 0, fluxoActive: false, fluxoLog: [],
     // Training
