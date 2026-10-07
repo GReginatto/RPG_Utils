@@ -1,11 +1,5 @@
-export const AURA_GROUPS = [
-  { n: 'Criadora',    c: '#2ecc71', i: '❋' },
-  { n: 'Emissora',    c: '#e74c3c', i: '◈' },
-  { n: 'Divina',      c: '#f4d03f', i: '✦' },
-  { n: 'Deformadora', c: '#9b59b6', i: '◉' },
-  { n: 'Mental',      c: '#3498db', i: '◎' },
-  { n: 'Ícor',        c: '#1abc9c', i: '⬡' },
-];
+// Hexagrama da imagem auras.png (D-32, D-35, D-40): mesma ordem do anel usada em rpgData.js
+export { AURA_GROUPS } from './rpgData';
 
 function devTechToVTT(dt, idx) {
   return {
@@ -45,7 +39,7 @@ export function companionToVTT(S) {
     name: S.name ?? '',
     race: S.race ?? '',
     profession: S.prof !== 'custom' ? (S.prof ?? '') : (S.customProf?.name ?? ''),
-    level: S.level ?? 1,
+    level: S.level ?? 3,
     attributes: { ...(S.attrs ?? {}) },
     hp: S.curHP ?? 0,
     maxHp: S.maxHP ?? 0,
@@ -79,7 +73,7 @@ export function vttToCompanion(token) {
     ...raw,
     name: token.name ?? raw.name ?? '',
     race: token.race ?? raw.race ?? 'Humano',
-    level: token.level ?? raw.level ?? 1,
+    level: token.level ?? raw.level ?? 3,
     xp: token.xp ?? raw.xp ?? 0,
     attrs: token.attributes ?? raw.attrs ?? {},
     curHP: token.hp ?? raw.curHP ?? 0,
@@ -90,16 +84,14 @@ export function vttToCompanion(token) {
     auraInit: token.aura ?? raw.auraInit ?? '',
     notes: token.notes ?? raw.notes ?? '',
     devTechs: (token.techniques ?? []).map(vttTechToCompanion),
-    proficiencies: (token.proficiencies ?? []).map(p => ({
-      n: p.name ?? '',
-      a: p.attr ?? 'FOR',
-    })),
-    inventory: (token.inventory ?? []).map(item => ({
-      id: item.id,
-      name: item.name ?? '',
-      qty: item.qty ?? 1,
-      weight: item.weight ?? '',
-      notes: item.notes ?? '',
+    // A ficha guarda perícias como nomes (strings) e itens como { id, n, w, s, no }
+    proficiencies: (token.proficiencies ?? []).map(p => p.name ?? p.n ?? String(p)),
+    inventory: (token.inventory ?? []).map((item, i) => ({
+      id: item.id ?? Date.now() + i,
+      n: item.n ?? item.name ?? '',
+      w: parseFloat(item.w ?? item.weight) || 0,
+      s: item.s ?? 'carried',
+      no: item.no ?? item.notes ?? '',
     })),
   };
 }
