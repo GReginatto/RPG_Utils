@@ -15,7 +15,8 @@ function renderAllTabs(sheet) {
 test('ficha nova abre todas as abas', () => {
   renderAllTabs(blankSheet({ name: 'Teste', prof: 'Guerreiro', level: 10, auras: [{ n: 'Fogo', lv: 1, her: true }] }));
   fireEvent.click(screen.getAllByText('XP')[0]);
-  expect(screen.getByText(/Benefícios de Nível/i)).toBeInTheDocument(); // P-041
+  expect(screen.getByText(/Progressão por Nível/i)).toBeInTheDocument(); // D-89
+  expect(screen.queryByText(/Legado da Arka \(nv 15\)/)).toBeNull();
   fireEvent.click(screen.getAllByText('Perícias')[0]);
   expect(screen.getByText('Pressão de Aura')).toBeInTheDocument();
 });
@@ -31,7 +32,7 @@ test('PP: subir FOR com pontos no nível 10', () => {
   const onUpdate = jest.fn();
   render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
   fireEvent.click(screen.getAllByText('Atributos')[0]);
-  expect(screen.getByText('21')).toBeInTheDocument(); // 21 PP disponíveis no nível 10
+  expect(screen.getAllByText(/9 ganhos \(1 por nível/).length).toBeGreaterThan(0); // 9 PP ganhos no nível 10 (D-89)
 });
 
 test('Auras: Primordial no catálogo com Dons; Despertar mostra o deus (rodada 6)', () => {
@@ -52,7 +53,7 @@ test('PP: compra pendente mostra o botão de confirmar (D-53)', () => {
   render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
   fireEvent.click(screen.getAllByText('Atributos')[0]);
   fireEvent.click(screen.getByText(/Confirmar compras \(1\)/));
-  expect(onUpdate).toHaveBeenCalledWith({ ppConf: expect.objectContaining({ attrUps: expect.objectContaining({ FOR: 1 }) }) });
+  expect(onUpdate).toHaveBeenCalledWith({ ppConf: expect.objectContaining({ attrUps: expect.objectContaining({ FOR: 1 }) }), herLivre: false });
 });
 
 test('ficha sem ppConf recebe as compras como confirmadas (D-53)', () => {
@@ -63,7 +64,7 @@ test('ficha sem ppConf recebe as compras como confirmadas (D-53)', () => {
 });
 
 test("Titânico não desperta nenhuma aura, nem as compradas (D-62)", () => {
-  const sheet = blankSheet({ level: 15, auras: [{ n: "Titânica", lv: 3, her: true }, { n: "Fogo", lv: 3, her: false, pago: 4 }], ppConf: { attrUps: {}, auras: { "Titânica": 3, Fogo: 3 } } });
+  const sheet = blankSheet({ level: 15, auras: [{ n: "Titânica", lv: 3, her: true }, { n: "Fogo", lv: 3, her: false, pago: 2 }], ppConf: { attrUps: {}, auras: { "Titânica": 3, Fogo: 3 } } });
   const onUpdate = jest.fn();
   const alerts = []; window.alert = m => alerts.push(m);
   render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
@@ -107,4 +108,22 @@ test("rodada 8: Ação Lendária só para quem despertou, máx. 2 por combate", 
   fireEvent.click(screen.getAllByText("Atributos")[0]);
   expect(screen.getByText("2/2")).toBeInTheDocument();
   expect(screen.getAllByText(/Cobertura/).length).toBeGreaterThan(0);
+});
+
+test("rodada 9: ficha da economia antiga é reembolsada com aviso (D-89)", () => {
+  const { ppEco, ...old } = blankSheet({ id: "v1", level: 9, attrUps: { FOR: 0, DEX: 0, CON: 0, SAB: 0, INT: 2, CAR: 0, DOM: 0 }, auras: [{ n: "Ilusão", lv: 3, her: true }], ppConf: { attrUps: { INT: 2 }, auras: { "Ilusão": 3 } } });
+  const onUpdate = jest.fn();
+  render(<CharacterSheet sheet={old} onUpdate={onUpdate} onClose={() => {}} />);
+  expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ ppEco: 2, auras: [{ n: "Ilusão", lv: 1, her: true }], ppAntigo: expect.stringMatching(/INT \+2/) }));
+});
+
+test("rodada 9: profissão montada mostra a régua; aura de nascença travada; Fúria do Demônio", () => {
+  const sheet = blankSheet({ race: "Demônio", prof: "custom", level: 5, auras: [{ n: "Fogo", lv: 1, her: true }], ppConf: { attrUps: {}, auras: { Fogo: 1 } } });
+  render(<CharacterSheet sheet={sheet} onUpdate={jest.fn()} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Perfil")[0]);
+  expect(screen.getAllByText(/Fora da régua da profissão montada/).length).toBeGreaterThan(0);
+  fireEvent.click(screen.getAllByText("Atributos")[0]);
+  expect(screen.getAllByText(/Fúria Ancestral/).length).toBeGreaterThan(0);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  expect(screen.getByText(/travada/)).toBeInTheDocument();
 });
