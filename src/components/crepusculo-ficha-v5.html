@@ -113,13 +113,14 @@ var A=["FOR","DEX","CON","SAB","INT","CAR","DOM"];
 var AN={FOR:"Força",DEX:"Destreza",CON:"Constituição",SAB:"Sabedoria",INT:"Inteligência",CAR:"Carisma",DOM:"Domínio"}; // P-039: DOM = Domínio
 // Canon: movimento por raça (9 m; anão 7 m), sem DEX. Afinidade de Arka = 1 Área por raça (D-37): Elfo Mental, Anão Emissora, Anjo Deformadora, Demônio Emissora, Humano nenhuma.
 // Efeito (PA-11): +2 nos testes de treino e −10% de MP nas auras da Área afim.
-var RACES={Humano:{bonus:{},mv:9,af:"",ab:"Adaptação: 2×/dia pode rerolar um teste de atributo. +1 em um atributo à escolha.",c:"#c9a96e"},Elfo:{bonus:{DEX:1},mv:9,af:"Mental",ab:"Visão no escuro, +2 furtividade e iniciativa. Fraqueza: -1 CON.",c:"#7ec8a0"},"Anão":{bonus:{CON:1},mv:7,af:"Emissora",ab:"Imunidade a venenos, +2 em testes de resistência de CON, visão no escuro. Fraqueza: -2m movimento.",res:{CON:2},c:"#b07840"},"Demônio":{bonus:{DOM:1},mv:9,af:"Emissora",ab:"+3 dano com fogo, 50% resistência a fogo. Fraqueza: -2 CAR com não-demônios.",c:"#c43030"},Anjo:{bonus:{SAB:1},mv:9,af:"Deformadora",ab:"Escudo de absorção: 15 pts, 1×/dia. Fraqueza: 150% dano de Trevas.",c:"#f0e68c"}};
+// Rodada 9: Humano — Adaptação rerrola atributo, perícia e resistência (P-083); +1 à escolha (S.humAttr). Anjo — planagem (P-084). Demônio — Fúria Ancestral no lugar do +3 de fogo (R13-5).
+var RACES={Humano:{bonus:{},mv:9,af:"",ab:"Adaptação: 2×/dia pode rerrolar um teste de atributo, de perícia ou de resistência (não ataques nem testes de treino) e fica com o novo resultado. +1 em um atributo à escolha.",c:"#c9a96e"},Elfo:{bonus:{DEX:1},mv:9,af:"Mental",ab:"Visão no escuro, +2 furtividade e iniciativa. Fraqueza: -1 CON.",c:"#7ec8a0"},"Anão":{bonus:{CON:1},mv:7,af:"Emissora",ab:"Imunidade a venenos, +2 em testes de resistência de CON, visão no escuro. Fraqueza: -2m movimento.",res:{CON:2},c:"#b07840"},"Demônio":{bonus:{DOM:1},mv:9,af:"Emissora",ab:"50% de resistência a fogo. Fúria Ancestral: 1×/descanso curto, ação bônus, por 3 rodadas: o primeiro acerto em cada turno, com arma ou técnica, causa +1d6 de dano a um alvo, do mesmo tipo do ataque. Fraqueza: −2 CAR em interações com não-demônios.",c:"#c43030"},Anjo:{bonus:{SAB:1},mv:9,af:"Deformadora",ab:"Escudo de absorção: 15 pts, 1×/dia. Planagem: se puder abrir as asas, não sofre dano de queda e avança 1 m na horizontal a cada 1 m de queda; não ganha altura. Fraqueza: 150% dano de Trevas.",c:"#f0e68c"}};
 // Profissões (cap. 12). m = bônus/penalidades; hp/mp = dados por nível (D-72: continuam por profissão; D-73: Guardião MP 1d4).
 // per = 8 perícias da profissão, das quais se escolhem 4 (P-060). arm = categorias de armadura proficientes (L/M/P), esc = escudo, armas = armas proficientes (P-049).
 // res = 2 testes de resistência proficientes (R10-5, D-66). co = riqueza inicial em CO (R9-1, D-65: Explorador 95). ex = capacidades exclusivas (R10-2, D-71, D-74).
 // P-040: a profissão "Arkano" passou a se chamar "Canalizador" (fichas antigas são convertidas em lS).
 var PP={Guerreiro:{m:{FOR:2,CON:1,INT:-2,DOM:-1},hp:"1d12",mp:"1d4",per:["Atletismo","Vigor Bruto","Fôlego","Intimidação","Percepção","Sobrevivência","Condução","Pontaria Mecânica"],arm:["L","M","P"],esc:true,armas:"Simples, marciais e de fogo",res:["FOR","DOM"],co:100},
-Explorador:{m:{DEX:2,SAB:1,FOR:-1,CON:-1,DOM:-1},hp:"1d8",mp:"1d6",per:["Acrobacia","Furtividade","Sobrevivência","Percepção","Navegação","Trato Animal","Atletismo","Prestidigitação"],arm:["L","M"],esc:false,armas:"Simples, marciais à distância e de fogo",res:["DEX","INT"],co:95,ex:[["Olho de Falcão","+2 nos ataques à distância, que causam crítico com 19–20; ignora meia cobertura. Fora de combate, proficiência dobrada em Percepção (D-74, D-77)."]]},
+Explorador:{m:{DEX:2,SAB:1,FOR:-1,CON:-1,DOM:-1},hp:"1d8",mp:"1d6",per:["Acrobacia","Furtividade","Sobrevivência","Percepção","Navegação","Trato Animal","Atletismo","Prestidigitação"],arm:["L","M"],esc:false,armas:"Simples, marciais à distância (arco longo, besta pesada, tridente) e de fogo",res:["DEX","INT"],co:95,ex:[["Olho de Falcão","+2 nos ataques à distância, que causam crítico com 19–20; ignora meia cobertura. Fora de combate, proficiência dobrada em Percepção (D-74, D-77)."]]},
 Estudioso:{m:{INT:2,SAB:1,FOR:-2,CON:-1},hp:"1d6",mp:"1d10",per:["Teoria da Arka","História","Investigação","Alquimia","Engenharia a Vapor","Lei e Licenças","Navegação","Medicina"],arm:["L"],esc:false,armas:"Simples e pistola",res:["INT","SAB"],co:120},
 Diplomata:{m:{CAR:2,INT:1,FOR:-1,DEX:-1,DOM:-1},hp:"1d6",mp:"1d8",per:["Persuasão","Enganação","Intuição","Etiqueta das Linhagens","Barganha","Lei e Licenças","História","Atuação"],arm:["L"],esc:false,armas:"Simples, espadas leves (rapieira, espada curta) e pistola",res:["DEX","CAR"],co:140,ex:[["Inspirar","ação bônus, 1×/turno, sem limite diário. Um aliado a até 18 m que possa ver ou ouvir o Diplomata tem vantagem no próximo teste de ataque (com arma ou de Arka) ou de resistência até o início do próximo turno do Diplomata; se esse ataque acertar, soma o mod CAR do Diplomata ao dano. Não funciona em si mesmo, nem se o Diplomata estiver Atordoado ou Inconsciente. Fora de combate, vale para um teste de perícia de um aliado."],["Especialista","dobra o bônus de proficiência em Persuasão e em mais 1 perícia da lista do Diplomata. Se ele não escolheu Persuasão, o Especialista lhe dá a proficiência nela."]]},
 Canalizador:{m:{DOM:3,INT:2,FOR:-3,CON:-1,DEX:-1},hp:"1d6",mp:"1d12",per:["Teoria da Arka","Canalização","Pressão de Aura","Sentir Arka","Concentração","Vontade","História","Alquimia"],arm:["L"],esc:false,armas:"Simples e pistola",res:["CON","DOM"],co:90},
@@ -131,6 +132,8 @@ var ARM_NOME={L:"leves",M:"médias",P:"pesadas"};
 // Na criação: 4 da lista da profissão (PP[p].per, P-060) + 2 livres, de qualquer atributo; + 2 proficiências livres de arma ou ferramenta, nunca categoria de armadura (D-45, P-049).
 var DP=[{n:"Atletismo",a:"FOR"},{n:"Vigor Bruto",a:"FOR"},{n:"Acrobacia",a:"DEX"},{n:"Furtividade",a:"DEX"},{n:"Prestidigitação",a:"DEX"},{n:"Condução",a:"DEX"},{n:"Pontaria Mecânica",a:"DEX"},{n:"Fôlego",a:"CON"},{n:"Concentração",a:"CON"},{n:"Teoria da Arka",a:"INT"},{n:"História",a:"INT"},{n:"Engenharia a Vapor",a:"INT"},{n:"Alquimia",a:"INT"},{n:"Investigação",a:"INT"},{n:"Lei e Licenças",a:"INT"},{n:"Navegação",a:"INT"},{n:"Percepção",a:"SAB"},{n:"Intuição",a:"SAB"},{n:"Medicina",a:"SAB"},{n:"Sobrevivência",a:"SAB"},{n:"Trato Animal",a:"SAB"},{n:"Vontade",a:"SAB"},{n:"Sentir Arka",a:"SAB"},{n:"Persuasão",a:"CAR"},{n:"Enganação",a:"CAR"},{n:"Intimidação",a:"CAR"},{n:"Atuação",a:"CAR"},{n:"Etiqueta das Linhagens",a:"CAR"},{n:"Barganha",a:"CAR"},{n:"Canalização",a:"DOM"},{n:"Pressão de Aura",a:"DOM"}];
 var PER_CRIACAO=6,PER_PROF=4,PROF_LIVRES=2;
+// Ferramentas (P-080, cap. 12): lista curta; proficiência soma ao teste; perícia + ferramenta = vantagem
+var FERRAMENTAS=["kit de alquimia","ferramentas de ferreiro","ferramentas de ladrão","instrumentos de navegação","ferramentas de engenheiro a vapor","kit de herbalismo e medicina","kit de disfarce","instrumento musical"];
 // Nomes antigos (perícias de D&D) que têm equivalente direto na lista nova
 var DP_MIGRA={"Adestrar Animais":"Trato Animal","Arcanismo":"Teoria da Arka"};
 
@@ -145,17 +148,19 @@ var AG=[
   {n:"Deformadora",ag:240,c:"#b07cd8",i:"◉"},
   {n:"Mental",ag:300,c:"#f0a050",i:"◎"}
 ];
-// Progressão por Pontos de Progressão (PP) — "PG (economia)", D-28, D-42, D-43, D-47
-var PP_POR_NIVEL=3;                 // 3 PP por nível do 4 ao 15 (36 no total); PP não gastos acumulam
-var PP_AURA_UP={2:8,3:10};          // subir aura 1→2 = 8 PP; 2→3 = 10 PP
-var PP_AURA_NOVA=[3,4,5,6];         // aura nova (entra no nv 1) pela distância 0/1/2/3 a partir da Área da aura hereditária
-var ATR_TETO=20;                    // teto do atributo depois da criação
-// Custo do +1 (D-52): a faixa olha o valor COMPRADO (compra de pontos + aumentos anteriores com PP), sem os bônus de raça e de profissão.
-// Faixas 2/3/4 PP para ≤16 / 17–18 / 19–20, lidas pelo valor comprado ANTES do +1 (D-60): 16→17 = 2 PP; 17→18 = 3; 19→20 = 4.
-// O teto 20 olha o valor final, com raça e profissão (D-60).
-function ppAtrCost(v){return v<=16?2:v<=18?3:4}
+// Progressão por Pontos de Progressão (PP) — reforma da progressão (D-89, R13-1), D-28, D-42, D-43, D-47
+// 1 PP por nível do 4 ao 15 + 1 extra nos níveis 5, 10 e 15 (15 no total); PP não gastos acumulam. Só atributos e auras.
+var PP_EXTRA=[5,10,15];
+function ppNoNivel(n){return n>LV_MIN&&n<=LV_MAX?1+(PP_EXTRA.indexOf(n)>=0?1:0):0}
+var PP_AURA_UP={2:3,3:4};           // subir aura 1→2 = 3 PP; 2→3 = 4 PP (R13-1)
+var PP_AURA_NOVA=[1,2,2,3];         // aura nova (entra no nv 1) pela distância 0/1/2/3 a partir da Área da aura de nascença (R13-1)
+var ATR_TETO=20;                    // teto do atributo no valor final
+// Custo do +1 (D-52, D-60, R13-1): a faixa olha o valor COMPRADO antes do +1 (compra de pontos + aumentos anteriores com PP), sem raça e profissão.
+// Até o valor comprado 18: 1 PP; de 19 para 20: 2 PP. O teto 20 olha o valor final, com raça e profissão.
+function ppAtrCost(v){return v<=18?1:2}
 var AURA_SO_NASCENCA=["Titânica","Aura Própria"]; // Titânica (D-42) e Ícor/Aura Própria (D-43) não se compram
-var PP_AURA_NOVA_TITANICO=4;        // D-50 (provisório): quem nasce Titânico compra qualquer outra aura como distância 1
+var PP_AURA_NOVA_TITANICO=2;        // R13-1 (provisório): quem nasce Titânico compra qualquer outra aura por 2 PP e sobe a Titânica por 3 e 4
+var PP_ECO=2;                       // versão da economia de PP gravada na ficha (1 = antiga, 3 PP/nível; 2 = D-89)
 
 // Catálogo (D-32, D-38): auras nas categorias originais do livro. Dracônica = Forma de Besta Lendária da Animalesca 3 (D-06, D-31, D-44).
 // Primordial (D-35, D-55): Selamento, Dreno, Nulidade, Corrente, níveis 1–3, texto do cap. 09 (PR5-01…04). Fraqueza comum no nv 3: +30% de dano de técnicas de Ícor (PR5-06).
@@ -216,7 +221,7 @@ var PANTEAO={
   {n:"Ptah",t:"o que Cria pela Palavra",mit:"Egípcia",dm:"Criou o mundo pensando-o e nomeando-o; patrono dos artesãos",dom:"Palavra que Cria",d:"1×/dia, ao nomear em voz alta uma criação da aura, ela dura até o próximo descanso longo, sem concentração, e tem +50% de HP. Técnicas da aura têm −2 na CD de treino."}],
 "Ícor":[{n:"Prometeu",t:"o Ladrão do Fogo",mit:"Grega",dm:"Moldou o homem do barro e roubou o fogo dos deuses",dom:"Fogo Roubado",d:"1×/dia, depois de ver uma técnica alheia, reproduz um efeito equivalente dentro do tema da Aura Própria, pagando o custo normal; cada uso dá +1 nível de Exaustão (o castigo do titã). Ao ver uma técnica, sabe se pode roubá-la e quanto custa. Técnicas da Aura Própria custam −10% de MP."}],
 "Deformadora":[{n:"Chronos",t:"a Chrono-mente",mit:"Grega",dm:"O tempo que devora o que vem; a inevitabilidade",dom:"Mente Fora do Tempo",d:"+5 em testes de INT. 2×/combate, depois de ver o resultado de um d20 (seu, de um aliado ou de um inimigo a até 10 m), obriga a rolar de novo. 1×/dia, vive 1 hora de pensamento em 1 minuto real."},
-  {n:"Hachiman",t:"a Dança das Lâminas",mit:"Xintoísta",dm:"Guerra, arqueiros, proteção dos guerreiros",dom:"Dança das Lâminas",d:"o espaço se dobra a seu favor: +10 m de deslocamento e ataque de oportunidade contra qualquer inimigo que entre ou saia do seu alcance. 1×/rodada, pode se teleportar até 10 m como parte do movimento. 1×/combate, faz até 5 ataques num único turno contra alvos diferentes."},
+  {n:"Hachiman",t:"a Dança das Lâminas",mit:"Xintoísta",dm:"Guerra, arqueiros, proteção dos guerreiros",dom:"Dança das Lâminas",d:"o espaço se dobra a seu favor: +10 m de movimento e ataque de oportunidade contra qualquer inimigo que entre ou saia do seu alcance. 1×/rodada, pode se teleportar até 10 m como parte do movimento. 1×/combate, faz até 5 ataques num único turno contra alvos diferentes."},
   {n:"Xing Tian",t:"a Resiliência Inabalável",mit:"Chinesa",dm:"O gigante decapitado que seguiu lutando sem cabeça",dom:"O Sem-Cabeça que Luta",d:"imune a venenos e doenças naturais; regenera 3 HP por rodada enquanto tiver pelo menos 1 HP. 1×/dia, ao cair a 0 HP, levanta-se com HP igual a 2 × o nível de personagem e luta por mais 1 minuto antes de cair. Fervor: 1×/dia, +2 em FOR, DEX e CON por 10 minutos."}],
 "Mental":[{n:"Thoth",t:"o Escriba dos Deuses",mit:"Egípcia",dm:"Escrita, conhecimento, magia e juízo das almas",dom:"Pena do Julgamento",d:"+5 em testes de INT e SAB. Ao ver uma técnica, sabe o custo, o tipo e o tier dela. 1×/dia, anula uma técnica de qualquer Área usada a até 30 m (teste de DOM contra a CD de técnica do autor dela)."},
   {n:"Morfeu",t:"o Portão dos Sonhos",mit:"Grega",dm:"Sonhos e sono; as formas que mortos e deuses usam para falar aos vivos",dom:"Portão de Chifre e Marfim",d:"1×/combate, um alvo a até 30 m faz teste de Vontade contra a CD de técnica ou dorme até o fim do próximo turno dele (sofrer dano acorda). 1×/noite, entra no sonho de alguém que já tenha visto, a qualquer distância, e conversa com ele."},
@@ -226,9 +231,8 @@ var PANTEAO={
 // XP necessário para subir do nível (índice+1) para o seguinte (cap. 12 + PB-6). XT[lv-1] = XP para ir de lv a lv+1. Nível 15 = máximo.
 var XT=[0,0,300,500,800,1200,1800,2500,3500,4000,4500,5000,5500,6000,0];
 var LV_MIN=3,LV_MAX=15;
-// Marcos de nível (cap. 12, PB-12)
-// Marcos (cap. 12, PB-12). O "+1 atributo a cada 2 níveis" e os níveis mínimos de aura saíram (PG economia revoga D-17): todo nível do 4 ao 15 dá +3 PP.
-var MARCOS={3:"Início da campanha (aura hereditária no nv 1)",4:"—",5:"Second Wind (25% do MP, 1×/combate)",6:"—",7:"Técnica Assinatura (−25% de custo)",8:"—",9:"Second Wind 2×/combate",10:"Técnica Máxima disponível",11:"2ª Técnica Assinatura",12:"—",13:"+1 dado no Projetar máximo e no teto das técnicas criadas (6d8 por 36 MP)",14:"—",15:"Legado da Arka (escolha 1)"};
+// D-89: o nível não dá nenhum benefício além de HP/MP, PP e proficiência. Saíram Second Wind, Técnica Assinatura por nível,
+// Técnica Máxima no nv 10, 6d8 no nv 13 e Legado da Arka (R13-2, R13-3, R13-4, R13-6). A coluna "Benefício de Nível" saiu.
 // XP por sessão (R9-4; cap. 12): [mínimo, típico, máximo] pelo nível atual. Com XP de combate: ×0,8 (×0,7 com 3+ lutas por sessão)
 var XP_SESSAO={3:[130,160,190],4:[170,210,250],5:[220,275,330],6:[290,360,430],7:[380,470,560],8:[460,580,700],9:[540,670,800],10:[640,800,960],11:[660,820,980],12:[730,910,1090],13:[800,1000,1200],14:[800,1000,1200]};
 var xpFat=1;
@@ -236,11 +240,10 @@ function rXS(){var el=$('xpSes');if(!el)return;var lv=S.level||LV_MIN,f=XP_SESSA
   var v=f.map(function(x){return Math.round(x*xpFat)});
   el.innerHTML='<div class="f ai g6 fw"><span style="font-size:10px;color:var(--td)">Nível '+lv+':</span>'+['Mínimo','Típico','Máximo'].map(function(nm,i){return '<button class="bt '+(i===1?'bp':'bo')+' bsm" onclick="addXS('+v[i]+')">+'+v[i]+' ('+nm.toLowerCase()+')</button>'}).join('')+'<select style="width:auto;padding:3px 24px 3px 6px;font-size:11px" onchange="xpFat=+this.value;rXS()"><option value="1"'+(xpFat===1?' selected':'')+'>sem XP de combate</option><option value="0.8"'+(xpFat===0.8?' selected':'')+'>com XP de combate (×0,8)</option><option value="0.7"'+(xpFat===0.7?' selected':'')+'>3+ lutas por sessão (×0,7)</option></select></div>'}
 function addXS(g){var lv=gv('charLv');if(lv>=LV_MAX){toast('Nível máximo');return}sv('charXP',Math.min(XT[lv-1],gv('charXP')+g));uXP();toast('+'+g+' XP (sessão)')}
-var LEGADO_OPC=["Expansão de Domínio sem Exaustão, 1×/dia","Fortalecimento permanente de +50% (não ocupa slot)"];
 // Proficiência escalonada (PB-1): +2 (nv 3–6), +3 (7–10), +4 (11–14), +5 (15)
 function gProf(lv){lv=lv||S.level||LV_MIN;return lv>=15?5:lv>=11?4:lv>=7?3:2}
-// ── Pontos de Progressão (PG economia) ──
-function ppEarned(lv){lv=lv||S.level||LV_MIN;return PP_POR_NIVEL*Math.max(0,Math.min(LV_MAX,lv)-LV_MIN)}
+// ── Pontos de Progressão (D-89, R13-1) ──
+function ppEarned(lv){lv=lv||S.level||LV_MIN;var c=0;for(var n=LV_MIN+1;n<=Math.min(LV_MAX,lv);n++)c+=ppNoNivel(n);return c}
 function ppAtrSpent(a){var b=S.attrs[a]||PB_BASE,n=(S.attrUps&&S.attrUps[a])||0,c=0;for(var k=0;k<n;k++)c+=ppAtrCost(b+k);return c} // D-52: valor comprado, sem raça/profissão
 function auraArea(n){var r='';Object.keys(AD).forEach(function(k){AD[k].forEach(function(x){if(x.n===n)r=k})});return r}
 function auraHer(){return (S.auras||[]).filter(function(x){return x.her})[0]}
@@ -252,22 +255,24 @@ function ppLeft(){return ppEarned()-ppSpent()}
 // Compras definitivas (D-53): uma compra com PP só pode ser desfeita durante a criação/level-up em que foi feita.
 // "Confirmar compras" (ou subir de nível) trava o estado atual em S.ppConf; depois disso, sem reembolso.
 function ppConf(){if(!S.ppConf)S.ppConf={attrUps:{},auras:{}};return S.ppConf}
-function ppConfirmar(){var c={attrUps:{},auras:{}};A.forEach(function(a){c.attrUps[a]=(S.attrUps&&S.attrUps[a])||0});(S.auras||[]).forEach(function(x){c.auras[x.n]=x.lv});S.ppConf=c}
+function ppConfirmar(){S.herLivre=false;var c={attrUps:{},auras:{}};A.forEach(function(a){c.attrUps[a]=(S.attrUps&&S.attrUps[a])||0});(S.auras||[]).forEach(function(x){c.auras[x.n]=x.lv});S.ppConf=c}
 function ppAtrConf(a){return ppConf().attrUps[a]||0}
 function ppAuraConf(x){var l=ppConf().auras[x.n];return l===undefined?(x.her?1:0):l} // 0 = comprada nesta sessão (pode ser devolvida)
 function ppPendente(){var n=0;A.forEach(function(a){n+=Math.max(0,((S.attrUps&&S.attrUps[a])||0)-ppAtrConf(a))});(S.auras||[]).forEach(function(x){n+=Math.max(0,(x.lv||1)-ppAuraConf(x))});return n}
 function ppOk(){if(!ppPendente())return;if(!confirm('Confirmar as compras com PP? Depois de confirmadas, não podem ser desfeitas nem reembolsadas (D-53).'))return;ppConfirmar();rPP();if($('dSt'))uAt();rMyAuras();sync();toast('Compras confirmadas')}
 function ppTravaNivel(novo){if(novo>(S.level||LV_MIN))ppConfirmar()} // o level-up seguinte encerra as compras do nível anterior
-function rPP(){var e=ppEarned(),g=ppSpent(),l=e-g;['ppBar','ppBarAu'].forEach(function(id){var el=$(id);if(!el)return;el.innerHTML='<span style="font-size:11px;color:var(--td)">Pontos de Progressão:</span><span style="font-size:20px;font-weight:700;font-family:Cinzel,serif;color:'+(l<0?'#b83030':'#c9a96e')+'">'+l+'</span><span style="font-size:10px;color:var(--tm)">disponíveis · '+e+' ganhos (3 por nível do 4 ao 15) · '+g+' gastos'+(l<0?' · <b style="color:#b83030">gasto acima do ganho</b>':'')+'</span>'+(function(){var p=ppPendente();return p?'<button class="bt bp bsm" onclick="ppOk()" title="Compras pendentes podem ser desfeitas até confirmar; depois, sem reembolso (D-53)">✔ Confirmar compras ('+p+')</button>':'<span style="font-size:9px;color:var(--tm)">compras confirmadas não são reembolsadas (D-53)</span>'})()})}
-// Compra de pontos (C-08): base 8, 35 pontos, máx. 18 na criação, cada ponto acima de 14 custa 2.
-// A profissão é aplicada ANTES da compra: o custo e o teto contam sobre o valor já com o modificador da profissão.
+function rPP(){var e=ppEarned(),g=ppSpent(),l=e-g;['ppBar','ppBarAu'].forEach(function(id){var el=$(id);if(!el)return;el.innerHTML=(S.ppAntigo?'<div style="flex-basis:100%;font-size:10px;color:#d4a017;line-height:1.5;text-align:left;border:1px solid rgba(212,160,23,.35);border-radius:4px;padding:5px 8px">⚠ <b>Reforma da progressão (D-89).</b> '+esc(S.ppAntigo)+' <button class="bt bo bsm" style="padding:1px 6px" onclick="S.ppAntigo=\'\';rPP();sync()">Entendi</button></div>':'')+'<span style="font-size:11px;color:var(--td)">Pontos de Progressão:</span><span style="font-size:20px;font-weight:700;font-family:Cinzel,serif;color:'+(l<0?'#b83030':'#c9a96e')+'">'+l+'</span><span style="font-size:10px;color:var(--tm)">disponíveis · '+e+' ganhos (1 por nível do 4 ao 15, +1 nos níveis 5, 10 e 15; 15 no total) · '+g+' gastos'+(l<0?' · <b style="color:#b83030">gasto acima do ganho</b>':'')+'</span>'+(function(){var p=ppPendente();return p?'<button class="bt bp bsm" onclick="ppOk()" title="Compras pendentes podem ser desfeitas até confirmar; depois, sem reembolso (D-53)">✔ Confirmar compras ('+p+')</button>':'<span style="font-size:9px;color:var(--tm)">compras confirmadas não são reembolsadas (D-53)</span>'})()})}
+// Compra de pontos (C-08, P-079): base 8, 35 pontos, cada ponto acima de 14 custa 2. Compra de 8 a 18 SEM bônus;
+// depois somam-se raça e profissão; o valor final vai de 5 a 20 já na criação.
 // S.attrs guarda o valor comprado sem profissão/raça (8 = nada comprado).
 var PB_BASE=8,PB_TOTAL=35,PB_MAX=18,PB_DOBRA=14;
 function pbCost(from,to){var c=0;if(to<from)return to-from;for(var v=from+1;v<=to;v++)c+=v>PB_DOBRA?2:1;return c}
 // Armaduras (PB-10 + itens do mundo, relatório da rodada 2). t: L=leve, M=média (DEX máx. 2), P=pesada (sem DEX)
-var ARMORS=[{n:"Sem armadura",ca:10,t:"N"},{n:"Acolchoado",ca:11,t:"L"},{n:"Couro",ca:11,t:"L"},{n:"Couro batido",ca:12,t:"L"},{n:"Cota de malha",ca:13,t:"M"},{n:"Peitoral de aço",ca:14,t:"M"},{n:"Meia-placa",ca:15,t:"M"},{n:"Brigantina de prata (Anjos)",ca:14,t:"M"},{n:"Cota de anéis",ca:14,t:"P"},{n:"Cota de talas",ca:15,t:"P"},{n:"Placas completas",ca:18,t:"P"},{n:"Armadura a vapor",ca:19,t:"P",mv:-2}];
+var ARMORS=[{n:"Sem armadura",ca:10,t:"N"},{n:"Acolchoado",ca:11,t:"L"},{n:"Couro",ca:11,t:"L"},{n:"Couro batido",ca:12,t:"L"},{n:"Cota de malha",ca:13,t:"M"},{n:"Peitoral de aço",ca:14,t:"M"},{n:"Meia-placa",ca:15,t:"M"},{n:"Brigantina de prata (Anjos)",ca:14,t:"M"},{n:"Cota de anéis",ca:14,t:"P",mv:-1},{n:"Cota de talas",ca:15,t:"P",mv:-1},{n:"Placas completas",ca:18,t:"P",mv:-2},{n:"Armadura a vapor",ca:19,t:"P",mv:-2}] // P-073: anéis e talas −1 m; placas e vapor −2 m;
 
-var S={name:"",player:"",age:"",gender:"",origin:"",alignment:"",appearance:"",personality:"",background:"",motivation:"",notes:"",race:"Humano",prof:"custom",customProf:{name:"Personalizado",m:{},hp:"1d8",mp:"1d8",sk:""},attrs:{FOR:8,DEX:8,CON:8,SAB:8,INT:8,CAR:8,DOM:8},proficiencies:[],customProfs:[],curHP:0,maxHP:0,curMP:0,maxMP:0,falls:0,auraInit:"",auraDesc:"",techs:"",extraAuras:"",gold:0,inventory:[],xp:0,level:3,fluxoDeseq:0,fluxoActive:false,fluxoLog:[],exTreino:0,sessoesTreino:[],arkaLocal:3,arkaCap:3,tecMax:"",devTechs:[],hpRolls:[],mpRolls:[],hpDice:[],mpDice:[],shortRests:0,hdUsed:0,especialista:"",acaoLend:0,legado:"",armor:"Sem armadura",shield:false,attrUps:{FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0},auras:[],toolProfs:["",""],ppConf:null};
+var S={name:"",player:"",age:"",gender:"",origin:"",alignment:"",appearance:"",personality:"",background:"",motivation:"",notes:"",race:"Humano",humAttr:"",prof:"custom",customProf:{name:"Profissão montada",m:{},hp:"1d8",mp:"1d8",sk:"",per:[],res:[],pac:"",exc:false,exd:"",co:0},attrs:{FOR:8,DEX:8,CON:8,SAB:8,INT:8,CAR:8,DOM:8},proficiencies:[],customProfs:[],curHP:0,maxHP:0,curMP:0,maxMP:0,falls:0,auraInit:"",auraDesc:"",techs:"",extraAuras:"",gold:0,inventory:[],xp:0,level:3,fluxoDeseq:0,fluxoActive:false,fluxoLog:[],exTreino:0,sessoesTreino:[],arkaLocal:3,arkaCap:3,tecMax:"",devTechs:[],hpRolls:[],mpRolls:[],hpDice:[],mpDice:[],shortRests:0,hdUsed:0,especialista:"",acaoLend:0,armor:"Sem armadura",shield:false,attrUps:{FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0},auras:[],toolProfs:["",""],ppConf:null,ppEco:2,ppAntigo:"",herLivre:false,escamas:false,vestigar:false,furiaUsada:false,adaptUsos:0,tonicoUsado:false};
+// Rodada 9: humAttr = +1 do Humano; ppEco = economia de PP (2 = D-89); ppAntigo = compras reembolsadas da economia antiga; herLivre = aura de nascença destravada pelo Mestre (P-097);
+// escamas = escamas da Animalesca ativas (P-095); vestigar = descansos a 75% (P-089); furiaUsada/adaptUsos = Fúria Ancestral (R13-5) e Adaptação (P-083)
 // attrUps = +1 comprados com PP; auras = [{n, lv, her(hereditária), pago, deus}] (D-28, D-29)
 // ppConf = compras de PP já confirmadas {attrUps:{FOR:n…}, auras:{nome:nível}} (D-53): só o que passa disso pode ser desfeito
 var selA=null,dAr=false,invF='all',crnPrev=false;
@@ -278,10 +283,20 @@ function sv(id,v){var e=$(id);if(e)e.textContent=v}
 function adj(id,d,mn,mx){var e=$(id);if(!e)return;var v=parseInt(e.textContent||"0")+d;v=Math.max(mn,Math.min(mx,v));e.textContent=v;if(id.indexOf('attr_')===0)uAt();sync()}
 function rD(n){var m=n.match(/(\d+)d(\d+)/);if(!m)return{t:0,r:[]};var c=+m[1],s=+m[2],t=0,r=[];for(var i=0;i<c;i++){var x=Math.floor(Math.random()*s)+1;r.push(x);t+=x}return{t:t,r:r}}
 function gP(){return S.prof==='custom'?S.customProf:PP[S.prof]||S.customProf}
-function gF0(a){var p=gP();return S.attrs[a]+(p.m[a]||0)+(RACES[S.race]?RACES[S.race].bonus[a]||0:0)}
+function rBonus(a){var rc=RACES[S.race];return (rc?rc.bonus[a]||0:0)+(S.race==='Humano'&&S.humAttr===a?1:0)} // Humano: +1 em um atributo à escolha (cap. 07)
+function gF0(a){var p=gP();return S.attrs[a]+(p.m[a]||0)+rBonus(a)}
 function gF(a){return gF0(a)+((S.attrUps&&S.attrUps[a])||0)}
 function gM(v){return Math.floor((v-10)/2)}
 // ── Perícias, resistências e armaduras por profissão (P-060, P-049, R10-5, R10-2, D-71, D-74, D-77) ──
+function temAura(n,lv){return (S.auras||[]).some(function(x){return x.n===n&&x.lv>=(lv||1)})}
+// Lembretes condicionais (P-095): Halo, Xing Tian, fraquezas
+function lembretes(){var l=[],dz=despertada();
+  if(temAura('Luz',3))l.push('Halo (Luz 3): ataques corpo a corpo contra você sofrem −1 (−2 se o atacante for criatura das trevas, distorcida ou morto-vivo)');
+  if(dz&&dz.deus==='Xing Tian')l.push('Xing Tian: regenera 3 HP por rodada enquanto tiver ao menos 1 HP; imune a venenos e doenças naturais');
+  if((S.auras||[]).some(function(x){return auraArea(x.n)==='Primordial'&&x.lv>=3}))l.push('Primordial no nível 3: sofre 30% a mais de dano de técnicas de Ícor');
+  if(S.race==='Anjo')l.push('Anjo: recebe 150% de dano de Trevas');
+  if(S.race==='Demônio')l.push('Demônio: 50% de resistência a fogo');
+  return l}
 function corpoRenovado(){return (S.auras||[]).some(function(x){return x.n==='Rejuvenescimento'&&x.lv>=3})}
 function profPer(){return gP().per||[]}
 // Diplomata: o Especialista dá proficiência em Persuasão mesmo que não escolhida (D-71)
@@ -293,7 +308,7 @@ function perTotal(n,a){return gM(gF(a))+perMult(n)*gProf()}
 function resProf(a){return (gP().res||[]).indexOf(a)>=0}
 function resTotal(a){var rc=RACES[S.race];return gM(gF(a))+(resProf(a)?gProf():0)+((rc&&rc.res&&rc.res[a])||0)}
 // Armadura sem proficiência: desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX (P-049)
-function armSemProf(){var p=gP();if(S.prof==='custom')return '';var ar=ARMORS.filter(function(x){return x.n===S.armor})[0];var f=[];if(ar&&ar.t!=='N'&&(p.arm||[]).indexOf(ar.t)<0)f.push('armadura '+{L:'leve',M:'média',P:'pesada'}[ar.t]);if(S.shield&&!p.esc)f.push('escudo');return f.join(' e ')}
+function armSemProf(){var p=profPac();if(!p)return '';var ar=ARMORS.filter(function(x){return x.n===S.armor})[0];var f=[];if(ar&&ar.t!=='N'&&(p.arm||[]).indexOf(ar.t)<0)f.push('armadura '+{L:'leve',M:'média',P:'pesada'}[ar.t]);if(S.shield&&!p.esc)f.push('escudo');return f.join(' e ')}
 function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function sync(){
@@ -325,11 +340,16 @@ function bPf(){
 function rRP(){
   var rb=$('rBtn');if(!rb)return;
   rb.innerHTML=Object.keys(RACES).map(function(r){var on=S.race===r;return '<button class="pl'+(on?' on':'')+'" onclick="S.race=\''+r+'\';rRP();uAt()" style="'+(on?'color:'+RACES[r].c+';border-color:'+RACES[r].c+';background:'+RACES[r].c+'15':'')+'">'+r+'</button>'}).join('');
-  var rc=RACES[S.race];$('rAb').innerHTML=rc.ab+'<br><span style="font-style:normal">Movimento: '+rc.mv+' m'+(rc.af?' · Afinidade de Arka: Área '+rc.af+' (+2 nos testes de treino, −10% de MP nas auras dessa Área)':' · Sem afinidade de Arka')+'</span>';$('rAb').style.borderLeftColor=rc.c;
+  var rc=RACES[S.race];$('rAb').innerHTML=rc.ab+'<br><span style="font-style:normal">Movimento: '+rc.mv+' m'+(rc.af?' · Afinidade de Arka: Área '+rc.af+' (+2 nos testes de treino, −10% de MP nas auras dessa Área)':' · Sem afinidade de Arka')+'</span>'+(S.race==='Humano'?'<div class="f ai g6" style="margin-top:5px;font-style:normal"><span>+1 em:</span><select style="width:150px" onchange="S.humAttr=this.value;uAt();sync()"><option value="">— atributo —</option>'+A.map(function(a){return '<option value="'+a+'"'+(S.humAttr===a?' selected':'')+'>'+AN[a]+'</option>'}).join('')+'</select></div>':'');$('rAb').style.borderLeftColor=rc.c;
   var pb=$('pBtn');
-  pb.innerHTML=Object.keys(PP).map(function(p){var on=S.prof===p;return '<button class="pl'+(on?' on':'')+'" onclick="S.prof=\''+p+'\';rRP();uAt();rPr()" style="'+(on?'color:var(--ac);border-color:var(--ad);background:rgba(201,169,110,.1)':'')+'">'+p+'</button>'}).join('')+'<button class="pl'+(S.prof==='custom'?' on':'')+'" onclick="S.prof=\'custom\';rRP();uAt();rPr()" style="'+(S.prof==='custom'?'color:var(--ac);border-color:var(--ad);background:rgba(201,169,110,.1)':'')+'">✎ Personalizado</button>';
+  pb.innerHTML=Object.keys(PP).map(function(p){var on=S.prof===p;return '<button class="pl'+(on?' on':'')+'" onclick="S.prof=\''+p+'\';rRP();uAt();rPr()" style="'+(on?'color:var(--ac);border-color:var(--ad);background:rgba(201,169,110,.1)':'')+'">'+p+'</button>'}).join('')+'<button class="pl'+(S.prof==='custom'?' on':'')+'" onclick="S.prof=\'custom\';rRP();uAt();rPr()" style="'+(S.prof==='custom'?'color:var(--ac);border-color:var(--ad);background:rgba(201,169,110,.1)':'')+'">✎ Montada (com o Mestre)</button>';
   var p=gP(),nf;
-  if(S.prof==='custom')nf='<b style="color:var(--tx)">Perfil:</b> '+esc(p.sk||'—')+'<br><b style="color:var(--tx)">HP:</b> '+p.hp+'+CON · <b style="color:var(--tx)">MP:</b> '+p.mp+'+DOM <span style="color:var(--tm)">(por nível, mín. 1)</span>';
+  if(S.prof==='custom'){var rg=reguaMontada(p);nf='<b style="color:var(--tx)">Profissão montada com o Mestre</b> (profissões são modelos, D-84; régua P-094). Nenhum item se liga a aura.<br><b style="color:var(--tx)">Ofício/background:</b> '+esc(p.sk||'—')+'<br><b style="color:var(--tx)">HP:</b> '+p.hp+'+CON · <b style="color:var(--tx)">MP:</b> '+p.mp+'+DOM <span style="color:var(--tm)">(por nível, mín. 1)</span>'+
+    '<br><b style="color:var(--tx)">Perícias (escolha 4):</b> '+((p.per||[]).join(', ')||'—')+
+    '<br><b style="color:var(--tx)">Armaduras e armas:</b> '+(p.pac&&PP[p.pac]?'pacote de '+p.pac+' — '+PP[p.pac].arm.map(function(t){return ARM_NOME[t]}).join(', ')+(PP[p.pac].esc?' e escudo':'')+' · '+PP[p.pac].armas:'—')+
+    '<br><b style="color:var(--tx)">Testes de resistência:</b> '+((p.res||[]).join(' e ')||'—')+' · <b style="color:var(--tx)">Riqueza inicial:</b> '+(p.co?p.co+' CO':'definida pelo Mestre')+(p.co?' <button class="bt bo bsm" style="padding:1px 6px" onclick="riqIni()">receber</button>':'')+' <span style="color:var(--tm)">(D-85; + kit básico de viagem grátis)</span>'+
+    (p.exc?'<br><b style="color:var(--ac)">Exclusiva (aprovada pelo Mestre):</b> '+esc(p.exd||'—'):'')+
+    '<div style="margin-top:5px;color:'+(rg.length?'#d4a017':'#3a7a4c')+'">'+(rg.length?'⚠ Fora da régua da profissão montada (P-094) — confirme com o Mestre:<br>• '+rg.join('<br>• '):'✔ Dentro da régua da profissão montada (P-094).')+'</div>'}
   else{nf='<b style="color:var(--tx)">HP:</b> '+p.hp+'+CON · <b style="color:var(--tx)">MP:</b> '+p.mp+'+DOM <span style="color:var(--tm)">(por nível, mín. 1)</span>'+
     '<br><b style="color:var(--tx)">Perícias (escolha 4):</b> '+p.per.join(', ')+
     '<br><b style="color:var(--tx)">Armaduras:</b> '+p.arm.map(function(t){return ARM_NOME[t]}).join(', ')+(p.esc?' e escudo':'')+' · <b style="color:var(--tx)">Armas:</b> '+p.armas+
@@ -337,16 +357,49 @@ function rRP(){
     (p.ex||[]).forEach(function(x){nf+='<br><b style="color:var(--ac)">'+x[0]+':</b> '+x[1]});}
   $('pNfo').innerHTML=nf;
   var ed=$('pEd');
-  if(S.prof==='custom'){var cp=S.customProf;ed.innerHTML='<div class="pe"><div class="st">Editor de Profissão</div><div class="pg" style="margin-bottom:8px"><div class="fd"><label class="fl">Nome</label><input type="text" value="'+esc(cp.name)+'" onchange="S.customProf.name=this.value;rRP()"></div><div class="fd"><label class="fl">Dado HP</label><input type="text" value="'+esc(cp.hp)+'" onchange="S.customProf.hp=this.value;uAt()"></div><div class="fd"><label class="fl">Dado MP</label><input type="text" value="'+esc(cp.mp)+'" onchange="S.customProf.mp=this.value;uAt()"></div></div><div class="fd"><label class="fl">Perfil</label><input type="text" value="'+esc(cp.sk)+'" onchange="S.customProf.sk=this.value;rRP()"></div><label class="fl">Modificadores</label><div class="f fw g8" style="margin-top:4px">'+A.map(function(a){var v=cp.m[a]||0;return '<div class="f ai g4"><span style="font-size:10px;color:var(--td);width:28px">'+a+'</span><div class="nc"><button class="nb" onclick="S.customProf.m.'+a+'=(S.customProf.m.'+a+'||0)-1;rRP();uAt()">−</button><span class="nv" style="color:'+(v>0?'#3a7a4c':v<0?'#b83030':'var(--tx)')+'">'+(v>0?'+':'')+v+'</span><button class="nb" onclick="S.customProf.m.'+a+'=(S.customProf.m.'+a+'||0)+1;rRP();uAt()">+</button></div></div>'}).join('')+'</div></div>'}else{ed.innerHTML=''}
+  if(S.prof==='custom'){var cp=S.customProf;ed.innerHTML=edMontada(cp)}else{ed.innerHTML=''}
 }
 
-// Riqueza inicial por profissão (R9-1, D-65), em CO, para gastar antes da primeira sessão
-function riqIni(){var p=gP();if(!p.co)return;var g=gv('pGold');if(g&&!confirm('Trocar as '+g+' CO atuais pela riqueza inicial de '+S.prof+' ('+p.co+' CO)?'))return;sv('pGold',p.co);S.gold=p.co;sync();toast('Riqueza inicial: '+p.co+' CO')}
+// ── Profissão montada com o Mestre (D-84, D-85, D-88; régua P-094) ──
+// A ficha valida a régua e avisa; não bloqueia (o Mestre aprova). Nenhum campo se liga a aura.
+var DADOS_PROF=["1d4","1d6","1d8","1d10","1d12"];
+function dDeg(d){var m=String(d||'').match(/d(\d+)/);var f=m?+m[1]:0;return {4:0,6:1,8:2,10:3,12:4}[f]}
+function reguaMontada(cp){var w=[],m=cp.m||{},pos=0,neg=0,np=0,fora=[];
+  A.forEach(function(a){var v=m[a]||0;if(v>0){pos+=v;np++}if(v<0)neg-=v;if(v>3||v<-3)fora.push(a+' '+(v>0?'+':'')+v)});
+  if(fora.length)w.push('nenhum atributo passa de +3 nem de −3 ('+fora.join(', ')+')');
+  if(pos!==neg)w.push('bônus e penalidades devem somar zero (bônus +'+pos+', penalidades −'+neg+')');
+  else if(!((pos===3&&np<=2)||(pos===5&&np<=3)))w.push('modificadores: +3/−3 (bônus em até 2 atributos) ou +5/−5 (bônus em até 3); agora +'+pos+'/−'+neg+' com bônus em '+np);
+  var dh=dDeg(cp.hp),dm=dDeg(cp.mp);
+  if(dh===undefined||dm===undefined)w.push('dados de HP e MP: use d4, d6, d8, d10 ou d12');
+  else{var dg=dh+dm;if(cp.exc){if(dg!==3)w.push('com capacidade exclusiva, os dados somam 3 degraus (agora '+dg+')')}
+    else if(pos===3&&dg!==4)w.push('sem exclusiva e com +3/−3, os dados somam 4 degraus (agora '+dg+')');
+    else if(pos===5&&(dg<4||dg>5))w.push('sem exclusiva e com +5/−5, os dados somam 4 ou 5 degraus (agora '+dg+')');
+    else if(pos!==3&&pos!==5&&(dg<3||dg>5))w.push('os dados somam de 3 a 5 degraus (agora '+dg+')')}
+  if((cp.per||[]).length!==8)w.push('lista de 8 perícias (agora '+(cp.per||[]).length+')');
+  if((cp.res||[]).length!==2)w.push('proficiência em 2 testes de resistência, de atributos diferentes (agora '+(cp.res||[]).length+')');
+  if(!cp.pac||!PP[cp.pac])w.push('escolha o pacote de armaduras e armas de uma das 7 profissões');
+  return w}
+function edMontada(cp){var lab=function(t){return '<label class="fl">'+t+'</label>'};
+  var dsel=function(k){var v=cp[k],o=DADOS_PROF.map(function(d){return '<option'+(v===d?' selected':'')+'>'+d+'</option>'}).join('');if(DADOS_PROF.indexOf(v)<0)o+='<option selected>'+esc(v)+'</option>';return '<select onchange="S.customProf.'+k+'=this.value;rRP();uAt()">'+o+'</select>'};
+  var h='<div class="pe"><div class="st">Profissão montada (com o Mestre)</div><div style="font-size:10px;color:var(--td);margin-bottom:8px;line-height:1.5">Régua (P-094): atributos +3/−3 (bônus em até 2) ou +5/−5 (bônus em até 3), nenhum além de ±3; dados de HP e MP somam 4 degraus com +3/−3 ou 4–5 com +5/−5 (d4 = 0, d6 = 1, d8 = 2, d10 = 3, d12 = 4), ou 3 com uma exclusiva do tamanho do Olho de Falcão; 8 perícias (o jogador escolhe 4); 2 resistências de atributos diferentes; armaduras e armas de uma das 7; riqueza inicial definida pelo Mestre (D-85). A ficha só avisa: quem aprova é o Mestre.</div>';
+  h+='<div class="pg" style="margin-bottom:8px"><div class="fd">'+lab('Nome')+'<input type="text" value="'+esc(cp.name)+'" onchange="S.customProf.name=this.value;rRP()"></div><div class="fd">'+lab('Ofício / background')+'<input type="text" value="'+esc(cp.sk||'')+'" onchange="S.customProf.sk=this.value;rRP()"></div><div class="fd">'+lab('Dado de HP')+dsel('hp')+'</div><div class="fd">'+lab('Dado de MP')+dsel('mp')+'</div></div>';
+  h+=lab('Modificadores')+'<div class="f fw g8" style="margin:4px 0 8px">'+A.map(function(a){var v=cp.m[a]||0;return '<div class="f ai g4"><span style="font-size:10px;color:var(--td);width:28px">'+a+'</span><div class="nc"><button class="nb" onclick="S.customProf.m.'+a+'=(S.customProf.m.'+a+'||0)-1;rRP();uAt()">−</button><span class="nv" style="color:'+(v>0?'#3a7a4c':v<0?'#b83030':'var(--tx)')+'">'+(v>0?'+':'')+v+'</span><button class="nb" onclick="S.customProf.m.'+a+'=(S.customProf.m.'+a+'||0)+1;rRP();uAt()">+</button></div></div>'}).join('')+'</div>';
+  h+=lab('Perícias da profissão ('+(cp.per||[]).length+'/8)')+'<div class="f fw g4" style="margin:4px 0 8px">'+DP.map(function(p){var on=(cp.per||[]).indexOf(p.n)>=0;return '<button class="pl'+(on?' on':'')+'" style="font-size:10px;padding:2px 7px;'+(on?'color:var(--ac);border-color:var(--ad)':'')+'" onclick="tPerM(\''+p.n+'\')">'+p.n+'</button>'}).join('')+'</div>';
+  h+=lab('Testes de resistência ('+(cp.res||[]).length+'/2)')+'<div class="f fw g4" style="margin:4px 0 8px">'+A.map(function(a){var on=(cp.res||[]).indexOf(a)>=0;return '<button class="pl'+(on?' on':'')+'" style="font-size:10px;padding:2px 7px;'+(on?'color:var(--ac);border-color:var(--ad)':'')+'" onclick="tRes(\''+a+'\')">'+a+'</button>'}).join('')+'</div>';
+  h+='<div class="pg" style="margin-bottom:8px"><div class="fd">'+lab('Armaduras e armas (pacote de)')+'<select onchange="S.customProf.pac=this.value;rRP();uAt();rPr()"><option value="">— uma das 7 —</option>'+Object.keys(PP).map(function(k){return '<option'+(cp.pac===k?' selected':'')+'>'+k+'</option>'}).join('')+'</select></div><div class="fd">'+lab('Riqueza inicial (CO, definida pelo Mestre)')+'<input type="number" min="0" value="'+(cp.co||0)+'" onchange="S.customProf.co=Math.max(0,parseInt(this.value)||0);rRP()"></div></div>';
+  h+='<label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;margin-bottom:4px"><input type="checkbox"'+(cp.exc?' checked':'')+' onchange="S.customProf.exc=this.checked;rRP()">Capacidade exclusiva aprovada pelo Mestre (dados somam 3 degraus)</label>';
+  if(cp.exc)h+='<input type="text" placeholder="Descreva a exclusiva..." value="'+esc(cp.exd||'')+'" onchange="S.customProf.exd=this.value;rRP()">';
+  return h+'</div>'}
+function tPerM(n){var cp=S.customProf;if(!cp.per)cp.per=[];var i=cp.per.indexOf(n);if(i>=0)cp.per.splice(i,1);else if(cp.per.length<8)cp.per.push(n);else{toast('A lista da profissão tem 8 perícias');return}rRP();rPr()}
+function profPac(){var p=gP();if(S.prof!=='custom')return p;return PP[p.pac]||null} // pacote de armaduras/armas da profissão montada
+
+// Riqueza inicial por profissão (R9-1, D-65), em CO, para gastar antes da primeira sessão; profissão montada: valor do Mestre (D-85)
+function riqIni(){var p=gP();if(!p.co)return;var g=gv('pGold');if(g&&!confirm('Trocar as '+g+' CO atuais pela riqueza inicial de '+(S.prof==='custom'?p.name:S.prof)+' ('+p.co+' CO)?'))return;sv('pGold',p.co);S.gold=p.co;sync();toast('Riqueza inicial: '+p.co+' CO')}
 
 // ═══ ATTRIBUTES ═══
 function bAt(){
   var h='<div class="st">Pontos</div><div id="pBar" class="f ai jc g10" style="padding:7px 14px;border-radius:5px;margin-bottom:6px"></div>';
-  h+='<div id="ppBar" class="f ai jc g10 fw" style="padding:5px 14px;border-radius:5px;margin-bottom:4px;border:1px solid rgba(201,169,110,.15)"></div><div style="font-size:10px;color:var(--tm);text-align:center;margin-bottom:12px">Compra (−/+ de cima): só na criação, sem passar de 18. Depois, +1 atributo com PP (−/+ de baixo): 2 / 3 / 4 PP pelas faixas até 16 / 17–18 / 19–20 do valor <b>comprado antes do +1</b>, sem os bônus de raça e de profissão (D-52, D-60: 16→17 = 2 PP, 17→18 = 3, 19→20 = 4; FOR comprada 16, 18 com bônus, ainda paga 2 PP); teto 20 no valor final, com raça e profissão (D-60). Uma compra com PP só pode ser desfeita antes de confirmada (D-53).</div>';
+  h+='<div id="ppBar" class="f ai jc g10 fw" style="padding:5px 14px;border-radius:5px;margin-bottom:4px;border:1px solid rgba(201,169,110,.15)"></div><div style="font-size:10px;color:var(--tm);text-align:center;margin-bottom:12px">Compra (−/+ de cima): só na criação, de 8 a 18 <b>sem bônus</b>; depois somam-se raça e profissão, e o valor final vai de 5 a 20 (P-079). Depois, +1 atributo com PP (−/+ de baixo): <b>1 PP</b> até o valor comprado 18 e <b>2 PP</b> de 19 para 20, pela faixa do valor <b>comprado antes do +1</b>, sem raça e profissão (R13-1; FOR comprada 16, 18 com bônus, paga 1 PP); teto 20 no valor final, com raça e profissão (D-60). Uma compra com PP só pode ser desfeita antes de confirmada (D-53).</div>';
   h+='<div class="ag" id="aGrid" style="margin-bottom:14px"></div>';
   h+='<div class="st">Derivados</div><div class="f g8 fw jc" id="dSt" style="margin-bottom:8px"></div>';
   h+='<div class="f g8 ai fw jc" style="margin-bottom:14px"><span style="font-size:10px;color:var(--td)">Armadura</span><select id="pArmor" style="width:210px" onchange="S.armor=this.value;uAt()">'+ARMORS.map(function(a){return '<option value="'+a.n+'">'+a.n+' ('+(a.t==='P'?'CA '+a.ca:a.t==='M'?'CA '+a.ca+'+DEX máx. 2':'CA '+a.ca+'+DEX')+')</option>'}).join('')+'</select><label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" id="pShield" onchange="S.shield=this.checked;uAt()">Escudo (+2)</label></div>';
@@ -358,8 +411,8 @@ function bAt(){
   // Descanso (cap. 13; PB-4)
   h+='<div class="sub-label">Descanso</div>';
   h+='<div class="flx-panel" style="margin-bottom:10px">';
-  h+='<div style="font-size:11px;color:var(--td);margin-bottom:6px">Descanso curto (10 min): recupera 50% do MP máximo e permite gastar dados de vida: o estoque é igual ao nível; por descanso curto, gasta-se até metade do nível (arredondado para cima), e cada dado recupera o resultado + mod CON (P-029, D-71). No máximo 2 descansos curtos entre descansos longos. Descanso longo (8 h): 100% de HP e MP, devolve todos os dados de vida, remove 1 nível de Exaustão de Arka, zera as Quedas (D-27) e os descansos curtos.</div>';
-  h+='<div class="f g8 ai fw"><button class="bt bs bsm" onclick="restShort()">Descanso curto</button><span id="srCt" style="font-size:10px;color:var(--td)">0/2</span><span id="hdCt" style="font-size:10px;color:var(--td)"></span><button class="bt bp bsm" onclick="restLong()">Descanso longo</button></div>';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:6px">Descanso curto (10 min): recupera 50% do MP máximo e permite gastar dados de vida: o estoque é igual ao nível; por descanso curto, gasta-se até metade do nível (arredondado para cima), e cada dado recupera o resultado + mod CON, no mínimo 1 HP por dado, mesmo com CON negativa (P-029, D-71, P-091). No máximo 2 descansos curtos entre descansos longos. Descanso longo (8 h): 100% de HP e MP, devolve todos os dados de vida, remove 1 nível de Exaustão de Arka, zera as Quedas (D-27) e os descansos curtos.</div>';
+  h+='<div class="f g8 ai fw"><button class="bt bs bsm" onclick="restShort()">Descanso curto</button><span id="srCt" style="font-size:10px;color:var(--td)">0/2</span><span id="hdCt" style="font-size:10px;color:var(--td)"></span><button class="bt bp bsm" onclick="restLong()">Descanso longo</button><label style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--td);cursor:pointer" title="P-089: em Vestigar, os descansos recuperam só 75% do HP e do MP que recuperariam (arredondado para baixo); dados de vida, Exaustão e Quedas seguem normais"><input type="checkbox" id="pVest" onchange="S.vestigar=this.checked"'+(S.vestigar?' checked':'')+'>Em Vestigar (75%)</label></div>';
   h+='</div>';
   // Rolagens de HP/MP (cap. 13; PB-8)
   h+='<div class="sub-label">Rolagens de HP e MP</div>';
@@ -377,7 +430,13 @@ function bAt(){
   h+='<div><b style="color:var(--tx)">Esquiva</b> (reação): contra ataque com arma que acertou, antes do dano: 1d20 + mod DEX contra o total do ataque; igualou ou superou, não sofre dano. <button class="bt bo bsm" style="padding:1px 6px" onclick="rollReac(\'DEX\',\'Esquiva\')">🎲</button></div>';
   h+='<div><b style="color:var(--tx)">Aparar</b> (reação): só contra corpo a corpo, empunhando arma corpo a corpo: 1d20 + mod FOR contra o total do ataque; com 20 natural, vantagem no próximo ataque contra o atacante até o fim do seu próximo turno. <button class="bt bo bsm" style="padding:1px 6px" onclick="rollReac(\'FOR\',\'Aparar\')">🎲</button></div>';
   h+='<div><b style="color:var(--tx)">Contra-Ataque</b> (reação): acertado em corpo a corpo, empunhando arma corpo a corpo, recebe o dano inteiro e faz 1 ataque com arma contra o atacante, com desvantagem.</div>';
+  h+='<div><b style="color:var(--tx)">Ataque de oportunidade</b> (reação, P-067): quando uma criatura hostil que você vê sai do seu alcance corpo a corpo sem Desengajar, 1 ataque com arma corpo a corpo contra ela.</div>';
   h+='<div><b style="color:var(--tx)">Desengajar</b> (ação): afasta-se sem provocar ataque de oportunidade neste turno. <b style="color:var(--tx)">Flanquear</b>: vantagem no corpo a corpo com um aliado do lado oposto do alvo, a até 1,5 m dele.</div>';
+  h+='<div><b style="color:var(--tx)">Agarrar</b> (ação, P-074): Atletismo contra Atletismo ou Acrobacia do alvo; com sucesso, ele fica Agarrado (movimento 0). Termina se você ficar Incapacitado ou se o alvo for afastado do seu alcance; para escapar, o agarrado gasta a Ação e repete o teste.</div>';
+  h+='<div><b style="color:var(--tx)">Ataque desarmado</b> (P-075): <span id="desarmDano"></span> de concussão; todos são proficientes.</div>';
+  h+='<div><b style="color:var(--tx)">Meditação</b> (P-071): custa a Ação e a Ação Bônus do turno (pode se mover); recupera 2d8 + mod DOM de MP; requer 1 turno sem receber dano. <button class="bt bo bsm" style="padding:1px 6px" onclick="meditar()">🎲 Meditar</button> <b style="color:var(--tx)">Regeneração passiva:</b> no início de cada turno, mod INT de MP (mínimo 1).</div>';
+  h+='<div style="margin-top:4px"><b style="color:var(--tx)">Armas</b> (P-069): <b>Acuidade</b> FOR ou DEX no ataque e no dano · <b>Versátil</b> dado entre parênteses com as duas mãos · <b>Arremesso</b> ataque à distância com o atributo do corpo a corpo · <b>Pesado</b> exige FOR 13 (abaixo, desvantagem) · <b>Duas mãos</b> · <b>Alcance 3 m</b> corpo a corpo até 3 m · <b>Recarga</b> 1 disparo por Ação · <b>Leve</b> com uma leve em cada mão, depois de atacar com a Ação, ataca com a outra como Ação Bônus, sem somar o modificador ao dano. <b style="color:var(--tx)">Alcance com dois números</b> (ex.: 12/36 m, E15-01): até o 1º, normal; entre os dois, desvantagem; além do 2º, impossível.</div>';
+  h+='<div id="racaPanel" style="margin-top:6px"></div>';
   h+='<div style="margin-top:4px"><b style="color:var(--tx)">Cobertura</b> (D-78): meia +2 de CA; três quartos +5; total = não pode ser alvo direto. <b style="color:var(--tx)">Dificuldades</b> (P-030): fácil 10 · média 14 · difícil 18 · muito difícil 22. <b style="color:var(--tx)">Rodada</b> = 6 s.</div>';
   h+='<div id="alPanel" style="margin-top:6px"></div>';
   h+='</div>';
@@ -386,13 +445,13 @@ function bAt(){
 function uAt(){
   A.forEach(function(a){var e=$('attr_'+a);if(e)S.attrs[a]=parseInt(e.textContent)||PB_BASE});
   var p=gP();
-  // Compra de pontos (C-08): custo calculado sobre o valor já com a profissão (aplicada antes da compra)
-  var used=0;A.forEach(function(a){var pm=p.m[a]||0;used+=pbCost(PB_BASE+pm,S.attrs[a]+pm)});var left=PB_TOTAL-used;
+  // Compra de pontos (C-08, P-079): custo sobre o valor comprado, sem raça e profissão
+  var used=0;A.forEach(function(a){used+=pbCost(PB_BASE,S.attrs[a])});var left=PB_TOTAL-used;
   var pb=$('pBar');if(!pb)return;
   var c=left<0?'#b83030':left===0?'#3a7a4c':'#c9a96e';
   pb.style.cssText='display:flex;align-items:center;justify-content:center;gap:10px;padding:7px 14px;border-radius:5px;background:'+(left<0?'rgba(184,48,48,.06)':'rgba(201,169,110,.04)')+';border:1px solid '+(left<0?'rgba(184,48,48,.2)':'rgba(201,169,110,.15)');
   pb.innerHTML='<span style="font-size:11px;color:var(--td)">Pontos:</span><span style="font-size:22px;font-weight:700;font-family:Cinzel,serif;color:'+c+'">'+left+'</span><span style="font-size:10px;color:var(--tm)">/ '+PB_TOTAL+' · base '+PB_BASE+', máx. '+PB_MAX+', acima de '+PB_DOBRA+' custa 2</span>';
-  var g=$('aGrid');if(g){g.innerHTML=A.map(function(a){var b=S.attrs[a],pm=p.m[a]||0,rm=RACES[S.race]?RACES[S.race].bonus[a]||0:0,fin=gF(a),mod=gM(fin),cst=pbCost(PB_BASE+pm,b+pm);var pc2=pm>0?'#3a7a4c':'#b83030';var mc2=mod>=0?'#3a7a4c':'#b83030';var pt=pm?'<span style="color:'+pc2+'">Prof'+(pm>0?'+':'')+pm+'</span> ':'';var rt=rm?'<span style="color:#3a7a4c">Raça+'+rm+'</span>':'';return '<div class="ac2" style="background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:7px 5px;text-align:center"><div style="font-family:Cinzel,serif;font-size:9px;color:var(--ac);font-weight:700;letter-spacing:.12em;margin-bottom:4px">'+a+'</div><div class="nc" style="justify-content:center"><button class="nb" onclick="adjAttr(\''+a+'\',-1)">−</button><span class="nv" id="attr_'+a+'" style="color:var(--tx)">'+b+'</span><button class="nb" onclick="adjAttr(\''+a+'\',1)">+</button></div><div style="font-size:8px;color:var(--tm);margin-top:3px;min-height:11px">'+pt+rt+'</div><div style="font-size:18px;font-weight:700;font-family:Cinzel,serif;margin-top:3px">'+fin+'</div><div style="font-size:9px;color:'+mc2+'">mod '+(mod>=0?'+':'')+mod+'</div><div style="font-size:8px;color:var(--tm)">custo '+cst+'</div><div class="f ai jc g4" style="margin-top:3px;font-size:8px;color:var(--td)">PP<button class="nb" style="width:15px;height:15px;font-size:9px" onclick="adjUp(\''+a+'\',-1)">−</button><span style="color:var(--ac);font-weight:700">+'+((S.attrUps&&S.attrUps[a])||0)+'</span><button class="nb" style="width:15px;height:15px;font-size:9px" onclick="adjUp(\''+a+'\',1)">+</button></div><div style="font-size:8px;color:var(--tm)">próx. '+ppAtrCost(b+((S.attrUps&&S.attrUps[a])||0))+' PP</div></div>'}).join('')}
+  var g=$('aGrid');if(g){g.innerHTML=A.map(function(a){var b=S.attrs[a],pm=p.m[a]||0,rm=rBonus(a),fin=gF(a),mod=gM(fin),cst=pbCost(PB_BASE,b);var pc2=pm>0?'#3a7a4c':'#b83030';var mc2=mod>=0?'#3a7a4c':'#b83030';var pt=pm?'<span style="color:'+pc2+'">Prof'+(pm>0?'+':'')+pm+'</span> ':'';var rt=rm?'<span style="color:#3a7a4c">Raça+'+rm+'</span>':'';return '<div class="ac2" style="background:var(--cd);border:1px solid var(--bd);border-radius:5px;padding:7px 5px;text-align:center"><div style="font-family:Cinzel,serif;font-size:9px;color:var(--ac);font-weight:700;letter-spacing:.12em;margin-bottom:4px">'+a+'</div><div class="nc" style="justify-content:center"><button class="nb" onclick="adjAttr(\''+a+'\',-1)">−</button><span class="nv" id="attr_'+a+'" style="color:var(--tx)">'+b+'</span><button class="nb" onclick="adjAttr(\''+a+'\',1)">+</button></div><div style="font-size:8px;color:var(--tm);margin-top:3px;min-height:11px">'+pt+rt+'</div><div style="font-size:18px;font-weight:700;font-family:Cinzel,serif;margin-top:3px'+(fin>ATR_TETO?';color:#b83030" title="Acima de 20: o valor final não passa de 20 (P-079)':'')+'">'+fin+'</div><div style="font-size:9px;color:'+mc2+'">mod '+(mod>=0?'+':'')+mod+'</div><div style="font-size:8px;color:var(--tm)">custo '+cst+'</div><div class="f ai jc g4" style="margin-top:3px;font-size:8px;color:var(--td)">PP<button class="nb" style="width:15px;height:15px;font-size:9px" onclick="adjUp(\''+a+'\',-1)">−</button><span style="color:var(--ac);font-weight:700">+'+((S.attrUps&&S.attrUps[a])||0)+'</span><button class="nb" style="width:15px;height:15px;font-size:9px" onclick="adjUp(\''+a+'\',1)">+</button></div><div style="font-size:8px;color:var(--tm)">próx. '+ppAtrCost(b+((S.attrUps&&S.attrUps[a])||0))+' PP</div></div>'}).join('')}
   var conMod=gM(gF('CON')),domMod=gM(gF('DOM')),dexMod=gM(gF('DEX'));
   // HP = dado + mod CON por nível; MP = dado + mod DOM por nível; mínimo 1 por nível (cap. 13, PB-8)
   var hd=S.hpDice||[],md=S.mpDice||[],hpT=0,mpT=0;
@@ -408,12 +467,19 @@ function uAt(){
   var ar=ARMORS.filter(function(x){return x.n===S.armor})[0]||ARMORS[0];
   var ca=ar.t==='P'?ar.ca:ar.t==='M'?ar.ca+Math.min(2,dexMod):ar.ca+dexMod;if(S.shield)ca+=2;
   var caS=ar.t==='P'?'pesada':ar.t==='M'?ar.ca+'+DEX(máx 2)':ar.ca+'+DEX';if(S.shield)caS+='+2';
+  // P-095: escamas da Animalesca 2+ (botão "escamas ativas": +2 de CA; não soma com a CA natural da Forma de Besta Lendária)
+  var escOk=temAura('Animalesca',2);if(escOk&&S.escamas){ca+=2;caS+='+2 escamas'}
   var mvR=RACES[S.race]?RACES[S.race].mv:9,mov=mvR+(ar.mv||0);
-  var mvS=S.race+(ar.mv?' '+ar.mv+' m armadura':ar.t==='P'?' (pesada: −1 a −2 m)':'');
+  var mvS=S.race+(ar.mv?' '+ar.mv+' m armadura':'');
+  // P-095: Dom de Hachiman (+10 m de movimento) entra no cálculo
+  var dzH=despertada();if(dzH&&dzH.deus==='Hachiman'){mov+=10;mvS+=' +10 Hachiman'}
   var se=$('pArmor');if(se)se.value=ar.n;var sh=$('pShield');if(sh)sh.checked=!!S.shield;
   var prof=gProf();
-  var dv=$('dSt');if(dv)dv.innerHTML='<div class="sb"><div class="sbl">HP Máx.</div><div class="sbv" style="color:var(--dn)">'+S.maxHP+'</div><div class="sbs">'+hd.length+'×('+p.hp+(conMod>=0?'+':'')+conMod+')'+(crn?' +'+crn+' Corpo Renovado':'')+'</div></div><div class="sb"><div class="sbl">MP Máx.</div><div class="sbv" style="color:var(--mn)">'+S.maxMP+'</div><div class="sbs">'+md.length+'×('+p.mp+(domMod>=0?'+':'')+domMod+' DOM)</div></div><div class="sb"><div class="sbl">CA</div><div class="sbv">'+ca+'</div><div class="sbs">'+caS+'</div></div><div class="sb"><div class="sbl">Movi</div><div class="sbv" style="color:var(--sc);font-size:15px">'+mov+'m</div><div class="sbs">'+mvS+'</div></div><div class="sb"><div class="sbl">Iniciativa</div><div class="sbv" style="font-size:13px">3d8'+(dexMod>=0?'+':'')+dexMod+'</div><div class="sbs">3d8+mod DEX</div></div><div class="sb"><div class="sbl">Proficiência</div><div class="sbv" style="font-size:15px">+'+prof+'</div><div class="sbs">nível '+(S.level||LV_MIN)+'</div></div>'+(function(){var w=armSemProf();return w?'<div style="flex-basis:100%;font-size:10px;color:var(--dn);text-align:center">Sem proficiência em '+w+': desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX (P-049).</div>':''})();
-  rLvRolls();rRests();rFalls();uWt();rPr();rPP();rAL()
+  var dv=$('dSt');if(dv)dv.innerHTML='<div class="sb"><div class="sbl">HP Máx.</div><div class="sbv" style="color:var(--dn)">'+S.maxHP+'</div><div class="sbs">'+hd.length+'×('+p.hp+(conMod>=0?'+':'')+conMod+')'+(crn?' +'+crn+' Corpo Renovado':'')+'</div></div><div class="sb"><div class="sbl">MP Máx.</div><div class="sbv" style="color:var(--mn)">'+S.maxMP+'</div><div class="sbs">'+md.length+'×('+p.mp+(domMod>=0?'+':'')+domMod+' DOM)</div></div><div class="sb"><div class="sbl">CA</div><div class="sbv">'+ca+'</div><div class="sbs">'+caS+'</div></div><div class="sb"><div class="sbl">Movi</div><div class="sbv" style="color:var(--sc);font-size:15px">'+mov+'m</div><div class="sbs">'+mvS+'</div></div><div class="sb"><div class="sbl">Iniciativa</div><div class="sbv" style="font-size:13px">3d8'+(dexMod>=0?'+':'')+dexMod+'</div><div class="sbs">3d8+mod DEX</div></div><div class="sb"><div class="sbl">Proficiência</div><div class="sbv" style="font-size:15px">+'+prof+'</div><div class="sbs">nível '+(S.level||LV_MIN)+'</div></div>'+(function(){var w=armSemProf();return w?'<div style="flex-basis:100%;font-size:10px;color:var(--dn);text-align:center">Sem proficiência em '+w+': desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX (P-049).</div>':''})()
+    +(escOk?'<label style="flex-basis:100%;display:flex;justify-content:center;align-items:center;gap:5px;font-size:10px;color:var(--td);cursor:pointer"><input type="checkbox"'+(S.escamas?' checked':'')+' onchange="S.escamas=this.checked;uAt()">Escamas ativas (Animalesca 2: +2 de CA; desligue na Forma de Besta Lendária)</label>':'')
+    +(function(){var l=lembretes();return l.length?'<div style="flex-basis:100%;font-size:10px;color:var(--td);text-align:center;line-height:1.5"><b style="color:var(--ac)">Lembretes</b> (P-095, não entram nos números): '+l.join(' · ')+'</div>':''})();
+  var dd=$('desarmDano');if(dd){var fm=gM(gF('FOR'));dd.textContent=(1+fm)+' (1 '+(fm>=0?'+ ':'− ')+Math.abs(fm)+' FOR)'}
+  rLvRolls();rRests();rFalls();uWt();rPr();rPP();rAL();rRaca()
 }
 // +1 atributo com PP (PG economia, D-52, D-60): faixa de custo pelo valor comprado antes do +1 (sem raça/profissão); teto 20 no valor final
 // Desfazer só vale para compras ainda não confirmadas (D-53)
@@ -424,10 +490,11 @@ function adjUp(a,d){
   uAt();if(typeof rMyAuras==='function')rMyAuras();sync()
 }
 function adjAttr(a,d){
-  var e=$('attr_'+a);if(!e)return;var pm=gP().m[a]||0;
+  var e=$('attr_'+a);if(!e)return;
   var v=(parseInt(e.textContent)||PB_BASE)+d;
   if(d<0&&v<PB_BASE){toast('Mínimo: '+PB_BASE);return}
-  if(d>0&&v+pm>PB_MAX){toast('Máximo na criação: '+PB_MAX+' (já com a profissão)');return}
+  if(d>0&&v>PB_MAX){toast('Compra até '+PB_MAX+', sem os bônus de raça e de profissão (P-079)');return}
+  if(d>0&&gF(a)+1>ATR_TETO){toast('Valor final acima de '+ATR_TETO+' com raça e profissão (P-079)');return}
   e.textContent=v;uAt();sync()
 }
 function rollLevelUp(){
@@ -484,18 +551,29 @@ function restShort(){
   if((S.shortRests||0)>=2){toast('Máximo de 2 descansos curtos entre descansos longos');return}
   var mx=Math.min(hdLeft(),hdMaxRest()),n=0;
   if(mx>0){var r=prompt('Descanso curto: quantos dados de vida ('+gP().hp+' + mod CON) gastar? 0 a '+mx+' (restam '+hdLeft()+' de '+(S.level||LV_MIN)+')',String(mx));if(r===null)return;n=Math.max(0,Math.min(mx,parseInt(r)||0))}
-  S.shortRests=(S.shortRests||0)+1;
-  S.curMP=Math.min(S.maxMP,gv('curMP')+Math.floor(S.maxMP*0.5));sv('curMP',S.curMP);
-  var cm=gM(gF('CON')),hr=[],cura=0;for(var i=0;i<n;i++){var d=rD(gP().hp).t;hr.push(d);cura+=Math.max(0,d+cm)}
-  S.hdUsed=(S.hdUsed||0)+n;S.curHP=Math.min(S.maxHP,gv('curHP')+cura);sv('curHP',S.curHP);uBa();rRests();
-  toast('Descanso curto ('+S.shortRests+'/2): +50% do MP'+(n?' · '+n+' dado(s) de vida ['+hr.join(',')+'] '+(cm>=0?'+':'')+cm+' CON cada = +'+cura+' HP':''))
+  S.shortRests=(S.shortRests||0)+1;S.furiaUsada=false;if(typeof rRaca==='function')rRaca();
+  var mpR=vestRec(gv('curMP'),S.maxMP,Math.floor(S.maxMP*0.5));S.curMP=gv('curMP')+mpR;sv('curMP',S.curMP);
+  var cm=gM(gF('CON')),hr=[],cura=0;for(var i=0;i<n;i++){var d=rD(gP().hp).t;hr.push(d);cura+=Math.max(1,d+cm)} // P-091: mínimo 1 por dado
+  var hpR=vestRec(gv('curHP'),S.maxHP,cura);
+  S.hdUsed=(S.hdUsed||0)+n;S.curHP=gv('curHP')+hpR;sv('curHP',S.curHP);uBa();rRests();
+  toast('Descanso curto ('+S.shortRests+'/2): +'+mpR+' MP'+(n?' · '+n+' dado(s) de vida ['+hr.join(',')+'] '+(cm>=0?'+':'')+cm+' CON cada (mín. 1) = +'+cura+' HP':'')+(S.vestigar?' · Vestigar: 75% (+'+hpR+' HP)':''))
 }
+// Vestigar (P-089): o descanso recupera 75% do que recuperaria (arredondado para baixo)
+function vestRec(cur,max,ganho){var g=Math.max(0,Math.min(max-cur,ganho));return S.vestigar?Math.floor(g*0.75):g}
 function restLong(){
-  S.shortRests=0;S.hdUsed=0;S.curHP=S.maxHP;sv('curHP',S.maxHP);S.curMP=S.maxMP;sv('curMP',S.maxMP);S.falls=0;sv('falls',0);rFalls();
+  S.shortRests=0;S.hdUsed=0;S.furiaUsada=false;S.tonicoUsado=false;S.adaptUsos=0;S.curHP=gv('curHP')+vestRec(gv('curHP'),S.maxHP,S.maxHP);sv('curHP',S.curHP);S.curMP=gv('curMP')+vestRec(gv('curMP'),S.maxMP,S.maxMP);sv('curMP',S.curMP);S.falls=0;sv('falls',0);rFalls();if(typeof rRaca==='function')rRaca();
   S.exTreino=Math.max(0,(S.exTreino||0)-1);uBa();rRests();if(typeof rExh==='function')rExh();
-  toast('Descanso longo: HP e MP cheios · dados de vida recuperados · Quedas zeradas · Exaustão de Arka → '+S.exTreino)
+  toast('Descanso longo: '+(S.vestigar?'HP e MP a 75% (Vestigar)':'HP e MP cheios')+' · dados de vida recuperados · Quedas zeradas · Exaustão de Arka → '+S.exTreino)
 }
 function rRests(){var e=$('srCt');if(e)e.textContent=(S.shortRests||0)+'/2 curtos';var h=$('hdCt');if(h)h.textContent='· dados de vida: '+hdLeft()+'/'+(S.level||LV_MIN)+' (até '+hdMaxRest()+' por descanso curto)'}
+// Meditação (P-071): 2d8 + mod DOM de MP
+function meditar(){var r=rD('2d8'),m=gM(gF('DOM')),g=Math.max(0,r.t+m),v=Math.min(S.maxMP,gv('curMP')+g);sv('curMP',v);S.curMP=v;uBa();toast('Meditação: 2d8 ['+r.r.join(',')+'] '+(m>=0?'+':'')+m+' DOM = +'+g+' MP (Ação + Ação Bônus)')}
+// Habilidades raciais com uso (Rodada 9): Fúria Ancestral do Demônio (R13-5) e Adaptação do Humano (P-083)
+function rRaca(){var el=$('racaPanel');if(!el)return;var h='';
+  if(S.race==='Demônio')h='<b style="color:#c43030">Fúria Ancestral</b> (R13-5): 1×/descanso curto, ação bônus, 3 rodadas; o primeiro acerto em cada turno, com arma ou técnica, causa +1d6 de dano a um alvo, do mesmo tipo do ataque. '+(S.furiaUsada?'<span style="color:var(--dn)">Usada — volta no descanso curto ou longo.</span>':'<button class="bt bo bsm" style="padding:1px 6px" onclick="S.furiaUsada=true;rRaca();toast(\'Fúria Ancestral: 3 rodadas\')">Despertar a fúria</button>')+' <button class="bt bo bsm" style="padding:1px 6px" onclick="var r=rD(\'1d6\');toast(\'Fúria Ancestral: +\'+r.t+\' de dano (1d6)\')">🎲 +1d6</button>';
+  else if(S.race==='Humano')h='<b style="color:#c9a96e">Adaptação</b> (P-083): 2×/dia, rerrola um teste de atributo, de perícia ou de resistência (não ataques nem treino) e fica com o novo resultado. Usos: <b>'+(S.adaptUsos||0)+'/2</b> <button class="bt bo bsm" style="padding:1px 6px" onclick="if((S.adaptUsos||0)>=2){toast(\'Adaptação: 2 usos por dia\');return}S.adaptUsos=(S.adaptUsos||0)+1;rRaca()">Usar</button> <span style="color:var(--tm)">(zera no descanso longo)</span>';
+  else if(S.race==='Anjo')h='<b style="color:#f0e68c">Planagem</b> (P-084): se puder abrir as asas, não sofre dano de queda e avança 1 m na horizontal a cada 1 m de queda; não ganha altura.';
+  el.innerHTML=h}
 function rollReac(a,nm){var d=Math.floor(Math.random()*20)+1,m=gM(gF(a));toast(nm+': d20 ['+d+'] '+(m>=0?'+':'')+m+' '+a+' = '+(d+m)+(nm==='Aparar'&&d===20?' · 20 natural: vantagem no próximo ataque contra o atacante':''))}
 // Ação Lendária de jogador (D-68, R11-2): quem fez o Despertar Divino; 1 por rodada, no fim do turno de outra criatura, máx. 2 por combate; 1 ataque ou 1 Projetar Básico (até 12 MP, pago normalmente); não gasta a reação
 var AL_MAX=2;
@@ -517,11 +595,11 @@ function rPr(){
   var el=$('pList');if(!el)return;
   // P-060: 4 da lista da profissão + 2 livres (as livres podem ser da lista); Persuasão dada pelo Especialista não conta (D-71)
   var lst=profPer(),mk=DP.filter(function(p){return S.proficiencies.indexOf(p.n)>=0}).map(function(p){return p.n}),nOn=mk.length,nL=mk.filter(function(n){return lst.indexOf(n)>=0}).length;
-  var pc=$('perCt');if(pc){pc.innerHTML=lst.length?'Marcadas: <b style="color:'+(nOn>PER_CRIACAO?'#b83030':'var(--ac)')+'">'+nOn+'/'+PER_CRIACAO+'</b> · da lista da profissão: <b style="color:'+(nL<Math.min(PER_PROF,nOn)&&nOn>=PER_CRIACAO?'#b83030':'var(--ac)')+'">'+nL+'</b> (mín. '+PER_PROF+')'+(nOn>=PER_CRIACAO&&nL<PER_PROF?' <b style="color:#b83030">— faltam perícias da lista</b>':''):'Marcadas: <b style="color:'+(nOn>PER_CRIACAO?'#b83030':'var(--ac)')+'">'+nOn+'/'+PER_CRIACAO+'</b> (profissão personalizada: 6 livres)'}
-  var rl=$('resList');if(rl)rl.innerHTML=A.map(function(a){var on=resProf(a),t=resTotal(a),rc=RACES[S.race],rb=rc&&rc.res&&rc.res[a];return '<div class="sb" style="min-width:64px;'+(on?'border-color:var(--ad)':'')+(S.prof==='custom'?';cursor:pointer':'')+'"'+(S.prof==='custom'?' onclick="tRes(\''+a+'\')" title="Profissão personalizada: clique para marcar"':'')+'><div class="sbl">'+a+(on?' ●':'')+'</div><div class="sbv" style="font-size:15px;color:'+(t>=0?'#3a7a4c':'#b83030')+'">'+(t>=0?'+':'')+t+'</div><div class="sbs">'+(on?'prof.':'')+(rb?' +'+rb+' raça':'')+'</div></div>'}).join('');
-  var at=$('armProfTxt');if(at){var gp=gP();at.innerHTML=(gp.armas?'<b style="color:var(--tx)">Da profissão:</b> armas '+gp.armas.toLowerCase()+'; armaduras '+gp.arm.map(function(t){return ARM_NOME[t]}).join(', ')+(gp.esc?' e escudo':'')+' (P-049). ':'')+'Mais 2 livres de arma ou ferramenta, nunca categoria de armadura (D-45). Arma sem proficiência: não soma a proficiência ao ataque. Armadura sem proficiência: desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX.'}
+  var pc=$('perCt');if(pc){pc.innerHTML=lst.length?'Marcadas: <b style="color:'+(nOn>PER_CRIACAO?'#b83030':'var(--ac)')+'">'+nOn+'/'+PER_CRIACAO+'</b> · da lista da profissão: <b style="color:'+(nL<Math.min(PER_PROF,nOn)&&nOn>=PER_CRIACAO?'#b83030':'var(--ac)')+'">'+nL+'</b> (mín. '+PER_PROF+')'+(nOn>=PER_CRIACAO&&nL<PER_PROF?' <b style="color:#b83030">— faltam perícias da lista</b>':''):'Marcadas: <b style="color:'+(nOn>PER_CRIACAO?'#b83030':'var(--ac)')+'">'+nOn+'/'+PER_CRIACAO+'</b> (profissão montada: monte a lista de 8 perícias no Perfil)'}
+  var rl=$('resList');if(rl)rl.innerHTML=A.map(function(a){var on=resProf(a),t=resTotal(a),rc=RACES[S.race],rb=rc&&rc.res&&rc.res[a];return '<div class="sb" style="min-width:64px;'+(on?'border-color:var(--ad)':'')+(S.prof==='custom'?';cursor:pointer':'')+'"'+(S.prof==='custom'?' onclick="tRes(\''+a+'\')" title="Profissão montada: clique para marcar"':'')+'><div class="sbl">'+a+(on?' ●':'')+'</div><div class="sbv" style="font-size:15px;color:'+(t>=0?'#3a7a4c':'#b83030')+'">'+(t>=0?'+':'')+t+'</div><div class="sbs">'+(on?'prof.':'')+(rb?' +'+rb+' raça':'')+'</div></div>'}).join('');
+  var at=$('armProfTxt');if(at){var gp=profPac()||{};at.innerHTML=(gp.armas?'<b style="color:var(--tx)">Da profissão:</b> armas '+gp.armas.toLowerCase()+'; armaduras '+gp.arm.map(function(t){return ARM_NOME[t]}).join(', ')+(gp.esc?' e escudo':'')+' (P-049). ':'')+'Mais 2 livres de arma ou ferramenta, nunca categoria de armadura (D-45). Arma sem proficiência: não soma a proficiência ao ataque. Armadura sem proficiência: desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX.<br><b style="color:var(--tx)">Ferramentas</b> (P-080): '+FERRAMENTAS.join(', ')+'. Proficiente na ferramenta: soma a proficiência ao teste feito com ela. Perícia e ferramenta do mesmo teste: vantagem, sem somar a proficiência duas vezes.'}
   var es=$('espSel');if(es){if(S.prof==='Diplomata'){var eo=PP.Diplomata.per.filter(function(n){return n!=='Persuasão'});es.innerHTML='<div class="f ai g6" style="margin-bottom:8px;font-size:11px"><span style="color:var(--ac)">Especialista (Diplomata):</span><span style="color:var(--td)">Persuasão e</span><select style="width:190px" onchange="S.especialista=this.value;rPr()"><option value="">— 1 perícia da lista —</option>'+eo.map(function(n){return '<option'+(S.especialista===n?' selected':'')+'>'+n+'</option>'}).join('')+'</select><span style="color:var(--tm)">proficiência dobrada (precisa ser proficiente)</span></div>'}else es.innerHTML=''}
-  var tp=$('toolPr');if(tp){if(!S.toolProfs)S.toolProfs=['',''];var th='';for(var ti=0;ti<PROF_LIVRES;ti++)th+='<input type="text" style="flex:1;min-width:140px" placeholder="Arma ou ferramenta '+(ti+1)+'..." value="'+esc(S.toolProfs[ti]||'')+'" onchange="S.toolProfs['+ti+']=this.value;sync()">';tp.innerHTML=th}
+  var tp=$('toolPr');if(tp){if(!S.toolProfs)S.toolProfs=['',''];var th='';for(var ti=0;ti<PROF_LIVRES;ti++)th+='<input type="text" list="ferrList" style="flex:1;min-width:140px" placeholder="Arma ou ferramenta '+(ti+1)+'..." value="'+esc(S.toolProfs[ti]||'')+'" onchange="S.toolProfs['+ti+']=this.value;sync()">';tp.innerHTML=th+'<datalist id="ferrList">'+FERRAMENTAS.map(function(f){return '<option value="'+f+'">'}).join('')+'</datalist>'}
   var lastA='';
   el.innerHTML=DP.map(function(p){var on=S.proficiencies.indexOf(p.n)>=0;var hd=p.a!==lastA?'<div style="font-family:Cinzel,serif;font-size:9px;color:var(--ac);letter-spacing:.1em;margin:6px 0 2px">'+AN[p.a].toUpperCase()+'</div>':'';lastA=p.a;var tem=temPer(p.n),mu=perMult(p.n);var total=perTotal(p.n,p.a);var tc=total>=0?'#3a7a4c':'#b83030';
     // Olho de Falcão (Explorador, D-77): proficiência dobrada em Percepção fora de combate
@@ -533,7 +611,7 @@ function rPr(){
   cl.innerHTML=S.customProfs.map(function(p,i){var on=S.proficiencies.indexOf(p.n)>=0;var mod=gM(gF(p.a));var total=mod+(on?gProf():0);var tc=total>=0?'#3a7a4c':'#b83030';return '<div class="pr"><div class="pc'+(on?' on':'')+'" onclick="tP(\''+esc(p.n)+'\')"></div><span style="font-size:12px;flex:1">'+esc(p.n)+'</span><span style="font-size:9px;color:var(--td);font-family:Cinzel,serif;width:28px;text-align:center">'+p.a+'</span><span style="font-size:13px;font-weight:700;font-family:Cinzel,serif;width:28px;text-align:center;color:'+tc+'">'+(total>=0?'+':'')+total+'</span><button style="width:18px;height:18px;border-radius:3px;border:1px solid var(--bd);background:0;color:var(--dn);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center" onclick="dCP('+i+')">✕</button></div>'}).join('')
 }
 function tP(n){var i=S.proficiencies.indexOf(n);if(i>=0)S.proficiencies.splice(i,1);else S.proficiencies.push(n);rPr()}
-function tRes(a){var cp=S.customProf;if(!cp.res)cp.res=[];var i=cp.res.indexOf(a);if(i>=0)cp.res.splice(i,1);else if(cp.res.length<2)cp.res.push(a);else{toast('Cada profissão é proficiente em 2 testes de resistência');return}rPr()}
+function tRes(a){var cp=S.customProf;if(!cp.res)cp.res=[];var i=cp.res.indexOf(a);if(i>=0)cp.res.splice(i,1);else if(cp.res.length<2)cp.res.push(a);else{toast('Cada profissão é proficiente em 2 testes de resistência, de atributos diferentes');return}rPr();if(S.prof==='custom'&&$('pNfo'))rRP()}
 function aCP(){var n=$('npN').value.trim();if(!n)return;if(!S.customProfs)S.customProfs=[];S.customProfs.push({n:n,a:$('npA').value});$('npN').value='';rPr();toast('"'+n+'" criada')}
 function dCP(i){var nm=S.customProfs[i].n;var pi=S.proficiencies.indexOf(nm);if(pi>=0)S.proficiencies.splice(pi,1);S.customProfs.splice(i,1);rPr()}
 
@@ -560,20 +638,25 @@ function bAu(){
   h+='<div class="st">Catálogo de Auras</div><div id="aCat"></div>';
   h+='<div class="st" style="margin-top:14px">Auras do Personagem</div>';
   h+='<div id="ppBarAu" class="f ai jc g10 fw" style="padding:5px 14px;border-radius:5px;margin-bottom:8px;border:1px solid rgba(201,169,110,.15)"></div>';
-  h+='<div class="fd"><label class="fl">Aura Hereditária (de nascença, nível 1 na criação)</label><select id="pAuraInit" onchange="setHer(this.value)"><option value="">— Selecione —</option>';
+  h+='<div class="fd"><label class="fl">Aura de nascença (hereditária, nível 1 na criação; fixa depois da criação, P-097) <span id="herLock"></span></label><select id="pAuraInit" onchange="setHer(this.value)"><option value="">— Selecione —</option>';
   // D-61: nascer com aura Primordial é possível, mas raríssimo (aviso, sem bloquear)
   AG.forEach(function(g){h+='<optgroup label="'+g.n+(g.n==='Primordial'?' (raríssima — requer aprovação do Mestre, D-61)':'')+'">';(AD[g.n]||[]).forEach(function(a){if(a.dev)return;h+='<option value="'+a.n+'">'+a.n+'</option>'});h+='</optgroup>'});
   h+='<optgroup label="Centro do hexagrama"><option value="Titânica">Titânica</option></optgroup></select></div>';
   h+='<div id="myAuras" style="margin-bottom:8px"></div>';
   h+='<div class="f g6 ai fw" style="margin-bottom:6px"><span style="font-size:10px;color:var(--td)">Comprar aura nova:</span><select id="buyAura" style="flex:1;min-width:150px"></select><button class="bt bp bsm" onclick="buyAura()">Comprar</button></div>';
-  h+='<div style="font-size:10px;color:var(--td);margin:0 0 10px;line-height:1.5">Progressão por Pontos de Progressão (PP). <b style="color:var(--tx)">Subir aura:</b> 1→2 = 8 PP, 2→3 = 10 PP; os níveis são cumulativos (D-59); em território imperial, nível 2 exige a licença Intermediária (30 CO) e nível 3 a Avançada (250 CO, exige a Intermediária) (R10-6, D-66). <b style="color:var(--tx)">Aura nova</b> (entra no nível 1): 3 / 4 / 5 / 6 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura hereditária. Titânica e Ícor (Aura Própria) só de nascença. Quem nasce Titânico compra qualquer outra aura por 4 PP e sobe a Titânica por 8/10 PP (provisório, D-50). Sem nível mínimo de personagem. <b style="color:var(--tx)">Compras definitivas</b> (D-53): só podem ser desfeitas antes de confirmadas (botão na barra de PP) ou do próximo level-up; depois, sem reembolso. <b style="color:var(--tx)">Despertar Divino</b> (nível 4): qualquer aura no nível 3 + um acontecimento de lore que o justifique, sob controle do Mestre; não custa PP; <b style="color:var(--tx)">um único Despertar por personagem</b> (D-56); o jogador escolhe um deus da Área da aura e recebe o Dom dele (D-49) e ganha 1 Ação Lendária por rodada, no máximo 2 por combate (D-68, R11-2; aba Atributos). <b style="color:var(--tx)">Quem nasce Titânico não desperta nenhuma aura</b>, nem as compradas, até a Titânica ter regra própria (D-59, D-62). <b style="color:var(--tx)">Aura hereditária Primordial</b>: possível, mas raríssima — requer aprovação do Mestre; o caminho normal é comprar com PP (D-61).<b style="color:var(--tx)">Todas as auras ficam ativas ao mesmo tempo</b> (D-29): o custo de combiná-las vem da Compatibilidade e da Exaustão. Entre auras, vale só a <b style="color:var(--tx)">maior</b> resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP <b style="color:var(--tx)">se somam</b> (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de <b style="color:var(--tx)">50%</b> da tabela.</div>';
+  h+='<div style="font-size:10px;color:var(--td);margin:0 0 10px;line-height:1.5">Progressão por Pontos de Progressão (PP): 1 por nível do 4 ao 15, +1 nos níveis 5, 10 e 15 (15 no total; D-89). <b style="color:var(--tx)">Subir aura:</b> 1→2 = 3 PP, 2→3 = 4 PP (R13-1); os níveis são cumulativos (D-59); em território imperial, nível 2 exige a licença Intermediária (30 CO) e nível 3 a Avançada (250 CO, exige a Intermediária) (R10-6, D-66). <b style="color:var(--tx)">Aura nova</b> (entra no nível 1): 1 / 2 / 2 / 3 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura de nascença (R13-1). Titânica e Ícor (Aura Própria) só de nascença. Quem nasce Titânico compra qualquer outra aura por 2 PP e sobe a Titânica por 3/4 PP (provisório). Sem nível mínimo de personagem. <b style="color:var(--tx)">Compras definitivas</b> (D-53): só podem ser desfeitas antes de confirmadas (botão na barra de PP) ou do próximo level-up; depois, sem reembolso. <b style="color:var(--tx)">Despertar Divino</b> (nível 4): qualquer aura no nível 3 + um acontecimento de lore que o justifique, sob controle do Mestre; não custa PP nem vem com o nível (D-89); <b style="color:var(--tx)">um único Despertar por personagem</b> (D-56); o jogador escolhe um deus da Área da aura e recebe o Dom dele (D-49) e ganha 1 Ação Lendária por rodada, no máximo 2 por combate (D-68, R11-2; aba Atributos). <b style="color:var(--tx)">Quem nasce Titânico não desperta nenhuma aura</b>, nem as compradas, até a Titânica ter regra própria (D-59, D-62). <b style="color:var(--tx)">Aura hereditária Primordial</b>: possível, mas raríssima — requer aprovação do Mestre; o caminho normal é comprar com PP (D-61).<b style="color:var(--tx)">Todas as auras ficam ativas ao mesmo tempo</b> (D-29): o custo de combiná-las vem da Compatibilidade e da Exaustão. Entre auras, vale só a <b style="color:var(--tx)">maior</b> resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP <b style="color:var(--tx)">se somam</b> (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de <b style="color:var(--tx)">50%</b> da tabela.</div>';
   h+='<div class="fd"><label class="fl">Descrição</label><textarea id="pAuraDesc" rows="2" placeholder="Como manifesta..." oninput="sync()"></textarea></div>';
   h+='<div class="fd"><label class="fl">Técnicas <span style="font-weight:400;color:var(--tm)">(ver aba Técnicas)</span></label><div id="pTechsSummary" style="font-size:11px;color:var(--td);padding:6px 9px;background:var(--cd);border:1px solid var(--bd);border-radius:4px;min-height:28px"></div></div>';
   h+='<div class="fd"><label class="fl">Notas sobre as auras</label><textarea id="pExtraAuras" rows="2" placeholder="Como foram conquistadas, licenças, mentores..." oninput="sync()"></textarea></div>';
   $('t-auras').innerHTML=h;iHex();rCat();syncTechsText();rMyAuras()
 }
 // ── Auras do personagem (D-28, D-29, D-42, D-43, D-47; PG economia) ──
+// P-097: a aura de nascença é escolhida na criação e não muda depois; trava quando as compras são confirmadas (ou no level-up).
+// Só o Mestre destrava, num caso excepcional.
+function herTravada(){var h=auraHer();return !!h&&!S.herLivre&&ppConf().auras[h.n]!==undefined}
+function herDestravar(){if(!confirm('Destravar a aura de nascença? Só o Mestre pode abrir essa exceção, num caso excepcional (P-097). Ela volta a travar na próxima confirmação de compras.'))return;S.herLivre=true;rMyAuras();sync();toast('Aura de nascença destravada pelo Mestre')}
 function setHer(n){
+  if(herTravada()){toast('A aura de nascença é fixa depois da criação; só o Mestre destrava (P-097)');rMyAuras();return}
   if(!S.auras)S.auras=[];
   S.auras=S.auras.filter(function(x){return !x.her&&x.n!==n});
   if(n)S.auras.unshift({n:n,lv:1,her:true});
@@ -615,7 +698,8 @@ function buyAura(){
 }
 function rMyAuras(){
   var el=$('myAuras');if(!el)return;if(!S.auras)S.auras=[];
-  var her=auraHer();var pi=$('pAuraInit');if(pi)pi.value=her?her.n:'';
+  var her=auraHer();var pi=$('pAuraInit');if(pi){pi.value=her?her.n:'';pi.disabled=herTravada()}
+  var hl=$('herLock');if(hl)hl.innerHTML=herTravada()?'<span style="color:var(--dn)">🔒 travada</span> <button class="bt bo bsm" style="padding:0 5px;font-size:7px" onclick="herDestravar()">destravar (Mestre)</button>':(S.herLivre&&her?'<span style="color:var(--ac)">🔓 destravada pelo Mestre</span>':'');
   if(!S.auras.length){el.innerHTML='<div style="font-size:11px;color:var(--tm);font-style:italic">Nenhuma aura. Escolha a hereditária acima.</div>'}
   else el.innerHTML=S.auras.map(function(x,i){var ar=x.n==='Titânica'?'Centro':auraArea(x.n);var g=AG.find(function(q){return q.n===ar});var c=g?g.c:'#ff6600';
     var dz=despertada(),cf=ppAuraConf(x);
@@ -633,9 +717,10 @@ function rMyAuras(){
     return h+'</div>'}).join('');
   var b=$('buyAura');if(b){var own=S.auras.map(function(x){return x.n}),o='';
     if(!her)o='<option value="">— escolha a hereditária primeiro —</option>';
-    else AG.forEach(function(g){var opts='';(AD[g.n]||[]).forEach(function(a){if(a.dev||own.indexOf(a.n)>=0)return;var c=auraNovaCost(a.n);if(c==null)return;opts+='<option value="'+a.n+'">'+a.n+' — '+c+' PP</option>'});if(opts)o+='<optgroup label="'+g.n+(her.n==='Titânica'?' (nascido Titânico: 4 PP, D-50)':' (distância '+aDist(auraArea(her.n),g.n)+')')+'">'+opts+'</optgroup>'});
+    else AG.forEach(function(g){var opts='';(AD[g.n]||[]).forEach(function(a){if(a.dev||own.indexOf(a.n)>=0)return;var c=auraNovaCost(a.n);if(c==null)return;opts+='<option value="'+a.n+'">'+a.n+' — '+c+' PP</option>'});if(opts)o+='<optgroup label="'+g.n+(her.n==='Titânica'?' (nascido Titânico: '+PP_AURA_NOVA_TITANICO+' PP, provisório)':' (distância '+aDist(auraArea(her.n),g.n)+')')+'">'+opts+'</optgroup>'});
     b.innerHTML=o}
   rPP();if(typeof rAL==='function')rAL();
+  var tms=$('tmStatus');if(tms)tms.innerHTML=(S.auras||[]).some(function(x){return x.lv>=3})?'<span style="color:var(--sc)">Você tem aura no nível 3.</span>':'<span style="color:var(--dn)">Nenhuma aura no nível 3 ainda.</span>';
   if($('dSt')&&corpoRenovado()!==crnPrev){crnPrev=corpoRenovado();uAt()} // Corpo Renovado muda o HP máximo
 }
 function iHex(){
@@ -656,11 +741,11 @@ function rAI(){
   var t=$('a_T');if(t){t.style.background=selA==='Titânica'?'#ff660012':'#0a0a18';t.style.borderColor=selA==='Titânica'?'#ff6600':'#444'}
   var info=$('aInfo');if(!info)return;
   if(!selA){info.innerHTML='';return}
-  if(selA==='Titânica'){info.innerHTML='<div class="crd" style="border-left:3px solid #ff6600"><div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:#ff6600;margin-bottom:4px">⬢ Titânica</div><div style="font-size:11px;color:var(--td);line-height:1.5">No centro do hexagrama, fora das seis Áreas. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4). Quem nasce Titânico não desperta nenhuma aura, nem as compradas (D-59, D-62). Só de nascença: não se compra com PP (D-42). Provisório até ter regra própria (D-50): sobe 8 PP (1→2) e 10 PP (2→3); quem nasce Titânico compra qualquer outra aura por 4 PP.</div></div>';return}
+  if(selA==='Titânica'){info.innerHTML='<div class="crd" style="border-left:3px solid #ff6600"><div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:#ff6600;margin-bottom:4px">⬢ Titânica</div><div style="font-size:11px;color:var(--td);line-height:1.5">No centro do hexagrama, fora das seis Áreas. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4). Quem nasce Titânico não desperta nenhuma aura, nem as compradas (D-59, D-62). Só de nascença: não se compra com PP (D-42). Provisório até ter regra própria: sobe 3 PP (1→2) e 4 PP (2→3); quem nasce Titânico compra qualquer outra aura por 2 PP (R13-1).</div></div>';return}
   var g=AG.find(function(x){return x.n===selA});
   // Compatibilidade (P-004): técnica com auras todas da mesma Área = −15% de MP (soma com outros descontos, piso 50%); vizinhas e a 2 passos = neutras;
   // alguma oposta = +25% de MP e 10% de chance de 1d6 de dano de Arka no usuário + fim do Fluxo; não acumula com Técnica em Conjunto
-  // Custo de aura nova (PG economia): distância 0/1/2/3 = 3/4/5/6 PP, a partir da Área da aura hereditária
+  // Custo de aura nova (R13-1): distância 0/1/2/3 = 1/2/2/3 PP, a partir da Área da aura de nascença
   var rows=AG.map(function(x){var d=aDist(selA,x.n);var rel=d===0?'Mesma Área (−15% MP)':d===3?'Oposta (+25% MP, 10% colateral)':d===1?'Vizinha (neutra)':'2 passos (neutra)';var c=d===0?'#3a7a4c':d===3?'#b83030':'#c9a96e';return '<div style="display:flex;justify-content:space-between;gap:6px;padding:2px 0;border-bottom:1px solid var(--bd)"><span style="font-size:11px">'+x.i+' '+x.n+'</span><span style="font-weight:700;color:'+c+';font-size:11px;text-align:right">'+rel+' · '+PP_AURA_NOVA[d]+' PP</span></div>'}).join('');
   info.innerHTML='<div class="crd" style="border-left:3px solid '+g.c+'"><div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:'+g.c+';margin-bottom:5px">'+g.i+' '+selA+'</div><div style="font-size:10px;color:var(--td);margin-bottom:5px">Relação com <b style="color:var(--tx)">'+selA+'</b> e custo de uma aura nova para quem nasceu com aura de '+selA+':</div>'+rows+'<div style="font-size:10px;color:var(--td);margin-top:5px;line-height:1.5"><b style="color:var(--tx)">Compatibilidade</b> (numa técnica que combina auras): todas da mesma Área = −15% de MP (soma com os outros descontos, piso de 50% da tabela); vizinhas ou a 2 passos = neutras; alguma oposta = +25% de MP e 10% de chance de colateral (1d6 de dano de Arka no usuário e fim do Fluxo). O desconto da mesma Área não acumula com o Fortalecimento Técnica em Conjunto.</div></div>'
 }
@@ -670,7 +755,7 @@ function rCat(){
   var h='';
   if(selA==='Titânica'){
     h+='<div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:#ff6600;margin-bottom:8px;letter-spacing:.1em">⬢ TITÂNICA</div>';
-    h+='<div class="crd" style="border-left:3px solid #ff6600;margin-bottom:10px"><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px">No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42). <b style="color:var(--tx)">Progressão provisória</b> (D-50), até que a Titânica ganhe regra própria: sobe como uma aura comum (8 PP do nível 1 ao 2, 10 PP do 2 ao 3); quem nasce Titânico compra qualquer outra aura como se fosse de Área vizinha (4 PP). Não desperta: sem Área e sem deus (D-59); e quem nasce Titânico também não desperta as auras que comprar (D-62). Uma aura extremamente rara e poderosa que transcende as limitações das auras convencionais. Permite ao usuário acessar e utilizar outras auras sem restrições de especialização, com dois limites: só pode usar auras que já tenha visto em uso, e nunca acessa Ícor nem as Divinas (o Despertar Divino, nível 4).</div><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px"><b style="color:var(--tx)">Leitura provisória</b> (P-056): além das auras das seis Áreas, a Titânica pode emprestar auras Primordiais que já tenha visto em uso. Os limites de auras simultâneas dos níveis abaixo (uma, duas, três) valem só para as auras emprestadas; as auras que o Titânico comprou com PP ficam todas ativas, como as de qualquer personagem (D-29).</div><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px"><b style="color:var(--tx)">Limitações:</b> Mesmo com este poder imenso, o usuário deve aprender a controlar cada aura individualmente. O domínio da aura Titânica evolui com o tempo e dedicação:</div></div>';
+    h+='<div class="crd" style="border-left:3px solid #ff6600;margin-bottom:10px"><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px">No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42). <b style="color:var(--tx)">Progressão provisória</b> (D-50), até que a Titânica ganhe regra própria: sobe como uma aura comum (3 PP do nível 1 ao 2, 4 PP do 2 ao 3); quem nasce Titânico compra qualquer outra aura por 2 PP (R13-1). Não desperta: sem Área e sem deus (D-59); e quem nasce Titânico também não desperta as auras que comprar (D-62). Uma aura extremamente rara e poderosa que transcende as limitações das auras convencionais. Permite ao usuário acessar e utilizar outras auras sem restrições de especialização, com dois limites: só pode usar auras que já tenha visto em uso, e nunca acessa Ícor nem as Divinas (o Despertar Divino, nível 4).</div><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px"><b style="color:var(--tx)">Leitura provisória</b> (P-056): além das auras das seis Áreas, a Titânica pode emprestar auras Primordiais que já tenha visto em uso. Os limites de auras simultâneas dos níveis abaixo (uma, duas, três) valem só para as auras emprestadas; as auras que o Titânico comprou com PP ficam todas ativas, como as de qualquer personagem (D-29).</div><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px"><b style="color:var(--tx)">Limitações:</b> Mesmo com este poder imenso, o usuário deve aprender a controlar cada aura individualmente. O domínio da aura Titânica evolui com o tempo e dedicação:</div></div>';
     h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Nível 1</div><div style="font-size:11px;color:var(--td);line-height:1.6">Acesso a três auras diferentes por dia, uma de cada vez, no nível 1. Cada troca de aura requer 1 minuto de concentração. Usar qualquer aura por mais de 10 minutos consecutivos causa 1d6 de dano por minuto adicional.</div></div>';
     h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Nível 2</div><div style="font-size:11px;color:var(--td);line-height:1.6">Acesso a cinco auras por dia, podendo usar duas simultaneamente, até o nível 2. Cada troca requer 30 segundos. Pode manter auras ativas por até 30 minutos antes de começar a sofrer dano.</div></div>';
     h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Nível 3</div><div style="font-size:11px;color:var(--td);line-height:1.6">Acesso a todas as auras que já viu em uso, podendo usar até três simultaneamente, em qualquer nível até o 3. Trocas são instantâneas (ação bônus). Pode manter auras ativas por até 1 hora antes de sofrer efeitos negativos.</div></div>';
@@ -698,10 +783,10 @@ function rCat(){
 // ═══ TÉCNICAS ═══
 var TECGEN=[
 {n:"Projetar",tag:"Todas as Auras",tagC:"#9b59b6",desc:"Concentra a aura na palma da mão e lança como projétil contra um oponente.",
-cost:"6 MP (mín) — 30 MP (máx por ataque) · A partir do nível 13: até 36 MP",
-dmg:"1d8 por cada 6 MP utilizado, até 5d8 (30 MP) · Nível 13+: 6d8 (36 MP)",
+cost:"6 MP (mín) — 30 MP (máx por ataque), em qualquer nível (R13-2)",
+dmg:"1d8 por cada 6 MP utilizado, até 5d8 (30 MP)",
 range:"10 m, +10 m a cada 6 MP acima de 6 (máximo 50 m): 6 MP = 10 m · 12 MP = 20 m · 18 MP = 30 m · 24 MP = 40 m · 30 MP ou mais = 50 m (P-017)",
-extra:"Tipo de dano: o de uma das auras do personagem, escolhida pelo jogador a cada disparo; usuários da mesma aura podem ser imunes um ao outro. Licença: livre até 12 MP (2d8); acima disso, exige licença em território imperial (P-054). Efeito pós-disparo (acima de 18 MP, D-81), pelo tipo de dano escolhido: Fogo = Queimadura · Água = Encharcado · Terra = Derrubado (resistência de FOR) · Vento = −2 no próximo ataque do alvo · Sombria = Cego 1 turno · Nebulosa = −2 no ataque do alvo · outras auras: o Mestre escolhe uma condição leve coerente"},
+extra:"Tipo de dano: o de uma das auras do personagem, escolhida pelo jogador a cada disparo; usuários da mesma aura podem ser imunes um ao outro. Licença: livre até 12 MP (2d8); acima disso, exige licença em território imperial (P-054). Efeito pós-disparo (acima de 18 MP, D-81), pelo tipo de dano escolhido: Fogo = Queimadura · Água = Encharcado · Terra = Derrubado (resistência de FOR) · Vento = −2 no próximo ataque do alvo · Sombria = Cego 1 turno · Nebulosa = −2 no próximo ataque do alvo · outras auras: o Mestre escolhe uma condição leve coerente"},
 {n:"Manifestar",tag:"Todas as Auras",tagC:"#2ecc71",desc:"Manifesta algo no plano físico ou mental. Permanece enquanto MP estiver reservada.",
 cost:"MP reservado enquanto existir: objetos simples 5–10 MP · médios 10–25 MP · grandes/complexos 25–45 MP (P-016)",
 dmg:"Construto que causa dano segue a tabela do Projetar: 6 MP por d8",
@@ -716,13 +801,13 @@ extra:"Vale só contra Arka (técnicas e capacidades de aura), nunca contra arma
 cost:"50% do MP máximo (não recuperável no combate) · Ativar gasta a ação do turno",
 dmg:"Escolha 2 de 4: vantagem nos ataques · +50% de dano (conta como Fortalecimento no limite de +300% e de 3 simultâneos) · 1 técnica extra grátis por turno, como ação bônus, de no máximo 3d8 · resistências do alvo pela metade",
 range:"Raio: 10 m · Duração: concentração, máx. 3 turnos",
-extra:"1×/dia; +1 nível de Exaustão de Arka após o uso. 1 Expansão por personagem. Expansões que se encontram (P-059): teste oposto de DOM (1d20 + mod DOM + proficiência); quem vence mantém a sua, e o perdedor perde a dele, com MP e Exaustão já pagos; se as auras forem de Áreas opostas no hexagrama, as duas se anulam sem teste. Legado da Arka (nv 15) pode remover a Exaustão (1×/dia)."}
+extra:"1×/dia; +1 nível de Exaustão de Arka após o uso. 1 Expansão por personagem. Expansões que se encontram (P-059): teste oposto de DOM (1d20 + mod DOM + proficiência); quem vence mantém a sua, e o perdedor perde a dele, com MP e Exaustão já pagos; se as auras forem de Áreas opostas no hexagrama, as duas se anulam sem teste."}
 ];
 
 var FORT=[
 {n:"Sinais de Mão",ef:"+25% eficiência (dano, duração ou área)",req:"Ação bônus"},
 {n:"Encantamento",ef:"+20% eficiência",req:"Personalizado pelo jogador, ação bônus"},
-{n:"Tempo de Carga",ef:"1 turno: +50% · 2 turnos: +100% · 3 turnos: +200%",req:"Metade da velocidade durante carga"},
+{n:"Tempo de Carga",ef:"1 turno: +50% · 2 turnos: +100% · 3 turnos: +200%",req:"Movimento pela metade durante a carga; a técnica sai no fim do último turno de carga (P-078)"},
 {n:"Consumíveis Mágicos",ef:"+30% eficiência",req:"Utensílio que se consome após uso"},
 {n:"Técnica em Conjunto",ef:"Mesma Área: +75% · Neutras: +50% · Opostas: +25%",req:"Dois usuários combinam auras; não acumula com o −15% de MP da mesma Área"},
 {n:"Votos",ef:"+100% eficiência",req:"Pacto com entidade, restrição permanente (Mestre define)"},
@@ -754,19 +839,19 @@ function bTc(){
   h+='<div class="tcd"><div class="tch" onclick="this.parentElement.classList.toggle(\'open\')"><span>Referência de Balanceamento</span><span class="arr">▶</span></div>';
   h+='<div class="tcb">';
   h+='<div class="tmc"><b>Custo:</b> pela tabela do Projetar (6 MP por d8). Descontos de MP (afinidade, sinergia, Assinatura, Fluxo, Dons…) se somam (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de 50% da tabela.</div>';
-  h+='<div class="tmc"><b>Dano (teto de dados, PR5-07):</b> de 2d8 até o máximo do Projetar no nível (5d8; 6d8 a partir do nível 13), qualquer que seja o número de auras combinadas. Cada aura além da primeira acrescenta um tipo de dano (escolhido a cada uso) ou um efeito, não dados; a tier Máxima de treino dá efeito, não dados. O teto vale só para técnicas criadas: capacidades escritas no Catálogo (ex.: sopro 8d6 da Animalesca 3, ataque 4d10 da Espiritual) podem passar dele (D-58). Ao salvar uma técnica acima do teto, a ficha avisa.</div>';
+  h+='<div class="tmc"><b>Dano (teto de dados, PR5-07, R13-2):</b> de 2d8 até 5d8 (o máximo do Projetar, em qualquer nível), qualquer que seja o número de auras combinadas. Cada aura além da primeira acrescenta um tipo de dano (escolhido a cada uso) ou um efeito, não dados; a tier Máxima de treino dá efeito, não dados. O teto vale só para técnicas criadas: capacidades escritas no Catálogo (ex.: sopro 8d6 da Animalesca 3, ataque 4d10 da Espiritual) podem passar dele (D-58). Ao salvar uma técnica acima do teto, a ficha avisa.</div>';
   h+='<div class="tmc"><b>Alcance:</b> Máx 100m para técnicas de longo alcance</div>';
   h+='<div class="tmc"><b>Área de Efeito:</b> Máx 10m de raio para técnicas de área</div>';
   h+='<div class="tmc"><b>Aprovação:</b> o Mestre aprova cada técnica, skill ou passiva criada; o aprendizado segue as regras de treino (D-18).</div>';
   h+='<div class="tmc"><b>Capacidades de aura:</b> as que causam dano, curam, negam ação ou dão ação extra são técnicas: custam 6 MP por d8 e usam ataque de Arka ou teste do alvo (CD 10 + mod DOM + proficiência). Resistências, sentidos e utilidade são passivos (PA-9).</div>';
   h+='<div class="tmc"><b>Controle (P-065):</b> negar ação (Atordoado, Enraizado, Silenciar…) custa 12 MP por turno de ação negada (como 2d8); conceder ação extra custa 18 MP por ação (como 3d8). Se o alvo repete o teste a cada turno, paga-se só o 1º turno (12 MP para aplicar). Nas tiers Avançada e Máxima, o custo acima do dano vem desses efeitos (P-066).</div>';
   h+='<div class="tmc"><b>Skill (P-061):</b> uso ativo de utilidade, sem MP. Custa 1 ação (ação bônus, se simples); livre fora de combate, 1×/turno em combate. <b>Passiva:</b> efeito permanente, sem ação nem MP. Skills e passivas treinam como técnica Básica (aura nv 1) ou Intermediária (aura nv 2+).</div>';
-  h+='<div class="tmc"><b>Licenças (território imperial, R10-6):</b> Básica livre (aura nv 1, técnicas Básicas, Projetar até 12 MP, Manifestar simples; Proteger sempre livre) · Intermediária 30 CO (técnicas Intermediárias, aura nv 2, porte civil de arma de fogo) · Avançada 250 CO, exige a Intermediária (técnicas Avançadas e Máximas, aura nv 3). Expansão de Domínio = arma de guerra.</div>';
+  h+='<div class="tmc"><b>Licenças (território imperial, R10-6):</b> Básica livre (aura nv 1, técnicas Básicas, Projetar até 12 MP, Manifestar simples; Proteger sempre livre) · Intermediária 30 CO (técnicas Intermediárias, aura nv 2, porte civil de arma de fogo) · Avançada 250 CO, exige a Intermediária (técnicas Avançadas e Máximas, aura nv 3). Expansão de Domínio = arma de guerra. <b>Território imperial</b> (P-088): Capitólio e planícies centrais, lei plena; Costa de Marés e Forjas reconhecem as licenças, com leis próprias; Picos Celestes, Bosque de Eryn e fora de Aldwynn, sem valor legal.</div>';
   h+='</div></div>';
 
   // ─── SEÇÃO 3: Elementos de Fortalecimento ───
   h+='<div class="st" style="margin-top:14px">Elementos de Fortalecimento</div>';
-  h+='<div style="font-size:11px;color:var(--td);margin-bottom:8px">Modificadores que aumentam a eficiência de técnicas. <b style="color:var(--tx)">Soma</b> (P-015): os bônus se somam e o total multiplica o dano base (+25% e +100% = +125%, ×2,25); combinar não tem custo extra de preparo. <b style="color:var(--tx)">Limite:</b> +300% cumulativo e 3 simultâneos; Votos e Limites de Uso não acumulam entre si; o +50% de dano da Expansão de Domínio conta nos dois limites. O Legado Arka Desperta (+50%) fica fora dos dois limites (teto efetivo +350%, P-055).</div>';
+  h+='<div style="font-size:11px;color:var(--td);margin-bottom:8px">Modificadores que aumentam a eficiência de técnicas. <b style="color:var(--tx)">Soma</b> (P-015): os bônus se somam e o total multiplica o dano base (+25% e +100% = +125%, ×2,25); combinar não tem custo extra de preparo. <b style="color:var(--tx)">Limite:</b> +300% cumulativo e 3 simultâneos; Votos e Limites de Uso não acumulam entre si; o +50% de dano da Expansão de Domínio conta nos dois limites.</div>';
   h+='<div class="fort-grid">';
   FORT.forEach(function(f){
     h+='<div class="fort-item"><b>'+f.n+'</b><div style="color:var(--sc);margin:2px 0">'+f.ef+'</div><div style="color:var(--tm);font-size:9px">Req: '+f.req+'</div></div>';
@@ -783,7 +868,6 @@ function bTc(){
     h+='<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;cursor:pointer"><input type="checkbox" onchange="calcFort()" id="fc'+i+'"><span>'+f.n+'</span>'+(vs?'<select id="fv'+i+'" onchange="calcFort()" style="width:auto;padding:2px 24px 2px 6px;font-size:11px">'+vs.map(function(v,j){return '<option value="'+j+'">'+v[0]+' (+'+v[1]+'%)</option>'}).join('')+'</select>':'')+'</label>';
   });
   h+='<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;cursor:pointer"><input type="checkbox" onchange="calcFort()" id="fcExp"><span>Expansão de Domínio (+50% de dano)</span></label>';
-  h+='<label style="display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;cursor:pointer"><input type="checkbox" onchange="calcFort()" id="fcLeg"><span>Legado Arka Desperta (+50%, fora dos limites)</span></label>';
   h+='</div>';
   h+='<div class="f g12 fw"><div class="sb"><div class="sbl">Bônus Total</div><div class="sbv" id="fortBonus" style="font-size:14px;color:var(--sc)">+0%</div></div>';
   h+='<div class="sb"><div class="sbl">Multiplicador</div><div class="sbv" id="fortMult" style="font-size:14px">×1</div></div>';
@@ -800,8 +884,9 @@ function bTc(){
   h+='<div class="tmc"><b>Gatilho:</b> acertar uma técnica de aura num alvo; não custa ação (P-014).</div>';
   h+='<div class="tmc"><b>Continuação:</b> a próxima técnica de qualquer aura da mesma Área: +1 Desequilíbrio.</div>';
   h+='<div class="tmc" style="color:var(--sc)"><b>Bônus por ponto:</b> −1 MP de custo OU +1 no ataque e no dano (escolha a cada ponto). O −1 MP entra nos descontos somados, com o piso de metade do custo de tabela.</div>';
-  h+='<div class="tmc" style="color:var(--dn)"><b>Penalidade por ponto:</b> −1 de CA do usuário. <b>Falha crítica:</b> perde todo o Desequilíbrio, e a técnica falhada custa o dobro.</div>';
-  h+='<div class="tmc"><b>Limite:</b> Desequilíbrio máximo = mod DOM. <b>Encerramento:</b> voluntário a qualquer momento, sem penalidade; o Desequilíbrio zera ao encerrar o Fluxo ou no fim do combate. Técnica com aura de Área oposta: 10% de chance de colateral que termina o Fluxo (P-004).</div>';
+  h+='<div class="tmc" style="color:var(--dn)"><b>Penalidade por ponto:</b> −1 de CA do usuário. <b>Falha crítica</b> (1 natural no ataque de Arka; em técnica sem rolagem de ataque, o alvo passar no teste com 20 natural): perde todo o Desequilíbrio, a técnica falhada custa o dobro e o Fluxo termina.</div>';
+  h+='<div class="tmc"><b>Erro comum</b> (P-093): a técnica de continuação que erra (ou cujo alvo passa no teste) não encerra o Fluxo nem soma Desequilíbrio; só acertos alimentam.</div>';
+  h+='<div class="tmc"><b>Limite:</b> Desequilíbrio máximo = mod DOM. <b>Encerramento:</b> só por falha crítica ou por vontade do usuário, a qualquer momento e sem penalidade; o Desequilíbrio zera ao encerrar o Fluxo ou no fim do combate. Técnica com aura de Área oposta: 10% de chance de colateral que termina o Fluxo (P-004).</div>';
   h+='</div></div>';
 
   // Tracker interativo
@@ -815,7 +900,7 @@ function bTc(){
   h+='<div class="sb"><div class="sbl">Bônus MP</div><div class="sbv" id="fluxoMPBonus" style="font-size:14px;color:var(--sc)">−0</div></div>';
   h+='<div class="sb"><div class="sbl">Bônus Atk/Dmg</div><div class="sbv" id="fluxoAtkBonus" style="font-size:14px;color:var(--sc)">+0</div></div>';
   h+='<div class="sb"><div class="sbl">Penalidade CA</div><div class="sbv" id="fluxoDefPen" style="font-size:14px;color:var(--dn)">0</div></div></div>';
-  h+='<div class="f g6" style="margin-bottom:6px"><button class="bt bs bsm" onclick="addFluxoHit()">✓ Continuou (mesma Área)</button><button class="bt bsm" onclick="addFluxoMiss()" style="background:var(--dn);color:var(--tx)">✕ Falha crítica</button><button class="bt bo bsm" onclick="endFluxoVoluntary()">Encerrar / fim do combate</button></div>';
+  h+='<div class="f g6" style="margin-bottom:6px"><button class="bt bs bsm" onclick="addFluxoHit()">✓ Acertou (mesma Área)</button><button class="bt bo bsm" onclick="addFluxoErro()">○ Errou (comum)</button><button class="bt bsm" onclick="addFluxoMiss()" style="background:var(--dn);color:var(--tx)">✕ Falha crítica</button><button class="bt bo bsm" onclick="endFluxoVoluntary()">Encerrar / fim do combate</button></div>';
   h+='<div class="flx-log" id="fluxoLog"></div>';
   h+='</div>';
 
@@ -845,14 +930,15 @@ function bTc(){
   h+='<div style="font-size:11px;color:var(--td);margin-bottom:6px">+1 nível no 1 natural de um teste de treino e +1 ao usar a Expansão de Domínio. Cada Descanso Longo remove 1 nível. Clique para ajustar.</div>';
   h+='<div class="exh-lvl" id="exhPips"></div>';
   h+='<div id="exhDesc" style="font-size:10px;line-height:1.5;margin-top:4px"></div>';
+  h+='<div style="font-size:10px;color:var(--td);margin-top:6px"><b style="color:var(--tx)">Tônico de Arka</b> (E15-02, 250 CO, raro): remove 1 nível de Exaustão; no máximo 1 por descanso longo. <button class="bt bo bsm" style="padding:1px 6px" onclick="usarTonico()">Usar tônico</button></div>';
   h+='<div class="f g6 fw" style="margin-top:6px"><button class="bt bsm" style="background:var(--dn);color:var(--tx)" onclick="addExh(\'1 natural no treino\')">1 natural no treino (+1)</button><button class="bt bsm" style="background:var(--dn);color:var(--tx)" onclick="addExh(\'Expansão de Domínio\')">Expansão (+1)</button><button class="bt bs bsm" onclick="descLongo()">Descanso Longo (−1)</button><button class="bt bo bsm" onclick="S.exTreino=0;rExh()">Limpar</button></div>';
   h+='</div>';
 
   // ─── SEÇÃO 7: Técnicas Máximas ───
   h+='<div class="st" style="margin-top:14px">Técnicas Máximas</div>';
-  h+='<div class="tcd"><div class="tch" onclick="this.parentElement.classList.toggle(\'open\')"><span>Técnicas Máximas (Nível 10+)</span><span class="arr">▶</span></div>';
+  h+='<div class="tcd"><div class="tch" onclick="this.parentElement.classList.toggle(\'open\')"><span>Técnicas Máximas (aura no nível 3)</span><span class="arr">▶</span></div>';
   h+='<div class="tcb">';
-  h+='<div class="tmc">Ao atingir <em>nível 10</em> ou superior, o personagem pode criar uma <em>Técnica Máxima</em> — a aproximação máxima de sua aura. Causam dano e efeitos significativamente superiores, projetadas para competir com a Expansão de Domínio.</div>';
+  h+='<div class="tmc">Requisito (R13-3): <em>aura no nível 3</em>, uma Técnica Avançada e narrativa; treino de 8 sessões, CD 22, custo 50+ MP. Não depende do nível de personagem. A tier Máxima dá efeitos de área, alcance ou controle acima da Avançada, <em>não dados</em>: o dano fica no teto de 5d8. <span id="tmStatus"></span></div>';
   h+='<div style="margin-top:6px"><label class="fl">Sua Técnica Máxima</label><textarea id="pTecMax" rows="3" placeholder="Nome, descrição, efeito, custo..." oninput="S.tecMax=this.value"></textarea></div>';
   h+='</div></div>';
 
@@ -893,14 +979,15 @@ function bTc(){
 }
 
 // ═══ TÉCNICAS DESENVOLVIDAS (CRUD) ═══
-// Teto de dados das técnicas criadas (PR5-07, D-58): máximo do Projetar no nível (5d8; 6d8 a partir do nv 13)
-function tetoD8(){return (S.level||LV_MIN)>=13?6:5}
+// Teto de dados das técnicas criadas (PR5-07, D-58, R13-2): 5d8, o máximo do Projetar
+function tetoD8(){return 5} // R13-2: teto fixo de 5d8 em qualquer nível
+var asPend=false; // Assinatura da técnica em edição (a marca é fixa)
 function addDevTech(){
   var n=$('dtName').value.trim();if(!n){toast('Dê um nome à técnica');return}
   var forts=[];FORT.forEach(function(f,i){var cb=$('dtF'+i);if(cb&&cb.checked)forts.push(f.n)});
-  var tech={id:Date.now(),name:n,cost:$('dtCost').value.trim(),dmg:$('dtDmg').value.trim(),range:$('dtRange').value.trim(),action:$('dtAction').value,aura:$('dtAura').value,fluxo:$('dtFluxo').value,desc:$('dtDesc').value.trim(),forts:forts,notes:$('dtNotes').value.trim()};
-  var md=(tech.dmg.match(/(\d+)\s*d\s*8/i)||[])[1];if(md&&+md>tetoD8())toast('Aviso: '+md+'d8 passa do teto das técnicas criadas no nível '+(S.level||LV_MIN)+' ('+tetoD8()+'d8, PR5-07)');
-  S.devTechs.push(tech);clearDTForm();rDevTechs();syncTechsText();toast('"'+n+'" adicionada!')
+  var tech={id:Date.now(),assin:!!asPend,name:n,cost:$('dtCost').value.trim(),dmg:$('dtDmg').value.trim(),range:$('dtRange').value.trim(),action:$('dtAction').value,aura:$('dtAura').value,fluxo:$('dtFluxo').value,desc:$('dtDesc').value.trim(),forts:forts,notes:$('dtNotes').value.trim()};
+  var md=(tech.dmg.match(/(\d+)\s*d\s*8/i)||[])[1];if(md&&+md>tetoD8())toast('Aviso: '+md+'d8 passa do teto das técnicas criadas ('+tetoD8()+'d8, R13-2)');
+  S.devTechs.push(tech);asPend=false;clearDTForm();rDevTechs();syncTechsText();toast('"'+n+'" adicionada!')
 }
 function clearDTForm(){
   ['dtName','dtCost','dtDmg','dtRange','dtDesc','dtNotes'].forEach(function(id){var e=$(id);if(e)e.value=''});
@@ -908,6 +995,11 @@ function clearDTForm(){
   FORT.forEach(function(f,i){var cb=$('dtF'+i);if(cb)cb.checked=false});
   var form=$('addTechForm');if(form)form.classList.remove('open')
 }
+// Técnica Assinatura (R13-4, P-077): marco de treino/história, sem pontos; só técnica treinada (não genérica); −25% de MP; fixa; máx. 2
+var ASSIN_MAX=2;
+function nAssin(){return (S.devTechs||[]).filter(function(t){return t.assin}).length}
+function setAssin(id){var t=(S.devTechs||[]).find(function(x){return x.id===id});if(!t)return;if(nAssin()>=ASSIN_MAX){toast('Máximo de '+ASSIN_MAX+' Técnicas Assinatura por personagem (R13-4)');return}
+  if(!confirm('Tornar "'+t.name+'" Técnica Assinatura? Exige que a técnica tenha sido treinada até o fim e um acontecimento de história, a critério do Mestre. Custa −25% de MP e a escolha é fixa para sempre.'))return;t.assin=true;rDevTechs();sync();toast(t.name+': Técnica Assinatura')}
 function delDevTech(id){S.devTechs=S.devTechs.filter(function(t){return t.id!==id});rDevTechs();syncTechsText()}
 function editDevTech(id){
   var t=S.devTechs.find(function(x){return x.id===id});if(!t)return;
@@ -916,7 +1008,7 @@ function editDevTech(id){
   $('dtDesc').value=t.desc||'';$('dtNotes').value=t.notes||'';
   FORT.forEach(function(f,i){var cb=$('dtF'+i);if(cb)cb.checked=(t.forts||[]).indexOf(f.n)>=0});
   var form=$('addTechForm');if(form)form.classList.add('open');
-  delDevTech(id);toast('Editando "'+t.name+'" — modifique e adicione novamente')
+  asPend=!!t.assin;delDevTech(id);toast('Editando "'+t.name+'" — modifique e adicione novamente')
 }
 function syncTechsText(){
   S.techs=S.devTechs.map(function(t){return t.name+' · '+t.cost+' · '+t.dmg+' · '+t.range+' · '+t.desc}).join('\n');
@@ -931,7 +1023,7 @@ function rDevTechs(){
   var auC={};AG.forEach(function(g){auC[g.n]=g.c});auC['Titânica']='#ff6600';
   el.innerHTML=S.devTechs.map(function(t){
     var h='<div class="tcd"><div class="tch" onclick="this.parentElement.classList.toggle(\'open\')">';
-    h+='<span style="display:flex;align-items:center;gap:6px"><span>'+esc(t.name)+'</span>';
+    h+='<span style="display:flex;align-items:center;gap:6px"><span>'+(t.assin?'★ ':'')+esc(t.name)+'</span>';
     if(t.action)h+='<span class="tdt" style="background:rgba(201,169,110,.1);color:'+( acC[t.action]||'var(--td)')+'">'+t.action+'</span>';
     if(t.fluxo==='Sim')h+='<span class="tdt" style="background:rgba(58,122,76,.1);color:var(--sc)">Fluxo</span>';
     h+='</span><span class="arr">▶</span></div>';
@@ -943,6 +1035,7 @@ function rDevTechs(){
     if(t.desc)h+='<div class="tmc" style="margin-top:4px">'+esc(t.desc)+'</div>';
     if(t.forts&&t.forts.length)h+='<div class="tmc" style="margin-top:4px"><b>Fortalecimentos:</b> '+t.forts.map(function(f){return '<span class="tdt" style="background:rgba(58,122,76,.08);color:var(--sc);font-size:8px">'+f+'</span>'}).join(' ')+'</div>';
     if(t.notes)h+='<div class="tmc" style="margin-top:4px;color:var(--tm)"><b>Notas:</b> '+esc(t.notes)+'</div>';
+    h+='<div class="tmc" style="margin-top:6px">'+(t.assin?'<b style="color:#f4d03f">★ Técnica Assinatura</b>: −25% de MP (soma com os outros descontos, piso de metade da tabela); escolha fixa (R13-4).':'<button class="bt bo bsm" onclick="setAssin('+t.id+')" title="Marco de treino/história a critério do Mestre (R13-4)">★ Tornar Assinatura</button> <span style="font-size:9px;color:var(--tm)">'+nAssin()+'/'+ASSIN_MAX+' · técnica treinada até o fim, por acontecimento de história</span>')+'</div>';
     h+='<div class="f g6" style="margin-top:8px"><button class="bt bo bsm" onclick="editDevTech('+t.id+')">✎ Editar</button><button class="bt bsm" onclick="delDevTech('+t.id+')" style="background:var(--dn);color:var(--tx)">✕ Remover</button></div>';
     h+='</div></div>';
     return h
@@ -968,9 +1061,14 @@ function addFluxoHit(){
 }
 function addFluxoMiss(){
   if(!S.fluxoActive){toast('Inicie o fluxo primeiro');return}
-  // Falha crítica (cap. 11): perde todo o Desequilíbrio; a técnica falhada custa o dobro
-  S.fluxoLog.unshift({t:'Falha crítica: perde todo o Desequilíbrio ('+S.fluxoDeseq+' → 0); a técnica falhada custa o dobro de MP.',c:'dn'});
-  S.fluxoDeseq=0;rFluxo()
+  // Falha crítica (cap. 11, P-076): perde todo o Desequilíbrio; a técnica falhada custa o dobro; o Fluxo termina
+  S.fluxoLog.unshift({t:'Falha crítica: perde todo o Desequilíbrio ('+S.fluxoDeseq+' → 0); a técnica falhada custa o dobro de MP; o Fluxo termina.',c:'dn'});
+  S.fluxoDeseq=0;S.fluxoActive=false;rFluxo()
+}
+// Erro comum (P-093): não encerra o Fluxo e não soma Desequilíbrio
+function addFluxoErro(){
+  if(!S.fluxoActive){toast('Inicie o fluxo primeiro');return}
+  S.fluxoLog.unshift({t:'Errou (comum): o Fluxo continua; Desequilíbrio segue em '+S.fluxoDeseq+'.',c:'td'});rFluxo()
 }
 function endFluxoVoluntary(){
   if(!S.fluxoActive){toast('Nenhum fluxo ativo');return}
@@ -1022,6 +1120,8 @@ function rExh(){
     else d.innerHTML='<span style="color:'+(S.exTreino<=2?'var(--ac)':'var(--dn)')+'">'+EXH_DESC[Math.min(S.exTreino,5)]+'</span>';
   }
 }
+// Tônico de Arka (E15-02): −1 Exaustão, máx. 1 por descanso longo
+function usarTonico(){if(S.tonicoUsado){toast('Tônico de Arka: só 1 por descanso longo');return}if(!(S.exTreino>0)){toast('Sem Exaustão de Arka');return}S.tonicoUsado=true;S.exTreino--;rExh();toast('Tônico de Arka: Exaustão → '+S.exTreino)}
 function addExh(src){S.exTreino=Math.min(5,(S.exTreino||0)+1);rExh();toast(src+': Exaustão de Arka → '+S.exTreino)}
 function descLongo(){S.exTreino=Math.max(0,S.exTreino-1);rExh();toast('Descanso Longo: Exaustão → '+S.exTreino)}
 
@@ -1104,7 +1204,7 @@ function rSessoes(){
 // ═══ CALCULADORA FORTALECIMENTO ═══
 // Fortalecimentos (cap. 11): limite +300% cumulativo e 3 simultâneos; Votos e Limites de Uso não acumulam entre si;
 // o +50% de dano da Expansão conta nos dois limites (PB-5). Os bônus se somam e o total multiplica o dano base, sem custo de preparo (P-015).
-// Legado Arka Desperta (+50%) fica fora do teto e dos 3 simultâneos (P-055).
+// O Legado da Arka saiu do jogo (R13-6): não há mais bônus fora do teto.
 var FORT_BASE=[25,20,0,30,0,100,75,0];
 var FORT_VAR={2:[["1 turno",50],["2 turnos",100],["3 turnos",200]],4:[["Mesma Área",75],["Neutras",50],["Opostas",25]],7:[["1×/dia",100],["1×/semana",200],["1×/mês",300]]};
 var FORT_TETO=300,FORT_MAXN=3;
@@ -1120,7 +1220,6 @@ function calcFort(){
   var ex=$('fcExp');if(ex&&ex.checked){count++;total+=50}
   if(count>FORT_MAXN)warn.push('Máximo de '+FORT_MAXN+' fortalecimentos simultâneos ('+count+' marcados).');
   if(total>FORT_TETO){warn.push('Limite de +'+FORT_TETO+'% atingido (soma: +'+total+'%).');total=FORT_TETO}
-  var lg=$('fcLeg');if(lg&&lg.checked)total+=50; // Arka Desperta: fora do teto e dos 3 simultâneos (P-055)
   $('fortBonus').textContent='+'+total+'%';
   $('fortMult').textContent='×'+String(Math.round((1+total/100)*100)/100).replace('.',',');
   $('fortCount').textContent=count+'/'+FORT_MAXN;
@@ -1129,18 +1228,17 @@ function calcFort(){
 
 // ═══ XP ═══
 function bXP(){
-  $('t-xp').innerHTML='<div class="st">XP por Sessão</div><div style="font-size:10px;color:var(--td);margin-bottom:6px">Ao fim de cada sessão, o Mestre concede XP na faixa do nível atual (R9-4): típico numa sessão comum, mínimo numa sessão curta ou parada, máximo num marco da história. Com XP de combate, a faixa vale 80% (70% com 3+ lutas por sessão).</div><div id="xpSes" style="margin-bottom:14px"></div><div class="st">XP de Combate (opcional)</div><div style="font-size:10px;color:var(--td);margin-bottom:8px">10 × nível de cada inimigo, somado, ÷ jogadores (D-20).</div><div class="f g16 fw ai" style="margin-bottom:14px"><div><label class="fl">Soma dos níveis dos inimigos</label><div class="nc"><button class="nb" onclick="adj(\'xCr\',-1,1,200);cXP()">−</button><span class="nv" id="xCr">5</span><button class="nb" onclick="adj(\'xCr\',1,1,200);cXP()">+</button></div></div><div><label class="fl">Jogadores</label><div class="nc"><button class="nb" onclick="adj(\'xPa\',-1,1,20);cXP()">−</button><span class="nv" id="xPa">4</span><button class="nb" onclick="adj(\'xPa\',1,1,20);cXP()">+</button></div></div><div class="sb"><div class="sbl">XP</div><div class="sbv" id="xG" style="font-size:16px">1</div></div></div><div class="st">Progresso</div><div class="f g12 ai fw" style="margin-bottom:8px"><div class="f ai g4"><span style="font-size:10px;color:var(--td)">Nível</span><div class="nc"><button class="nb" onclick="adj(\'charLv\',-1,LV_MIN,LV_MAX);uXP()">−</button><span class="nv" id="charLv">3</span><button class="nb" onclick="adj(\'charLv\',1,LV_MIN,LV_MAX);uXP()">+</button></div></div><div class="f ai g4"><span style="font-size:10px;color:var(--td)">XP</span><div class="nc"><button class="nb" onclick="adj(\'charXP\',-10,0,9999);uXP()">−</button><span class="nv" id="charXP">0</span><button class="nb" onclick="adj(\'charXP\',10,0,9999);uXP()">+</button></div></div><button class="bt bs bsm" onclick="aXP()">+ Add</button></div><div class="f ai g8" style="margin-bottom:5px"><div class="bt2" style="height:9px"><div class="bf" id="xF" style="background:linear-gradient(90deg,var(--ad),var(--ac));width:0%"></div></div><span id="xL" style="font-size:10px;min-width:60px;text-align:right;color:var(--td)">0/300</span></div><div id="lU" style="display:none;padding:6px;background:rgba(244,208,63,.06);border:1px solid rgba(244,208,63,.2);border-radius:4px;font-family:Cinzel,serif;font-size:9px;color:#f4d03f;text-align:center;font-weight:700;margin-bottom:12px"></div><div class="st" style="margin-top:12px">Benefícios de Nível</div><div id="marcosL" style="margin-bottom:12px"></div><div class="st" style="margin-top:12px">Durabilidade (regra opcional)</div><div style="font-size:10px;color:var(--td);margin-bottom:6px">Apêndice (P-034, R10-7, D-76, D-79): toda arma, armadura e escudo começa com durabilidade 10. Arma: −0,25 por ataque e −1 por Aparar. Armadura: −1 por acerto crítico sofrido. Escudo: −1 por Aparar com escudo (a arma também perde 1) e −1 por todo Proteger de quem o carrega. Com 0, a arma causa 1 + mod do atributo; armadura ou escudo se perde. Ferreiros reparam.</div><div class="f g8" style="margin-bottom:7px"><button class="pl on" id="dW" onclick="dAr=false;uDU()" style="color:var(--ac);border-color:var(--ad)">Arma (−0,25/ataque)</button><button class="pl" id="dA2" onclick="dAr=true;uDU()">Armadura ou escudo (−1/evento)</button></div><div class="f g16 ai fw"><div class="fc g6"><div class="f ai g4"><span style="font-size:9px;color:var(--td);min-width:40px" id="dEvL">Ataques</span><div class="nc"><button class="nb" onclick="adj(\'dAt\',-1,0,200);cD()">−</button><span class="nv" id="dAt">10</span><button class="nb" onclick="adj(\'dAt\',1,0,200);cD()">+</button></div></div><div class="f ai g4"><span style="font-size:9px;color:var(--td);min-width:40px">Atual</span><div class="nc"><button class="nb" onclick="adj(\'dCu\',-1,0,200);cD()">−</button><span class="nv" id="dCu">10</span><button class="nb" onclick="adj(\'dCu\',1,0,200);cD()">+</button></div></div></div><div class="f g8"><div class="sb"><div class="sbl">Perda</div><div class="sbv" id="dL" style="color:var(--dn);font-size:14px">2.50</div></div><div class="sb"><div class="sbl">Restante</div><div class="sbv" id="dR" style="color:var(--sc);font-size:14px">7.50</div></div></div></div>';cXP();cD();uXP()
+  $('t-xp').innerHTML='<div class="st">XP por Sessão</div><div style="font-size:10px;color:var(--td);margin-bottom:6px">Ao fim de cada sessão, o Mestre concede XP na faixa do nível atual (R9-4): típico numa sessão comum, mínimo numa sessão curta ou parada, máximo num marco da história. Com XP de combate, a faixa vale 80% (70% com 3+ lutas por sessão).</div><div id="xpSes" style="margin-bottom:14px"></div><div class="st">XP de Combate (opcional)</div><div style="font-size:10px;color:var(--td);margin-bottom:8px">10 × nível de cada inimigo × valor da categoria (lacaio ¾ · padrão 1 · elite 2 · chefe 4 · chefe de fim de arco 5), somado, ÷ jogadores (R14-5).</div><div class="f g16 fw ai" style="margin-bottom:14px"><div><label class="fl">Soma de nível × valor dos inimigos</label><div class="nc"><button class="nb" onclick="adj(\'xCr\',-1,1,200);cXP()">−</button><span class="nv" id="xCr">5</span><button class="nb" onclick="adj(\'xCr\',1,1,200);cXP()">+</button></div></div><div><label class="fl">Jogadores</label><div class="nc"><button class="nb" onclick="adj(\'xPa\',-1,1,20);cXP()">−</button><span class="nv" id="xPa">4</span><button class="nb" onclick="adj(\'xPa\',1,1,20);cXP()">+</button></div></div><div class="sb"><div class="sbl">XP</div><div class="sbv" id="xG" style="font-size:16px">1</div></div></div><div class="st">Progresso</div><div class="f g12 ai fw" style="margin-bottom:8px"><div class="f ai g4"><span style="font-size:10px;color:var(--td)">Nível</span><div class="nc"><button class="nb" onclick="adj(\'charLv\',-1,LV_MIN,LV_MAX);uXP()">−</button><span class="nv" id="charLv">3</span><button class="nb" onclick="adj(\'charLv\',1,LV_MIN,LV_MAX);uXP()">+</button></div></div><div class="f ai g4"><span style="font-size:10px;color:var(--td)">XP</span><div class="nc"><button class="nb" onclick="adj(\'charXP\',-10,0,9999);uXP()">−</button><span class="nv" id="charXP">0</span><button class="nb" onclick="adj(\'charXP\',10,0,9999);uXP()">+</button></div></div><button class="bt bs bsm" onclick="aXP()">+ Add</button></div><div class="f ai g8" style="margin-bottom:5px"><div class="bt2" style="height:9px"><div class="bf" id="xF" style="background:linear-gradient(90deg,var(--ad),var(--ac));width:0%"></div></div><span id="xL" style="font-size:10px;min-width:60px;text-align:right;color:var(--td)">0/300</span></div><div id="lU" style="display:none;padding:6px;background:rgba(244,208,63,.06);border:1px solid rgba(244,208,63,.2);border-radius:4px;font-family:Cinzel,serif;font-size:9px;color:#f4d03f;text-align:center;font-weight:700;margin-bottom:12px"></div><div class="st" style="margin-top:12px">Progressão por Nível</div><div id="marcosL" style="margin-bottom:12px"></div><div class="st" style="margin-top:12px">Durabilidade (regra opcional)</div><div style="font-size:10px;color:var(--td);margin-bottom:6px">Apêndice (P-034, R10-7, D-76, D-79): toda arma, armadura e escudo começa com durabilidade 10. Arma: −0,25 por ataque e −1 por Aparar. Armadura: −1 por acerto crítico sofrido. Escudo: −1 por Aparar com escudo (a arma também perde 1) e −1 por todo Proteger de quem o carrega. Com 0, a arma causa 1 + mod do atributo; armadura ou escudo se perde. Ferreiros reparam.</div><div class="f g8" style="margin-bottom:7px"><button class="pl on" id="dW" onclick="dAr=false;uDU()" style="color:var(--ac);border-color:var(--ad)">Arma (−0,25/ataque)</button><button class="pl" id="dA2" onclick="dAr=true;uDU()">Armadura ou escudo (−1/evento)</button></div><div class="f g16 ai fw"><div class="fc g6"><div class="f ai g4"><span style="font-size:9px;color:var(--td);min-width:40px" id="dEvL">Ataques</span><div class="nc"><button class="nb" onclick="adj(\'dAt\',-1,0,200);cD()">−</button><span class="nv" id="dAt">10</span><button class="nb" onclick="adj(\'dAt\',1,0,200);cD()">+</button></div></div><div class="f ai g4"><span style="font-size:9px;color:var(--td);min-width:40px">Atual</span><div class="nc"><button class="nb" onclick="adj(\'dCu\',-1,0,200);cD()">−</button><span class="nv" id="dCu">10</span><button class="nb" onclick="adj(\'dCu\',1,0,200);cD()">+</button></div></div></div><div class="f g8"><div class="sb"><div class="sbl">Perda</div><div class="sbv" id="dL" style="color:var(--dn);font-size:14px">2.50</div></div><div class="sb"><div class="sbl">Restante</div><div class="sbv" id="dR" style="color:var(--sc);font-size:14px">7.50</div></div></div></div>';cXP();cD();uXP()
 }
 // XP de combate opcional (D-20): fórmula do painel do mestre = Σ(10 × nível do inimigo) ÷ jogadores
 function cXP(){sv('xG',Math.floor((10*gv('xCr'))/Math.max(1,gv('xPa'))))}
 function uXP(){var lv=Math.max(LV_MIN,Math.min(LV_MAX,gv('charLv'))),xp=gv('charXP');sv('charLv',lv);var b=$('lU');
   if(lv>=LV_MAX){$('xF').style.width='100%';$('xL').textContent='Nível máximo';b.style.display='none'}
-  else{var need=XT[lv-1];$('xF').style.width=Math.min(100,(xp/need)*100)+'%';$('xL').textContent=xp+'/'+need;if(xp>=need){b.style.display='block';b.textContent='✦ LEVEL UP! → Nível '+(lv+1)+': +'+PP_POR_NIVEL+' PP'+(MARCOS[lv+1]!=='—'?' · '+MARCOS[lv+1]:'')}else b.style.display='none'}
+  else{var need=XT[lv-1];$('xF').style.width=Math.min(100,(xp/need)*100)+'%';$('xL').textContent=xp+'/'+need;if(xp>=need){b.style.display='block';b.textContent='✦ LEVEL UP! → Nível '+(lv+1)+': +'+ppNoNivel(lv+1)+' PP'+(gProf(lv+1)>gProf(lv)?' · proficiência +'+gProf(lv+1):'')}else b.style.display='none'}
   var chg=S.level!==lv;if(chg)ppTravaNivel(lv);S.level=lv;S.xp=xp;rMarcos();rXS();if(chg)rRests();if(chg){rPr();if($('dSt'))uAt();rMyAuras()}}
 function rMarcos(){var el=$('marcosL');if(!el)return;var lv=S.level||LV_MIN,h='';
-  for(var n=LV_MIN;n<=LV_MAX;n++){var cur=n===lv,done=n<=lv;h+='<div style="display:flex;gap:8px;padding:3px 6px;font-size:11px;border-bottom:1px solid var(--bd);'+(cur?'background:rgba(201,169,110,.08);':'')+'color:'+(done?'var(--tx)':'var(--tm)')+'"><span style="font-family:Cinzel,serif;font-weight:700;min-width:34px;color:'+(cur?'var(--ac)':'inherit')+'">Nv '+n+'</span><span style="min-width:62px;color:var(--td)">'+(n<LV_MAX?XT[n-1]+' XP':'—')+'</span><span style="min-width:24px">+'+gProf(n)+'</span><span style="min-width:44px;color:var(--ac)">'+ppEarned(n)+' PP</span><span style="min-width:74px;color:var(--td)" title="XP por sessão: mínimo–típico–máximo (R9-4)">'+(XP_SESSAO[n]?XP_SESSAO[n].join('–'):'—')+'</span><span style="flex:1">'+(n>LV_MIN?'+'+PP_POR_NIVEL+' PP'+(MARCOS[n]!=='—'?' · '+MARCOS[n]:''):MARCOS[n])+'</span></div>'}
-  h+='<div class="f ai g8" style="margin-top:6px"><span style="font-size:10px;color:var(--td)">Legado da Arka (nv 15):</span><select id="pLegado" style="flex:1" onchange="S.legado=this.value"><option value="">— Escolha 1 —</option>'+LEGADO_OPC.map(function(o){return '<option value="'+o+'"'+(S.legado===o?' selected':'')+'>'+o+'</option>'}).join('')+'</select></div>';
-  h+='<div style="font-size:9px;color:var(--tm);margin-top:3px">Colunas: nível · XP para subir ao próximo · proficiência · PP acumulados · XP por sessão (mín.–típico–máx.) · benefício de nível. A cada nível rolam-se HP e MP (aba Atributos) e ganham-se 3 PP (gastos nas abas Atributos e Auras; acumulam).</div>';
+  for(var n=LV_MIN;n<=LV_MAX;n++){var cur=n===lv,done=n<=lv;h+='<div style="display:flex;gap:8px;padding:3px 6px;font-size:11px;border-bottom:1px solid var(--bd);'+(cur?'background:rgba(201,169,110,.08);':'')+'color:'+(done?'var(--tx)':'var(--tm)')+'"><span style="font-family:Cinzel,serif;font-weight:700;min-width:34px;color:'+(cur?'var(--ac)':'inherit')+'">Nv '+n+'</span><span style="min-width:62px;color:var(--td)">'+(n<LV_MAX?XT[n-1]+' XP':'—')+'</span><span style="min-width:24px">+'+gProf(n)+'</span><span style="min-width:44px;color:var(--ac)">'+ppEarned(n)+' PP</span><span style="min-width:74px;color:var(--td)" title="XP por sessão: mínimo–típico–máximo (R9-4)">'+(XP_SESSAO[n]?XP_SESSAO[n].join('–'):'—')+'</span><span style="flex:1">'+(n>LV_MIN?'+'+ppNoNivel(n)+' PP'+(gProf(n)>gProf(n-1)?' · proficiência +'+gProf(n):''):'Início da campanha (aura de nascença no nível 1)')+'</span></div>'}
+  h+='<div style="font-size:9px;color:var(--tm);margin-top:3px">Colunas: nível · XP para subir ao próximo · proficiência · PP acumulados · XP por sessão (mín.–típico–máx.) · o que o nível dá. A cada nível rolam-se HP e MP (aba Atributos) e ganha-se 1 PP (2 nos níveis 5, 10 e 15; 15 no total), gasto só em atributos e auras e acumulável (D-89). O nível não dá outro poder: técnicas, Técnica Assinatura e Despertar Divino vêm do treino e da história.</div>';
   el.innerHTML=h}
 function aXP(){var lv=gv('charLv');if(lv>=LV_MAX){toast('Nível máximo');return}var g=parseInt($('xG').textContent);sv('charXP',Math.min(XT[lv-1],gv('charXP')+g));uXP();toast('+'+g+' XP')}
 function uDU(){$('dW').className='pl'+(dAr?'':' on');$('dW').style.cssText=dAr?'':'color:var(--ac);border-color:var(--ad)';$('dA2').className='pl'+(dAr?' on':'');$('dA2').style.cssText=dAr?'color:var(--ac);border-color:var(--ad)':'';cD()}
@@ -1155,13 +1253,21 @@ function eJ(){sync();$('jO').value=JSON.stringify(S,null,2);toast('JSON gerado')
 function dlJ(){sync();var nm=(S.name||'personagem').replace(/\s+/g,'_').toLowerCase();var bl=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=nm+'_crepusculo.json';a.click();URL.revokeObjectURL(a.href);toast(a.download+' baixado')}
 function iJ(){try{var raw=$('jI').value.trim();if(!raw){toast('Cole JSON');return}lS(JSON.parse(raw));toast('Carregado!')}catch(e){toast('Erro: '+e.message)}}
 function lF(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){try{var d=JSON.parse(ev.target.result);lS(d);$('jI').value=JSON.stringify(d,null,2);toast('Arquivo: '+f.name)}catch(err){toast('Erro: '+err.message)}};r.readAsText(f);e.target.value=''}
+// Conversão da economia antiga de PP (D-89): devolve os +1 de atributo, as auras compradas e os níveis de aura,
+// guarda a lista em S.ppAntigo (aviso na barra de PP) e deixa as compras novas pendentes até o jogador confirmar.
+function converterPP(){var ups=0,her=auraHer(),lista=[];A.forEach(function(a){var n=(S.attrUps&&S.attrUps[a])||0;if(n){ups+=n;lista.push(a+' +'+n)}});
+  (S.auras||[]).forEach(function(x){if(!x.her||x.lv>1)lista.push(x.n+' nível '+x.lv+(x.her?' (nascença)':' (comprada)')+(x.deus?', Despertar sob '+x.deus:''))});
+  if(!lista.length)return false;
+  S.ppAntigo='Compras da economia antiga, reembolsadas: '+lista.join('; ')+'. Agora: 1 PP por nível (+1 nos níveis 5, 10 e 15); +1 atributo 1 PP (2 de 19 para 20); aura 1→2 = 3, 2→3 = 4; aura nova 1/2/2/3. Um Despertar Divino anterior volta quando a aura chegar de novo ao nível 3, com o Mestre.';
+  S.attrUps={FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0};S.auras=her?[{n:her.n,lv:1,her:true}]:[];
+  var c={attrUps:{},auras:{}};A.forEach(function(a){c.attrUps[a]=0});if(her)c.auras[her.n]=1;S.ppConf=c;return true}
 function lS(d){
   Object.keys(S).forEach(function(k){if(d[k]!==undefined)S[k]=d[k]});
   S.inventory=(S.inventory||[]).map(function(it,i){return Object.assign({},it,{id:it.id||Date.now()+i})});
   if(!S.customProf)S.customProf={name:'Personalizado',m:{},hp:'1d8',mp:'1d8',sk:''};
   if(!S.customProfs)S.customProfs=[];if(!S.proficiencies)S.proficiencies=[];
   // Campos novos (canon 2026-10): valores padrão para fichas antigas
-  if(d.shortRests===undefined)S.shortRests=0;if(d.legado===undefined)S.legado='';
+  if(d.shortRests===undefined)S.shortRests=0;
   if(d.armor===undefined)S.armor='Sem armadura';if(d.shield===undefined)S.shield=false;
   // Rodada 5: PP, auras estruturadas, perícias novas, proficiências livres
   if(!d.attrUps)S.attrUps={FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0};
@@ -1173,6 +1279,12 @@ function lS(d){
   if(PROF_MIGRA[S.prof])S.prof=PROF_MIGRA[S.prof];
   if(d.hdUsed===undefined)S.hdUsed=0;if(d.especialista===undefined)S.especialista='';if(d.acaoLend===undefined)S.acaoLend=0;
   S.level=Math.max(LV_MIN,Math.min(LV_MAX,S.level||LV_MIN));
+  // Rodada 9: profissão montada (P-094) e campos novos
+  var cp=S.customProf;if(cp.name==='Personalizado')cp.name='Profissão montada';['per','res'].forEach(function(k){if(!cp[k])cp[k]=[]});if(cp.pac===undefined)cp.pac='';if(cp.exc===undefined)cp.exc=false;if(cp.exd===undefined)cp.exd='';if(cp.co===undefined)cp.co=0;
+  if(d.humAttr===undefined)S.humAttr='';if(d.herLivre===undefined)S.herLivre=false;if(d.escamas===undefined)S.escamas=false;if(d.vestigar===undefined)S.vestigar=false;if(d.furiaUsada===undefined)S.furiaUsada=false;if(d.adaptUsos===undefined)S.adaptUsos=0;if(d.tonicoUsado===undefined)S.tonicoUsado=false;if(d.ppAntigo===undefined)S.ppAntigo='';
+  (S.devTechs||[]).forEach(function(t){if(t.assin===undefined)t.assin=false});
+  // Rodada 9 (D-89): ficha salva com a economia antiga (3 PP/nível, custos PG) → reembolsa todas as compras com PP e pede para redistribuir
+  if(d.ppEco===undefined||d.ppEco<PP_ECO){var conv=converterPP();S.ppEco=PP_ECO;if(conv)setTimeout(function(){toast('Economia de PP nova (D-89): compras antigas reembolsadas — redistribua os pontos')},300)}
   // Rodada 6 (D-53): ficha sem registro de confirmação → as compras que ela já tem contam como confirmadas
   if(d.ppConf===undefined)ppConfirmar();
   var legacy=d.hpDice===undefined&&d.hpRolls!==undefined;
@@ -1189,7 +1301,7 @@ function lS(d){
   if(S.devTechs===undefined)S.devTechs=[];
   if(S.hpRolls===undefined)S.hpRolls=[];
   if(S.mpRolls===undefined)S.mpRolls=[];
-  sv('arkaLocal',S.arkaLocal||3);sv('arkaCap',S.arkaCap||3);
+  sv('arkaLocal',S.arkaLocal||3);sv('arkaCap',S.arkaCap||3);var pv=$('pVest');if(pv)pv.checked=!!S.vestigar;
   var tm=$('pTecMax');if(tm)tm.value=S.tecMax||'';
   rFluxo();rExh();rArka();rSessoes();rDevTechs();syncTechsText();rMyAuras();rFalls();rRests();rAL();rXS()
 }
