@@ -1336,10 +1336,12 @@ export function convertOldPP(sheet) {
   if (!lista.length) return { ppEco: PP_ECO };
   const zero = {}; ATTRS.forEach(a => { zero[a] = 0; });
   const auras = her ? [{ n: her.n, lv: 1, her: true }] : [];
+  // G-09: o Despertar Divino e o deus ficam guardados e reativam sozinhos quando a aura voltar ao nível 3
+  const dz = awakenedAura(sheet.auras);
   return {
-    ppEco: PP_ECO, attrUps: { ...zero }, auras,
+    ppEco: PP_ECO, attrUps: { ...zero }, auras, despGuarda: dz ? { n: dz.n, deus: dz.deus || '' } : null,
     ppConf: { attrUps: { ...zero }, auras: her ? { [her.n]: 1 } : {} },
-    ppAntigo: `Compras da economia antiga, reembolsadas: ${lista.join('; ')}. Agora: 1 PP por nível (+1 nos níveis 5, 10 e 15); +1 atributo 1 PP (2 de 19 para 20); aura 1→2 = 3, 2→3 = 4; aura nova 1/2/2/3. Um Despertar Divino anterior volta quando a aura chegar de novo ao nível 3, com o Mestre.`,
+    ppAntigo: `Compras da economia antiga, reembolsadas: ${lista.join('; ')}. Agora: 1 PP por nível (+1 nos níveis 5, 10 e 15); +1 atributo 1 PP (2 de 19 para 20); aura 1→2 = 3, 2→3 = 4; aura nova 1/2/2/3.${dz ? ` O Despertar Divino de ${dz.n}${dz.deus ? ` (sob ${dz.deus})` : ''} fica guardado e volta sozinho quando ${dz.n} chegar de novo ao nível 3${dz.her ? '' : ' (recompre a aura)'}.` : ''}`,
   };
 }
 // Lembretes condicionais (P-095): não entram nos números
@@ -1382,7 +1384,7 @@ export function blankSheet(overrides = {}) {
     auraInit: '', auraDesc: '', extraAuras: '', auras: [],
     ppConf: null,       // compras de PP confirmadas (D-53); null = nada confirmado ainda
     ppEco: PP_ECO, ppAntigo: '', herLivre: false, // economia D-89; aviso da conversão; aura de nascença destravada (P-097)
-    escamas: false, vestigar: false, furiaUsada: false, adaptUsos: 0, tonicoUsado: false, // P-095, P-089, R13-5, P-083, E15-02
+    escamas: false, vestigar: false, furiaUsada: false, adaptUsos: 0, tonicoUsado: false, despGuarda: null, // P-095, P-089, R13-5, P-083, E15-02, G-09
     // Inventory / Gold
     gold: 0, inventory: [],
     // XP / Level

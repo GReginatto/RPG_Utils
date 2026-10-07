@@ -768,12 +768,19 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
         const c = PP_AURA_UP[x.lv + 1];
         if (ppLeft(sheet) < c) { window.alert(`PP insuficientes: ${x.n} ${x.lv}→${x.lv+1} custa ${c} PP`); return; }
         list[i] = { ...x, lv: x.lv + 1 };
+        // G-09: Despertar guardado na conversão da economia antiga reativa sozinho no nível 3
+        const dg = sheet.despGuarda;
+        if (x.lv + 1 === 3 && dg && dg.n === x.n && !awakenedAura(auras) && !titanicBorn(auras)) {
+          list[i] = { ...x, lv: 4, deus: dg.deus, despRest: true };
+          u({ auras: list, despGuarda: null }); return;
+        }
       }
     } else {
       // Desfazer só o que ainda não foi confirmado (D-53)
       const cf = auraConfirmed(sheet, x);
       if (x.lv > 1) {
         if (x.lv <= cf) { window.alert(`${x.n}: nível ${x.lv} já confirmado, sem reembolso (D-53).`); return; }
+        if (x.lv === 4 && x.despRest) { const y = { ...x, lv: 2 }; delete y.deus; delete y.despRest; list[i] = y; u({ auras: list, despGuarda: { n: x.n, deus: x.deus || '' } }); return; }
         list[i] = { ...x, lv: x.lv - 1 };
         if (x.lv - 1 < 4) delete list[i].deus;
       } else if (!x.her) {
@@ -918,7 +925,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
       {auras.map((x,i)=>{
         const ar=x.n==='Titânica'?'Centro':auraArea(x.n), c=groupColor(ar);
         const dz=awakenedAura(auras), cf=auraConfirmed(sheet,x);
-        const nx=x.lv<3?`${PP_AURA_UP[x.lv+1]} PP`:x.lv===3?(titanicBorn(auras)?'não desperta (Titânico, D-62)':dz?'Despertar já usado (D-56)':'Despertar (evento, 0 PP)'):'máx.';
+        const nx=x.lv<3?`${PP_AURA_UP[x.lv+1]} PP${sheet.despGuarda?.n===x.n&&x.lv===2?' (restaura o Despertar)':''}`:x.lv===3?(titanicBorn(auras)?'não desperta (Titânico, D-62)':dz?'Despertar já usado (D-56)':'Despertar (evento, 0 PP)'):'máx.';
         const gods=PANTHEON[auraArea(x.n)]||[], gd=gods.find(g=>g.n===x.deus), locked=cf>=4&&!!x.deus;
         return (
           <div key={x.n} style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',background:'var(--card)',border:'1px solid var(--border)',borderLeft:`3px solid ${c}`,borderRadius:4,padding:'6px 9px',marginBottom:4}}>

@@ -127,3 +127,14 @@ test("rodada 9: profissão montada mostra a régua; aura de nascença travada; F
   fireEvent.click(screen.getAllByText("Auras")[0]);
   expect(screen.getByText(/travada/)).toBeInTheDocument();
 });
+
+test("G-09: Despertar guardado reativa sozinho quando a aura volta ao nível 3", () => {
+  const sheet = blankSheet({ level: 9, auras: [{ n: "Fogo", lv: 2, her: true }], despGuarda: { n: "Fogo", deus: "Agni" }, ppConf: { attrUps: {}, auras: { Fogo: 1 } } });
+  const onUpdate = jest.fn();
+  render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  expect(screen.getAllByText(/restaura o Despertar/).length).toBeGreaterThan(0);
+  const plus = screen.getAllByText("+");
+  fireEvent.click(plus[plus.length - 1]);
+  expect(onUpdate).toHaveBeenCalledWith({ auras: [{ n: "Fogo", lv: 4, her: true, deus: "Agni", despRest: true }], despGuarda: null });
+});

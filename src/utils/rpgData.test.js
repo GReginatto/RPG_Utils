@@ -176,6 +176,10 @@ describe('regras do canon', () => {
     expect(c.auras).toEqual([{ n: 'Ilusão', lv: 1, her: true }]);
     expect(Object.values(c.attrUps).every(v => v === 0)).toBe(true);
     expect(c.ppAntigo).toMatch(/Raksasha/);
+    expect(c.despGuarda).toBeNull();
+    const d = convertOldPP({ level: 9, attrUps: {}, auras: [{ n: 'Fogo', lv: 4, her: true, deus: 'Agni' }] });
+    expect(d.despGuarda).toEqual({ n: 'Fogo', deus: 'Agni' }); // G-09: Despertar preservado
+    expect(d.ppAntigo).toMatch(/sob Agni/);
     expect(convertOldPP({ ...old, ...c })).toBeNull();
     expect(convertOldPP({ auras: [{ n: 'Fogo', lv: 1, her: true }] })).toEqual({ ppEco: 2 });
     expect(heritageLocked({ ...old, ...c })).toBe(true);
