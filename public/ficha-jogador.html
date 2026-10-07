@@ -270,7 +270,7 @@ function pbCost(from,to){var c=0;if(to<from)return to-from;for(var v=from+1;v<=t
 // Armaduras (PB-10 + itens do mundo, relatório da rodada 2). t: L=leve, M=média (DEX máx. 2), P=pesada (sem DEX)
 var ARMORS=[{n:"Sem armadura",ca:10,t:"N"},{n:"Acolchoado",ca:11,t:"L"},{n:"Couro",ca:11,t:"L"},{n:"Couro batido",ca:12,t:"L"},{n:"Cota de malha",ca:13,t:"M"},{n:"Peitoral de aço",ca:14,t:"M"},{n:"Meia-placa",ca:15,t:"M"},{n:"Brigantina de prata (Anjos)",ca:14,t:"M"},{n:"Cota de anéis",ca:14,t:"P",mv:-1},{n:"Cota de talas",ca:15,t:"P",mv:-1},{n:"Placas completas",ca:18,t:"P",mv:-2},{n:"Armadura a vapor",ca:19,t:"P",mv:-2}] // P-073: anéis e talas −1 m; placas e vapor −2 m;
 
-var S={name:"",player:"",age:"",gender:"",origin:"",alignment:"",appearance:"",personality:"",background:"",motivation:"",notes:"",race:"Humano",humAttr:"",prof:"custom",customProf:{name:"Profissão montada",m:{},hp:"1d8",mp:"1d8",sk:"",per:[],res:[],pac:"",exc:false,exd:"",co:0},attrs:{FOR:8,DEX:8,CON:8,SAB:8,INT:8,CAR:8,DOM:8},proficiencies:[],customProfs:[],curHP:0,maxHP:0,curMP:0,maxMP:0,falls:0,auraInit:"",auraDesc:"",techs:"",extraAuras:"",gold:0,inventory:[],xp:0,level:3,fluxoDeseq:0,fluxoActive:false,fluxoLog:[],exTreino:0,sessoesTreino:[],arkaLocal:3,arkaCap:3,tecMax:"",devTechs:[],hpRolls:[],mpRolls:[],hpDice:[],mpDice:[],shortRests:0,hdUsed:0,especialista:"",acaoLend:0,armor:"Sem armadura",shield:false,attrUps:{FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0},auras:[],toolProfs:["",""],ppConf:null,ppEco:2,ppAntigo:"",herLivre:false,escamas:false,vestigar:false,furiaUsada:false,adaptUsos:0,tonicoUsado:false};
+var S={name:"",player:"",age:"",gender:"",origin:"",alignment:"",appearance:"",personality:"",background:"",motivation:"",notes:"",race:"Humano",humAttr:"",prof:"custom",customProf:{name:"Profissão montada",m:{},hp:"1d8",mp:"1d8",sk:"",per:[],res:[],pac:"",exc:false,exd:"",co:0},attrs:{FOR:8,DEX:8,CON:8,SAB:8,INT:8,CAR:8,DOM:8},proficiencies:[],customProfs:[],curHP:0,maxHP:0,curMP:0,maxMP:0,falls:0,auraInit:"",auraDesc:"",techs:"",extraAuras:"",gold:0,inventory:[],xp:0,level:3,fluxoDeseq:0,fluxoActive:false,fluxoLog:[],exTreino:0,sessoesTreino:[],arkaLocal:3,arkaCap:3,tecMax:"",devTechs:[],hpRolls:[],mpRolls:[],hpDice:[],mpDice:[],shortRests:0,hdUsed:0,especialista:"",acaoLend:0,armor:"Sem armadura",shield:false,attrUps:{FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0},auras:[],toolProfs:["",""],ppConf:null,ppEco:2,ppAntigo:"",herLivre:false,escamas:false,vestigar:false,furiaUsada:false,adaptUsos:0,tonicoUsado:false,despGuarda:null};
 // Rodada 9: humAttr = +1 do Humano; ppEco = economia de PP (2 = D-89); ppAntigo = compras reembolsadas da economia antiga; herLivre = aura de nascença destravada pelo Mestre (P-097);
 // escamas = escamas da Animalesca ativas (P-095); vestigar = descansos a 75% (P-089); furiaUsada/adaptUsos = Fúria Ancestral (R13-5) e Adaptação (P-083)
 // attrUps = +1 comprados com PP; auras = [{n, lv, her(hereditária), pago, deus}] (D-28, D-29)
@@ -679,10 +679,14 @@ function auraUp(i,d){
       x.lv=4;x.deus=gs.length===1?gs[0].n:'';rMyAuras();rPP();sync();toast(x.n+': Despertar Divino — escolha o deus');return}
     var c=PP_AURA_UP[x.lv+1];if(ppLeft()<c){toast('PP insuficientes: '+x.n+' '+x.lv+'→'+(x.lv+1)+' custa '+c+' PP');return}
     x.lv++;
+    // G-09: Despertar guardado na conversão da economia antiga reativa sozinho no nível 3
+    var dg=S.despGuarda;if(x.lv===3&&dg&&dg.n===x.n&&!despertada()&&!nascTitanico()){x.lv=4;x.deus=dg.deus;x.despRest=true;S.despGuarda=null;toast(x.n+': Despertar Divino restaurado'+(dg.deus?' (sob '+dg.deus+')':''))}
   }else{
     // Desfazer só o que ainda não foi confirmado (D-53)
     var cf=ppAuraConf(x);
-    if(x.lv>1){if(x.lv<=cf){toast(x.n+': nível '+x.lv+' já confirmado, sem reembolso (D-53)');return}x.lv--;if(x.lv<4)delete x.deus}
+    if(x.lv>1){if(x.lv<=cf){toast(x.n+': nível '+x.lv+' já confirmado, sem reembolso (D-53)');return}
+      if(x.lv===4&&x.despRest){S.despGuarda={n:x.n,deus:x.deus||''};x.lv=2;delete x.deus;delete x.despRest} // desfaz o 2→3 que tinha restaurado o Despertar
+      else{x.lv--;if(x.lv<4)delete x.deus}}
     else if(!x.her){if(cf>0){toast(x.n+': compra já confirmada, sem reembolso (D-53)');return}if(!confirm('Desfazer a compra de '+x.n+' (ainda não confirmada; devolve '+(x.pago||0)+' PP)?'))return;S.auras.splice(i,1)}
   }
   rMyAuras();rPP();sync()
@@ -703,7 +707,7 @@ function rMyAuras(){
   if(!S.auras.length){el.innerHTML='<div style="font-size:11px;color:var(--tm);font-style:italic">Nenhuma aura. Escolha a hereditária acima.</div>'}
   else el.innerHTML=S.auras.map(function(x,i){var ar=x.n==='Titânica'?'Centro':auraArea(x.n);var g=AG.find(function(q){return q.n===ar});var c=g?g.c:'#ff6600';
     var dz=despertada(),cf=ppAuraConf(x);
-    var nx=x.lv<3?(PP_AURA_UP[x.lv+1]+' PP'):x.lv===3?(nascTitanico()?'não desperta (Titânico, D-62)':dz?'Despertar já usado (D-56)':'Despertar (evento, 0 PP)'):'máx.';
+    var nx=x.lv<3?(PP_AURA_UP[x.lv+1]+' PP'+(S.despGuarda&&S.despGuarda.n===x.n&&x.lv===2?' (restaura o Despertar)':'')):x.lv===3?(nascTitanico()?'não desperta (Titânico, D-62)':dz?'Despertar já usado (D-56)':'Despertar (evento, 0 PP)'):'máx.';
     var h='<div class="crd" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-left:3px solid '+c+';margin-bottom:4px;padding:6px 9px"><span style="font-weight:600;font-size:12px;min-width:110px">'+esc(x.n)+'</span><span style="font-size:9px;color:'+c+'">'+ar+(x.her?' · hereditária'+(ar==='Primordial'?' · <b style="color:var(--dn)">raríssima — requer aprovação do Mestre (D-61)</b>':''):' · comprada ('+(x.pago||0)+' PP)')+(x.lv>cf?' · <b style="color:var(--ac)">pendente</b>':'')+'</span>';
     h+='<div class="nc" style="margin-left:auto"><button class="nb" onclick="auraUp('+i+',-1)">−</button><span class="nv" style="color:var(--ac)">'+(x.lv===4?'4 ✦':x.lv)+'</span><button class="nb" onclick="auraUp('+i+',1)">+</button></div><span style="font-size:9px;color:var(--tm);min-width:90px">próx.: '+nx+'</span>';
     if(x.lv>=2)h+='<span style="font-size:9px;color:var(--dn)" title="Território imperial (R10-6)">licença '+(x.lv>=3?'Avançada':'Intermediária')+'</span>';
@@ -1258,7 +1262,9 @@ function lF(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onl
 function converterPP(){var ups=0,her=auraHer(),lista=[];A.forEach(function(a){var n=(S.attrUps&&S.attrUps[a])||0;if(n){ups+=n;lista.push(a+' +'+n)}});
   (S.auras||[]).forEach(function(x){if(!x.her||x.lv>1)lista.push(x.n+' nível '+x.lv+(x.her?' (nascença)':' (comprada)')+(x.deus?', Despertar sob '+x.deus:''))});
   if(!lista.length)return false;
-  S.ppAntigo='Compras da economia antiga, reembolsadas: '+lista.join('; ')+'. Agora: 1 PP por nível (+1 nos níveis 5, 10 e 15); +1 atributo 1 PP (2 de 19 para 20); aura 1→2 = 3, 2→3 = 4; aura nova 1/2/2/3. Um Despertar Divino anterior volta quando a aura chegar de novo ao nível 3, com o Mestre.';
+  // G-09: o Despertar Divino e o deus ficam guardados e reativam sozinhos quando a aura voltar ao nível 3
+  var dz=(S.auras||[]).filter(function(x){return x.lv===4})[0];S.despGuarda=dz?{n:dz.n,deus:dz.deus||''}:null;
+  S.ppAntigo='Compras da economia antiga, reembolsadas: '+lista.join('; ')+'. Agora: 1 PP por nível (+1 nos níveis 5, 10 e 15); +1 atributo 1 PP (2 de 19 para 20); aura 1→2 = 3, 2→3 = 4; aura nova 1/2/2/3.'+(dz?' O Despertar Divino de '+dz.n+(dz.deus?' (sob '+dz.deus+')':'')+' fica guardado e volta sozinho quando '+dz.n+' chegar de novo ao nível 3'+(dz.her?'':' (recompre a aura)')+'.':'');
   S.attrUps={FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0};S.auras=her?[{n:her.n,lv:1,her:true}]:[];
   var c={attrUps:{},auras:{}};A.forEach(function(a){c.attrUps[a]=0});if(her)c.auras[her.n]=1;S.ppConf=c;return true}
 function lS(d){
@@ -1281,7 +1287,7 @@ function lS(d){
   S.level=Math.max(LV_MIN,Math.min(LV_MAX,S.level||LV_MIN));
   // Rodada 9: profissão montada (P-094) e campos novos
   var cp=S.customProf;if(cp.name==='Personalizado')cp.name='Profissão montada';['per','res'].forEach(function(k){if(!cp[k])cp[k]=[]});if(cp.pac===undefined)cp.pac='';if(cp.exc===undefined)cp.exc=false;if(cp.exd===undefined)cp.exd='';if(cp.co===undefined)cp.co=0;
-  if(d.humAttr===undefined)S.humAttr='';if(d.herLivre===undefined)S.herLivre=false;if(d.escamas===undefined)S.escamas=false;if(d.vestigar===undefined)S.vestigar=false;if(d.furiaUsada===undefined)S.furiaUsada=false;if(d.adaptUsos===undefined)S.adaptUsos=0;if(d.tonicoUsado===undefined)S.tonicoUsado=false;if(d.ppAntigo===undefined)S.ppAntigo='';
+  if(d.humAttr===undefined)S.humAttr='';if(d.herLivre===undefined)S.herLivre=false;if(d.escamas===undefined)S.escamas=false;if(d.vestigar===undefined)S.vestigar=false;if(d.furiaUsada===undefined)S.furiaUsada=false;if(d.adaptUsos===undefined)S.adaptUsos=0;if(d.tonicoUsado===undefined)S.tonicoUsado=false;if(d.despGuarda===undefined)S.despGuarda=null;if(d.ppAntigo===undefined)S.ppAntigo='';
   (S.devTechs||[]).forEach(function(t){if(t.assin===undefined)t.assin=false});
   // Rodada 9 (D-89): ficha salva com a economia antiga (3 PP/nível, custos PG) → reembolsa todas as compras com PP e pede para redistribuir
   if(d.ppEco===undefined||d.ppEco<PP_ECO){var conv=converterPP();S.ppEco=PP_ECO;if(conv)setTimeout(function(){toast('Economia de PP nova (D-89): compras antigas reembolsadas — redistribua os pontos')},300)}
