@@ -484,7 +484,7 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
         <RBtn onClick={()=>{const cf=finalAttr(sheet,'CON');const r=rollDice(1,20,amod(cf));const d=r.rolls[0];emit(`💀 ${sheet.name||'Personagem'} teste contra a morte: [${d}]${mstr(cf)} = ${r.total} (CD 10) ${d===20?'— 20 natural: levanta com 1 HP':d===1?'— 1 natural: 2 falhas':r.total>=10?'— sucesso':'— falha'}`);}}>Teste contra a morte</RBtn>
       </div>
       <div style={{fontSize:10,color:(sheet.falls??0)>=4?'#b83030':'var(--sub)',marginBottom:10}}>
-        {(sheet.falls??0)>=4?'4ª Queda: o personagem morre.':'Cair a 0 HP marca 1 Queda. Na 4ª Queda o personagem morre. Teste contra a morte: 1d20 + mod CON, CD 10. Medicina (SAB) CD 10 estabiliza com 1 HP. As Quedas zeram no descanso longo. Opcional: sobredano de 75% do HP máximo = morte (D-27).'}
+        {(sheet.falls??0)>=4?'4ª Queda: o personagem morre.':'Cair a 0 HP marca 1 Queda. Na 4ª Queda o personagem morre. Teste contra a morte: 1d20 + mod CON, CD 10. Medicina (SAB) CD 10 estabiliza com 1 HP. As Quedas zeram no descanso longo. Sobredano de 75% ou mais do HP máximo = morte, sem testes (D-27, D-93).'}
       </div>
 
       {/* Rest */}
@@ -1387,13 +1387,13 @@ function TecnicasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToken
 }
 
 // ── XpTab ─────────────────────────────────────────────────────────────────────
-// XP (cap. 12 + PB-6): nível 3–15. Ganho (D-20): XP por sessão (faixa do Mestre) + XP de combate opcional
-// (fórmula do painel: 10 × nível de cada inimigo, somado, ÷ jogadores; a calibrar). Do nível 4 ao 15: 1 PP por nível, 2 nos níveis 5, 10 e 15 (D-89).
+// XP (cap. 12 + PB-6): nível 3–15. Ganho (D-20): XP por sessão (faixa do Mestre, sempre ×0,8 ou ×0,7 com 3+ lutas) + XP de combate, que vale sempre (D-93)
+// (fórmula do painel: 10 × nível de cada inimigo × valor da categoria, somado, ÷ jogadores; R14-5). Do nível 4 ao 15: 1 PP por nível, 2 nos níveis 5, 10 e 15 (D-89).
 function XpTab({ sheet, onUpdate, isReadOnly }) {
   const u = onUpdate;
   const [xpLv,setXpLv]=useState(5), [xpPa,setXpPa]=useState(4);
   const [durAtk,setDurAtk]=useState(10), [durCur,setDurCur]=useState(10), [durArmor,setDurArmor]=useState(false);
-  const [xpFat,setXpFat]=useState(1);
+  const [xpFat,setXpFat]=useState(0.8);
   const xs = XP_SESSION[sheetLevel(sheet)];
   const xpGain=Math.floor((10*xpLv)/xpPa);
   const lv=sheetLevel(sheet), xp=sheet.xp??0;
@@ -1408,17 +1408,17 @@ function XpTab({ sheet, onUpdate, isReadOnly }) {
   return (
     <div>
       <St>XP por Sessão</St>
-      <div style={{fontSize:10,color:'var(--sub)',marginBottom:6}}>Ao fim de cada sessão, o Mestre concede XP na faixa do nível atual (R9-4): típico numa sessão comum, mínimo numa curta ou parada, máximo num marco da história. Com XP de combate, a faixa vale 80% (70% com 3+ lutas por sessão).</div>
+      <div style={{fontSize:10,color:'var(--sub)',marginBottom:6}}>Ao fim de cada sessão, o Mestre concede XP na faixa do nível atual (R9-4): típico numa sessão comum, mínimo numa curta ou parada, máximo num marco da história. O XP de combate vale sempre junto (D-93), então a faixa já sai reduzida: 80% (70% com 3+ lutas na sessão).</div>
       {xs ? (
         <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:14}}>
           <span style={{fontSize:10,color:'var(--sub)'}}>Nível {sheetLevel(sheet)}:</span>
           {['mínimo','típico','máximo'].map((nm,i)=>{ const v=Math.round(xs[i]*xpFat); return <button key={nm} className="tbtn" disabled={isReadOnly||lv>=LV_MAX} onClick={()=>u({xp:Math.min(XP_TABLE[lv-1],xp+v)})}>+{v} ({nm})</button>; })}
           <select className="vtt-select" value={xpFat} onChange={e=>setXpFat(+e.target.value)} style={{width:'auto',fontSize:11}}>
-            <option value={1}>sem XP de combate</option><option value={0.8}>com XP de combate (×0,8)</option><option value={0.7}>3+ lutas por sessão (×0,7)</option>
+            <option value={0.8}>até 2 lutas na sessão (×0,8)</option><option value={0.7}>3+ lutas na sessão (×0,7)</option>
           </select>
         </div>
       ) : <div style={{fontSize:11,color:'var(--sub)',fontStyle:'italic',marginBottom:14}}>Nível máximo: sem XP por sessão.</div>}
-      <St>XP de Combate (opcional)</St>
+      <St>XP de Combate</St>
       <div style={{fontSize:10,color:'var(--sub)',marginBottom:8}}>10 × nível de cada inimigo × valor da categoria (lacaio ¾ · padrão 1 · elite 2 · chefe 4 · chefe de fim de arco 5), somado, ÷ jogadores (R14-5).</div>
       <div style={{display:'flex',gap:16,flexWrap:'wrap',alignItems:'center',marginBottom:14}}>
         {[['Soma de nível × valor dos inimigos',xpLv,setXpLv,200],['Jogadores',xpPa,setXpPa,20]].map(([lbl,val,set,mx])=>(

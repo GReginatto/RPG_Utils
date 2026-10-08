@@ -1292,7 +1292,7 @@ export function restGain(cur, max, gain, vestigar) { const g = Math.max(0, Math.
 export function corpoRenovado(auras) { return (auras || []).some(x => x.n === 'Rejuvenescimento' && x.lv >= 3); }
 // Ação Lendária de jogador (D-68, R11-2): quem despertou; 1 por rodada, máx. 2 por combate
 export const LEGENDARY_MAX = 2;
-// XP por sessão (R9-4): [mínimo, típico, máximo] pelo nível atual; com XP de combate ×0,8 (×0,7 com 3+ lutas)
+// XP por sessão (R9-4): [mínimo, típico, máximo] pelo nível atual (tabela-base); o XP de combate vale sempre (D-93), então a ficha aplica ×0,8 (×0,7 com 3+ lutas)
 export const XP_SESSION = { 3: [130, 160, 190], 4: [170, 210, 250], 5: [220, 275, 330], 6: [290, 360, 430], 7: [380, 470, 560], 8: [460, 580, 700], 9: [540, 670, 800], 10: [640, 800, 960], 11: [660, 820, 980], 12: [730, 910, 1090], 13: [800, 1000, 1200], 14: [800, 1000, 1200] };
 // Licença por nível de aura em território imperial (R10-6, D-66)
 export function auraLicense(lv) { return lv >= 3 ? 'Avançada' : lv >= 2 ? 'Intermediária' : ''; }
