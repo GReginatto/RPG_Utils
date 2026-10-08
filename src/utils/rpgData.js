@@ -613,7 +613,7 @@ export const AURA_DETAILS = {
       "n": "Animalesca",
       "l": [
         "Aprimora os sentidos (visão, audição, olfato) em 100%, concedendo +5 em testes de Percepção. Aumenta uma característica física: +3 em FOR ou em DEX, ou +3 m de movimento. Pode se comunicar telepaticamente com animais em um raio de 10 metros e manifestar partes animais (garras, presas, etc.) em membros pequenos por até 1 hora, 3 vezes ao dia.",
-        "Transforma-se completamente em um animal não mítico de tamanho pequeno ou médio por até 3 horas, adquirindo todas as suas capacidades físicas. Pode manifestar partes de animais míticos menores (como garras de grifo ou escamas de basilisco) em até 30% do corpo por 1 hora, 2 vezes ao dia. Cada manifestação traz uma parte, por exemplo: <b>escamas</b>, +2 de CA (soma com armadura e escudo, não com a CA natural da Forma de Besta Lendária); ou <b>asas</b>, voo com deslocamento igual ao do usuário, que precisa terminar o turno em solo ou num apoio firme, senão cai. Manifestar escamas e asas ao mesmo tempo gasta as 2 manifestações do dia. Escamas e asas são passivas: não custam MP.",
+        "Transforma-se completamente em um animal não mítico de tamanho pequeno ou médio por até 3 horas, adquirindo todas as suas capacidades físicas. Pode manifestar partes de animais míticos menores (como garras de grifo ou escamas de basilisco) em até 30% do corpo por 1 hora, 2 vezes ao dia. Cada manifestação traz uma parte, por exemplo: <b>escamas</b>, +1 de CA (soma com armadura e escudo, não com a CA natural da Forma de Besta Lendária); ou <b>asas</b>, voo com deslocamento igual ao do usuário, que precisa terminar o turno em solo ou num apoio firme, senão cai. Manifestar escamas e asas ao mesmo tempo gasta as 2 manifestações do dia. Escamas e asas são passivas: não custam MP.",
         "Transforma-se em qualquer animal não mítico que tenha observado por pelo menos 10 minutos, independentemente do tamanho, por até 12 horas. As transformações mantêm a consciência e inteligência originais.<br><br><b>Forma de Besta Lendária (Nível 3):</b> O ápice da Animalesca. Uma vez por dia, o usuário se transforma por até 1 hora numa besta lendária e, a cada transformação, escolhe uma das duas opções abaixo. Em qualquer delas, mantém a capacidade de fala e inteligência originais.<br><br><b>Dragão:</b> a antiga aura Dracônica. O usuário se transforma completamente em um dragão de 5 metros de comprimento e escolhe um elemento (fogo, gelo, ácido ou eletricidade). Nesta forma, ganha Força 20, CA natural de 18, imunidade ao elemento escolhido e sopro dracônico desse elemento de 10 metros, causando 8d6 de dano (recarrega a cada 1d4 turnos).<br><br><b>Animal mítico menor:</b> o usuário se transforma em um animal mítico menor, como um grifo jovem, um pequeno basilisco ou uma hidra jovem. A forma tem perfil fixo: Força 18, CA natural de 16 e um ataque especial de 6d6 (recarrega a cada 1d4 turnos), sem imunidade elemental. Ganha ainda uma capacidade da criatura escolhida: <b>voo</b> de 18 metros (grifo); <b>olhar</b> que deixa o alvo Enraizado por 1 turno, com teste de CON contra a CD de técnica (basilisco); ou <b>1 mordida extra</b> de 1d8 por turno (hidra)."
       ]
     },
@@ -642,7 +642,7 @@ export const AURA_DETAILS = {
       "l": [
         "Realiza alterações leves na forma física de objetos ou seres vivos, afetando até 10% do volume total. Pode modificar texturas, cores e propriedades superficiais. Altera propriedades químicas simples (como pH ou solubilidade) por até 1 hora. As alterações em seres vivos são temporárias (duração de 10 minutos) e requerem consentimento ou um teste de resistência.",
         "Permite alterações que afetam até 50% do volume de um objeto ou ser vivo. Pode modificar estruturas internas simples e alterar propriedades químicas e físicas (densidade, estado da matéria, reatividade) por até 24 horas. Pode transformar objetos externos em híbridos com corpos orgânicos, criando enxertos temporários (duração de 1 hora) ou permanentes (com sucesso em teste de Constituição).",
-        "Controle total sobre a morfologia, podendo transformar completamente sua própria forma física ou a de outros seres vivos (com consentimento ou falha em teste de resistência com -5 de penalidade). Pode criar formas híbridas complexas que combinam características de múltiplas espécies por tempo indefinido. Altera permanentemente propriedades químicas e físicas de objetos e substâncias, podendo criar materiais com propriedades únicas."
+        "Controle total sobre a morfologia, podendo transformar completamente sua própria forma física ou a de outros seres vivos (com consentimento ou falha em teste de resistência com -2 de penalidade). Pode criar formas híbridas complexas que combinam características de múltiplas espécies por tempo indefinido. Altera permanentemente propriedades químicas e físicas de objetos e substâncias, podendo criar materiais com propriedades únicas."
       ]
     },
     {
@@ -852,7 +852,7 @@ export const PANTHEON = {
       "mit": "Chinesa",
       "dm": "O gigante decapitado que seguiu lutando sem cabeça",
       "dom": "O Sem-Cabeça que Luta",
-      "d": "imune a venenos e doenças naturais; regenera 3 HP por rodada enquanto tiver pelo menos 1 HP. 1×/dia, ao cair a 0 HP, levanta-se com HP igual a 2 × o nível de personagem e luta por mais 1 minuto antes de cair. Fervor: 1×/dia, +2 em FOR, DEX e CON por 10 minutos."
+      "d": "imune a venenos e doenças naturais; regenera 1 HP por rodada enquanto tiver pelo menos 1 HP. 1×/dia, ao cair a 0 HP, levanta-se com HP igual ao nível de personagem e luta por mais 1 minuto antes de cair. Fervor: 1×/dia, +2 em FOR, DEX e CON por 10 minutos."
     }
   ],
   "Mental": [
@@ -964,7 +964,7 @@ export const FORT_ELEMENTS = [
   {
     "n": "Tempo de Carga",
     "ef": "1 turno: +50% · 2 turnos: +100% · 3 turnos: +200%",
-    "req": "Movimento pela metade durante a carga; a técnica sai no fim do último turno de carga (P-078)"
+    "req": "Movimento pela metade durante a carga; a técnica dispara no início do seu próximo turno, depois do último turno de carga (P-078, R15-4)"
   },
   {
     "n": "Consumíveis Mágicos",
@@ -1348,13 +1348,13 @@ export function convertOldPP(sheet) {
 export function sheetReminders(sheet) {
   const l = [], au = sheet.auras || [], dz = awakenedAura(au);
   if (au.some(x => x.n === 'Luz' && x.lv >= 3)) l.push('Halo (Luz 3): ataques corpo a corpo contra você sofrem −1 (−2 se o atacante for criatura das trevas, distorcida ou morto-vivo)');
-  if (dz?.deus === 'Xing Tian') l.push('Xing Tian: regenera 3 HP por rodada enquanto tiver ao menos 1 HP; imune a venenos e doenças naturais');
+  if (dz?.deus === 'Xing Tian') l.push('Xing Tian: regenera 1 HP por rodada enquanto tiver ao menos 1 HP; 1×/dia, ao cair a 0 HP, levanta-se com HP igual ao nível; imune a venenos e doenças naturais');
   if (au.some(x => auraArea(x.n) === 'Primordial' && x.lv >= 3)) l.push('Primordial no nível 3: sofre 30% a mais de dano de técnicas de Ícor');
   if (sheet.race === 'Anjo') l.push('Anjo: recebe 150% de dano de Trevas');
   if (sheet.race === 'Demônio') l.push('Demônio: 50% de resistência a fogo');
   return l;
 }
-// Escamas da Animalesca 2+ (P-095): +2 de CA com o botão ligado; Hachiman: +10 m de movimento
+// Escamas da Animalesca 2+ (P-095, R15-7): +1 de CA com o botão ligado; Hachiman: +10 m de movimento
 export function scalesAvailable(auras) { return (auras || []).some(x => x.n === 'Animalesca' && x.lv >= 2); }
 export function hachimanBonus(auras) { return awakenedAura(auras)?.deus === 'Hachiman' ? 10 : 0; }
 

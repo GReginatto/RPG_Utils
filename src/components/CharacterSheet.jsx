@@ -55,7 +55,7 @@ function calcDefense(sheet) {
   const ar = ARMORS.find(x => x.n === sheet.armor) || ARMORS[0];
   let ca = ar.t === 'P' ? ar.ca : ar.t === 'M' ? ar.ca + Math.min(2, dexMod) : ar.ca + dexMod;
   if (sheet.shield) ca += 2;
-  const esc = scalesAvailable(sheet.auras) && sheet.escamas; if (esc) ca += 2;    // P-095: escamas da Animalesca 2+
+  const esc = scalesAvailable(sheet.auras) && sheet.escamas; if (esc) ca += 1;    // P-095, R15-7: escamas da Animalesca 2+
   const hach = hachimanBonus(sheet.auras);                                          // P-095: Dom de Hachiman
   const mv = (RACES_DATA[sheet.race]?.mv ?? 9) + (ar.mv || 0) + hach;              // P-073: armadura pesada −1/−2 m
   return { ca, mv, ar, esc, hach };
@@ -395,13 +395,13 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
       <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8}}>
         <Sb label="HP Máx." value={calcMaxHP} sub={`${hpDice.length}×(${p.hp||'1d8'}${conMod>=0?'+':''}${conMod})${calcHPMP(sheet).crn?` +${calcHPMP(sheet).crn} Corpo Renovado`:''}`} color="#b83030"/>
         <Sb label="MP Máx." value={calcMaxMP} sub={`${mpDice.length}×(${p.mp||'1d8'}${domMod>=0?'+':''}${domMod} DOM)`} color="#3a6aaa"/>
-        <Sb label="CA" value={ca} sub={`${ar.t==='P'?'pesada':ar.t==='M'?`${ar.ca}+DEX(máx 2)`:`${ar.ca}+DEX`}${sheet.shield?'+2':''}${esc?'+2 escamas':''}`}/>
+        <Sb label="CA" value={ca} sub={`${ar.t==='P'?'pesada':ar.t==='M'?`${ar.ca}+DEX(máx 2)`:`${ar.ca}+DEX`}${sheet.shield?'+2':''}${esc?'+1 escamas':''}`}/>
         <Sb label="Movimento" value={`${mv}m`} sub={`${sheet.race||'Humano'}${ar.mv?` ${ar.mv} m armadura`:''}${hach?` +${hach} Hachiman`:''}`} color="#3a7a4c"/>
         <Sb label="Iniciativa" value={`3d8${mstr(dexFin)}`} sub="3d8+mod DEX"/>
         <Sb label="Proficiência" value={`+${prof}`} sub={`nível ${lv}`}/>
       </div>
       {(()=>{ const w=armorWithoutProf(profKey(sheet), p, ar.n, sheet.shield); return w ? <div style={{fontSize:10,color:'#b83030',marginBottom:6}}>Sem proficiência em {w}: desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX (P-049).</div> : null; })()}
-      {scalesAvailable(sheet.auras)&&<label style={{display:'flex',alignItems:'center',gap:5,fontSize:10,color:'var(--sub)',marginBottom:6}}><input type="checkbox" checked={!!sheet.escamas} disabled={isReadOnly} onChange={e=>u({escamas:e.target.checked})}/>Escamas ativas (Animalesca 2: +2 de CA; desligue na Forma de Besta Lendária) (P-095)</label>}
+      {scalesAvailable(sheet.auras)&&<label style={{display:'flex',alignItems:'center',gap:5,fontSize:10,color:'var(--sub)',marginBottom:6}}><input type="checkbox" checked={!!sheet.escamas} disabled={isReadOnly} onChange={e=>u({escamas:e.target.checked})}/>Escamas ativas (Animalesca 2: +1 de CA; desligue na Forma de Besta Lendária) (P-095)</label>}
       {(()=>{ const l=sheetReminders(sheet); return l.length ? <div style={{fontSize:10,color:'var(--sub)',lineHeight:1.5,marginBottom:6}}><b style={{color:'var(--gold)'}}>Lembretes</b> (P-095, não entram nos números): {l.join(' · ')}</div> : null; })()}
       <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginBottom:12}}>
         <span style={{fontSize:10,color:'var(--sub)'}}>Armadura</span>
@@ -1400,7 +1400,7 @@ function XpTab({ sheet, onUpdate, isReadOnly }) {
   const atMax=lv>=LV_MAX;
   const need=atMax?0:XP_TABLE[lv-1];
   const xpPct=atMax?100:need>0?Math.min(100,(xp/need)*100):0;
-  // Durabilidade opcional (apêndice; D-76, D-79): arma −0,25 por ataque (−1 por Aparar); armadura −1 por crítico sofrido; escudo −1 por Aparar ou Proteger
+  // Durabilidade (apêndice Mecânicas Extras, D-92; D-76, D-79): arma −0,25 por ataque (−1 por Aparar); armadura −1 por crítico sofrido; escudo −1 por Aparar ou Proteger
   const durLoss=durAtk*(durArmor?1:0.25), durRem=Math.max(0,durCur-durLoss);
   // D-89: o nível dá só HP/MP, PP e proficiência
   const milestone = n => n>LV_MIN ? `+${ppAtLevel(n)} PP${profBonus(n)>profBonus(n-1)?` · proficiência +${profBonus(n)}`:''}` : 'Início da campanha (aura de nascença no nível 1)';
@@ -1464,10 +1464,10 @@ function XpTab({ sheet, onUpdate, isReadOnly }) {
         })}
       </div>
       <div style={{fontSize:9,color:'var(--sub)',marginBottom:4}}>A cada nível rolam-se HP e MP e ganha-se 1 PP (2 nos níveis 5, 10 e 15; 15 no total), gasto só em atributos e auras (D-89). O nível não dá outro poder: técnicas, Técnica Assinatura e Despertar Divino vêm do treino e da história.</div>
-      <div style={{fontSize:9,color:'var(--sub)',marginBottom:12}}>Colunas: nível · XP para subir ao próximo · proficiência · PP acumulados · XP por sessão (mín.–típico–máx.) · benefício de nível. A cada nível rolam-se HP e MP (aba Atributos) e ganham-se 3 PP (gastos nas abas Atributos e Auras; acumulam).</div>
+      <div style={{fontSize:9,color:'var(--sub)',marginBottom:12}}>Colunas: nível · XP para subir ao próximo · proficiência · PP acumulados · XP por sessão (mín.–típico–máx.) · o que o nível dá. A cada nível rolam-se HP e MP (aba Atributos) e ganha-se 1 PP (2 nos níveis 5, 10 e 15; 15 no total), gasto só em atributos e auras e acumulável (D-89).</div>
 
-      <St>Durabilidade (regra opcional)</St>
-      <div style={{fontSize:10,color:'var(--sub)',marginBottom:6}}>Apêndice (P-034, R10-7, D-76, D-79): tudo começa com durabilidade 10. Arma: −0,25 por ataque e −1 por Aparar. Armadura: −1 por acerto crítico sofrido. Escudo: −1 por Aparar com escudo (a arma também perde 1) e −1 por todo Proteger de quem o carrega. Com 0, a arma causa 1 + mod; armadura ou escudo se perde. Ferreiros reparam.</div>
+      <St>Durabilidade (Mecânicas Extras)</St>
+      <div style={{fontSize:10,color:'var(--sub)',marginBottom:6}}>Apêndice Mecânicas Extras (D-92; P-034, R10-7, D-76, D-79): tudo começa com durabilidade 10. Arma: −0,25 por ataque e −1 por Aparar. Armadura: −1 por acerto crítico sofrido. Escudo: −1 por Aparar com escudo (a arma também perde 1) e −1 por todo Proteger de quem o carrega. Com 0, a arma causa 1 + mod; armadura ou escudo se perde. Ferreiros reparam.</div>
       <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:10}}>
         {[[false,'Arma (−0,25/ataque)'],[true,'Armadura ou escudo (−1/evento)']].map(([isArmor,lbl])=>(
           <button key={lbl} onClick={()=>setDurArmor(isArmor)} style={{padding:'4px 10px',borderRadius:16,fontSize:11,cursor:'pointer',border:`1px solid ${durArmor===isArmor?'var(--gold-dim)':'var(--border)'}`,background:durArmor===isArmor?'rgba(201,169,110,.1)':'transparent',color:durArmor===isArmor?'var(--gold)':'var(--sub)',fontFamily:'inherit'}}>{lbl}</button>
