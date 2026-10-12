@@ -136,6 +136,8 @@ var PER_CRIACAO=6,PER_PROF=4,PROF_LIVRES=2;
 var FERRAMENTAS=["kit de alquimia","ferramentas de ferreiro","ferramentas de ladrão","instrumentos de navegação","ferramentas de engenheiro a vapor","kit de herbalismo e medicina","kit de disfarce","instrumento musical"];
 // Nomes antigos (perícias de D&D) que têm equivalente direto na lista nova
 var DP_MIGRA={"Adestrar Animais":"Trato Animal","Arcanismo":"Teoria da Arka"};
+// D-113: armaduras renomeadas (números iguais); fichas salvas com o nome antigo são convertidas ao carregar
+var ARM_MIGRA={"Acolchoado":"Sobretudo acolchoado","Couro":"Casaco de couro","Couro batido":"Casaco de caça reforçado","Cota de malha":"Colete de malha","Peitoral de aço":"Couraça","Meia-placa":"Couraça de cavalaria"};
 
 // Hexagrama da imagem auras.png (D-32, D-35, D-40): 6 Áreas, na ordem do anel Primordial–Emissora–Criadora–Ícor–Deformadora–Mental.
 // A ordem do array É o anel (aDist usa o índice): opostos ficam a 3 passos (Primordial↔Ícor, Emissora↔Deformadora, Criadora↔Mental).
@@ -268,7 +270,7 @@ function rPP(){var e=ppEarned(),g=ppSpent(),l=e-g;['ppBar','ppBarAu'].forEach(fu
 var PB_BASE=8,PB_TOTAL=35,PB_MAX=18,PB_DOBRA=14;
 function pbCost(from,to){var c=0;if(to<from)return to-from;for(var v=from+1;v<=to;v++)c+=v>PB_DOBRA?2:1;return c}
 // Armaduras (PB-10 + itens do mundo, relatório da rodada 2). t: L=leve, M=média (DEX máx. 2), P=pesada (sem DEX)
-var ARMORS=[{n:"Sem armadura",ca:10,t:"N"},{n:"Acolchoado",ca:11,t:"L"},{n:"Couro",ca:11,t:"L"},{n:"Couro batido",ca:12,t:"L"},{n:"Cota de malha",ca:13,t:"M"},{n:"Peitoral de aço",ca:14,t:"M"},{n:"Meia-placa",ca:15,t:"M"},{n:"Brigantina de prata (Anjos)",ca:14,t:"M"},{n:"Cota de anéis",ca:14,t:"P",mv:-1},{n:"Cota de talas",ca:15,t:"P",mv:-1},{n:"Placas completas",ca:18,t:"P",mv:-2},{n:"Armadura a vapor",ca:19,t:"P",mv:-2}] // P-073: anéis e talas −1 m; placas e vapor −2 m;
+var ARMORS=[{n:"Sem armadura",ca:10,t:"N"},{n:"Sobretudo acolchoado",ca:11,t:"L"},{n:"Casaco de couro",ca:11,t:"L"},{n:"Casaco de caça reforçado",ca:12,t:"L"},{n:"Colete de malha",ca:13,t:"M"},{n:"Couraça",ca:14,t:"M"},{n:"Couraça de cavalaria",ca:15,t:"M"},{n:"Brigantina de prata (Anjos)",ca:14,t:"M"},{n:"Cota de anéis",ca:14,t:"P",mv:-1},{n:"Cota de talas",ca:15,t:"P",mv:-1},{n:"Placas completas",ca:18,t:"P",mv:-2},{n:"Armadura a vapor",ca:19,t:"P",mv:-2}] // P-073: anéis e talas −1 m; placas e vapor −2 m;
 
 var S={name:"",player:"",age:"",gender:"",origin:"",alignment:"",appearance:"",personality:"",background:"",motivation:"",notes:"",race:"Humano",humAttr:"",prof:"custom",customProf:{name:"Profissão montada",m:{},hp:"1d8",mp:"1d8",sk:"",per:[],res:[],pac:"",exc:false,exd:"",co:0},attrs:{FOR:8,DEX:8,CON:8,SAB:8,INT:8,CAR:8,DOM:8},proficiencies:[],customProfs:[],curHP:0,maxHP:0,curMP:0,maxMP:0,falls:0,auraInit:"",auraDesc:"",techs:"",extraAuras:"",gold:0,inventory:[],xp:0,level:3,fluxoDeseq:0,fluxoActive:false,fluxoLog:[],exTreino:0,sessoesTreino:[],arkaLocal:3,arkaCap:3,tecMax:"",devTechs:[],hpRolls:[],mpRolls:[],hpDice:[],mpDice:[],shortRests:0,hdUsed:0,especialista:"",acaoLend:0,armor:"Sem armadura",shield:false,attrUps:{FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0},auras:[],toolProfs:["",""],ppConf:null,ppEco:2,ppAntigo:"",herLivre:false,escamas:false,vestigar:false,furiaUsada:false,adaptUsos:0,tonicoUsado:false,despGuarda:null};
 // Rodada 9: humAttr = +1 do Humano; ppEco = economia de PP (2 = D-89); ppAntigo = compras reembolsadas da economia antiga; herLivre = aura de nascença destravada pelo Mestre (P-097);
@@ -1274,7 +1276,7 @@ function lS(d){
   if(!S.customProfs)S.customProfs=[];if(!S.proficiencies)S.proficiencies=[];
   // Campos novos (canon 2026-10): valores padrão para fichas antigas
   if(d.shortRests===undefined)S.shortRests=0;
-  if(d.armor===undefined)S.armor='Sem armadura';if(d.shield===undefined)S.shield=false;
+  if(d.armor===undefined)S.armor='Sem armadura';else if(ARM_MIGRA[S.armor])S.armor=ARM_MIGRA[S.armor];if(d.shield===undefined)S.shield=false;
   // Rodada 5: PP, auras estruturadas, perícias novas, proficiências livres
   if(!d.attrUps)S.attrUps={FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0};
   if(!d.toolProfs)S.toolProfs=['',''];

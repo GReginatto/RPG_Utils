@@ -448,6 +448,16 @@ export const SKILLS_AT_CREATION = 6;
 export const SKILLS_FROM_PROF = 4;
 export const PROF_RENAMES = { Arkano: 'Canalizador' }; // P-040
 export const ARMOR_CAT = { L: 'leves', M: 'médias', P: 'pesadas' };
+// D-113: armaduras renomeadas (números iguais); fichas salvas com o nome antigo continuam valendo
+export const ARMOR_RENAMES = {
+  'Acolchoado': 'Sobretudo acolchoado',
+  'Couro': 'Casaco de couro',
+  'Couro batido': 'Casaco de caça reforçado',
+  'Cota de malha': 'Colete de malha',
+  'Peitoral de aço': 'Couraça',
+  'Meia-placa': 'Couraça de cavalaria',
+};
+export function armorName(n) { return ARMOR_RENAMES[n] || n; }
 export const FREE_TOOL_PROFS = 2;
 export const SKILL_RENAMES = {
   "Adestrar Animais": "Trato Animal",
@@ -1091,32 +1101,32 @@ export const ARMORS = [
     "t": "N"
   },
   {
-    "n": "Acolchoado",
+    "n": "Sobretudo acolchoado",
     "ca": 11,
     "t": "L"
   },
   {
-    "n": "Couro",
+    "n": "Casaco de couro",
     "ca": 11,
     "t": "L"
   },
   {
-    "n": "Couro batido",
+    "n": "Casaco de caça reforçado",
     "ca": 12,
     "t": "L"
   },
   {
-    "n": "Cota de malha",
+    "n": "Colete de malha",
     "ca": 13,
     "t": "M"
   },
   {
-    "n": "Peitoral de aço",
+    "n": "Couraça",
     "ca": 14,
     "t": "M"
   },
   {
-    "n": "Meia-placa",
+    "n": "Couraça de cavalaria",
     "ca": 15,
     "t": "M"
   },
@@ -1276,7 +1286,7 @@ export function saveBonus(prof, race, a, mod, pb) { return mod + (saveProficient
 export function armorWithoutProf(profKey, prof, armorName, shield) {
   if (profKey === 'custom') prof = PROFESSIONS_DATA[prof?.pac];
   if (!prof?.arm) return '';
-  const ar = ARMORS.find(x => x.n === armorName); const f = [];
+  const ar = ARMORS.find(x => x.n === (ARMOR_RENAMES[armorName] || armorName)); const f = [];
   if (ar && ar.t !== 'N' && !prof.arm.includes(ar.t)) f.push('armadura ' + { L: 'leve', M: 'média', P: 'pesada' }[ar.t]);
   if (shield && !prof.esc) f.push('escudo');
   return f.join(' e ');

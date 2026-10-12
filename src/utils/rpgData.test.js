@@ -1,7 +1,7 @@
 import {
   SKILLS, AURA_GROUPS, AURA_DETAILS, RACES_DATA, XP_TABLE, ppAtLevel, profRuler, convertOldPP, heritageLocked, hitDieHeal, restGain, raceBonus, sheetReminders, scalesAvailable, hachimanBonus, TOOLS, ARMORS,
   pointBuyCost, profBonus, ppAttrCost, ppEarned, areaDistance, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
-  PANTHEON, GENERIC_TECHS, PROFESSIONS_DATA, skillProfMult, saveBonus, armorWithoutProf, hitDiceLeft, hitDicePerRest, corpoRenovado, XP_SESSION, auraLicense, ATTR_FULL, ppConfirmState, ppPending, attrConfirmed, auraConfirmed, awakenedAura, techDiceCap, titanicBorn, rareHereditary,
+  PANTHEON, GENERIC_TECHS, PROFESSIONS_DATA, skillProfMult, saveBonus, armorWithoutProf, armorName, hitDiceLeft, hitDicePerRest, corpoRenovado, XP_SESSION, auraLicense, ATTR_FULL, ppConfirmState, ppPending, attrConfirmed, auraConfirmed, awakenedAura, techDiceCap, titanicBorn, rareHereditary,
 } from './rpgData';
 
 // Casos calculados à mão a partir do canon (rodadas 5 e 6 do artífice)
@@ -143,7 +143,12 @@ describe('regras do canon', () => {
     expect(saveBonus(PROFESSIONS_DATA["Guardião"], "Anão", "CON", 0, 2)).toBe(4);
     expect(saveBonus(PROFESSIONS_DATA["Guardião"], "Anão", "DEX", -2, 2)).toBe(-2);
     expect(armorWithoutProf("Estudioso", PROFESSIONS_DATA.Estudioso, "Cota de malha", true)).toBe("armadura média e escudo");
-    expect(armorWithoutProf("Curandeiro", PROFESSIONS_DATA.Curandeiro, "Cota de malha", true)).toBe("");
+    expect(armorWithoutProf("Curandeiro", PROFESSIONS_DATA.Curandeiro, "Colete de malha", true)).toBe("");
+    // D-113: nomes novos das armaduras, números iguais; nome antigo salvo continua reconhecido (linha acima usa "Cota de malha")
+    expect(ARMORS.filter(a => ["Sobretudo acolchoado", "Casaco de couro", "Casaco de caça reforçado", "Colete de malha", "Couraça", "Couraça de cavalaria"].includes(a.n)).map(a => a.ca)).toEqual([11, 11, 12, 13, 14, 15]);
+    expect(armorName("Couro")).toBe("Casaco de couro");
+    expect(armorName("Couro batido")).toBe("Casaco de caça reforçado");
+    expect(armorName("Placas completas")).toBe("Placas completas");
   });
 
   test("rodada 8: dados de vida, Corpo Renovado, XP por sessão, licenças", () => {
