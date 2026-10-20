@@ -47,7 +47,7 @@ export const RACES_DATA = {
     },
     "mv": 7,
     "af": "Emissora",
-    "ab": "Imunidade a venenos, +2 em testes de resistência de CON, visão no escuro. Fraqueza: -2m movimento.",
+    "ab": "Resistência a venenos, +2 em testes de resistência de CON, visão no escuro. Fraqueza: -2m movimento.",
     "res": {
       "CON": 2
     },
