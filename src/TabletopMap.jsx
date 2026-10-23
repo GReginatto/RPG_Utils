@@ -24,6 +24,9 @@ import { TilePanel } from './components/TileLayer';
 import MacroBar, { runMacroCommands } from './components/MacroBar';
 import { processEffectsOnTurnStart } from './components/ActiveEffects';
 import GMPanel from './components/GMPanel';
+import { sync } from './sync/client';
+import SyncBadge from './components/SyncBadge';
+import { equal as deepEqual } from './sync/jsonPatch.mjs';
 
 const { cols: COLS, rows: ROWS } = GRID;
 
@@ -43,6 +46,7 @@ function findNearestFree(tx, ty, occupied) {
 const STATE_KEY = 'crepusculo-vtt';
 
 function loadSaved() {
+  if (sync.initial?.state) return sync.initial.state;
   try {
     const raw = localStorage.getItem(STATE_KEY);
     return raw ? JSON.parse(raw) : {};
@@ -1058,6 +1062,7 @@ export default function TabletopMap() {
   // ── Auto-save ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isMounted.current) { isMounted.current = true; return; }
+    if (sync.status !== 'idle') return; // na mesa sincronizada o servidor guarda tudo
     const timer = setTimeout(() => {
       try {
         const state = buildSaveState();
@@ -1454,7 +1459,69 @@ export default function TabletopMap() {
     macros, timerEnabled, timerDuration, timerSoundEnabled,
   ]);
 
+
+  // ── Aplicar estado (importação e mesa sincronizada) ──────────────────────
+  // roots = chaves de topo que mudaram (null = tudo); prev = estado anterior combinado.
+  const applyState = useCallback((s, roots, prev) => {
+    const has = (k) => !roots || roots.has(k);
+    const same = (a, b) => prev != null && deepEqual(a, b);
+    if (has('scenes') || has('activeSceneId') || has('partyTokens')) {
+      const scenes = Array.isArray(s.scenes) && s.scenes.length ? s.scenes : [makeScene({ name: 'Cena Principal' })];
+      const activeId = s.activeSceneId ?? scenes[0].id;
+      const active = scenes.find(sc => sc.id === activeId) ?? scenes[0];
+      const pScenes = prev?.scenes ?? [];
+      const pActive = prev ? (pScenes.find(sc => sc.id === prev.activeSceneId) ?? null) : null;
+      const sceneChanged = !prev || prev.activeSceneId !== activeId || !pActive;
+      const field = (k) => sceneChanged || !same(pActive?.[k], active?.[k]);
+      if (sceneChanged || !same(prev?.partyTokens, s.partyTokens) || field('tokens')) {
+        const allToks = [...(s.partyTokens ?? []), ...(active?.tokens ?? [])];
+        setTokens(allToks); resetIdCounter(allToks);
+      }
+      if (field('mapImage')) setBgImage(active?.mapImage ?? null);
+      if (field('fog')) {
+        setFogEnabled(active?.fog?.enabled ?? false);
+        setRevealedCells(new Set(active?.fog?.revealedCells ?? []));
+      }
+      if (field('markers')) setMarkers(active?.markers ?? []);
+      if (field('paintedCells')) setPaintedCells(active?.paintedCells ?? {});
+      if (field('weather')) setWeather(active?.weather ?? 'none');
+      if (field('aoes')) aoeState.setAoes(active?.aoes ?? []);
+      if (field('drawings')) drawingState.setDrawings(active?.drawings ?? []);
+      if (field('tiles')) setTiles(active?.tiles ?? []);
+      if (field('walls')) setWalls(sanitizeWalls(active?.walls ?? []));
+      sceneManager.setScenes(scenes);
+      sceneManager.setActiveSceneId(activeId);
+    }
+    const simple = [
+      ['log', setLog, []], ['chatMessages', setChatMessages, []], ['showGrid', setShowGrid, true],
+      ['combatActive', setCombatActive, false], ['currentRound', setCurrentRound, 1],
+      ['currentTurnIndex', setCurrentTurnIndex, 0], ['initiativeOrder', setInitiativeOrder, []],
+      ['customConditions', setCustomConditions, []], ['tokenGroups', setTokenGroups, []],
+      ['journalEntries', setJournalEntries, []], ['compendiumEntries', setCompendiumEntries, []],
+      ['rollableTables', setRollableTables, []], ['macros', setMacros, []],
+      ['timerEnabled', setTimerEnabled, false], ['timerDuration', setTimerDuration, 60],
+      ['timerSoundEnabled', setTimerSoundEnabled, true],
+    ];
+    for (const [k, set, def] of simple) if (has(k) && !same(prev?.[k], s[k])) set(s[k] ?? def);
+    if (has('partyData') && !same(prev?.partyData, s.partyData)) party.loadFromSave(s.partyData ?? null);
+    if (has('sheets') && !same(prev?.sheets, s.sheets)) sheetState.loadSheets(s.sheets ?? []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setTokens, resetIdCounter, party, sceneManager, aoeState, drawingState, sheetState]);
+  const applyStateRef = useRef(applyState);
+  applyStateRef.current = applyState;
+  const buildSaveStateRef = useRef(buildSaveState);
+  buildSaveStateRef.current = buildSaveState;
+
+  // ── Mesa sincronizada ─────────────────────────────────────────────────────
+  useEffect(() => {
+    sync.getLocal = () => buildSaveStateRef.current();
+    sync.applyRemote = (s, roots, prev) => applyStateRef.current(s, roots, prev);
+    return () => { sync.getLocal = null; sync.applyRemote = null; };
+  }, []);
+  useEffect(() => { sync.schedule(); }, [buildSaveState]);
+
   const handleSave = useCallback(() => {
+    if (sync.status !== 'idle') { sync.flush(); showToast(sync.active ? 'Salvo no servidor da mesa!' : 'Sem conexão: será salvo ao reconectar.'); return; }
     try { localStorage.setItem(STATE_KEY, JSON.stringify(buildSaveState())); showToast('Sessão salva!'); }
     catch { showToast('Erro: dados muito grandes para salvar.'); }
   }, [buildSaveState, showToast]);
@@ -1729,6 +1796,7 @@ export default function TabletopMap() {
               Crepúsculo dos Reinos
             </div>
             <RoleBadge onSwitch={clearRole} />
+            <SyncBadge />
           </div>
           <div style={{ flex: 1, textAlign: 'center', fontSize: 11, minWidth: 0 }}>
             {combatActive && combatTurnToken ? (

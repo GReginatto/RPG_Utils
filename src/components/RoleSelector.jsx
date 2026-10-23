@@ -1,210 +1,144 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRole } from '../hooks/useRole';
+import { api } from '../sync/client';
 
+// Tela de entrada. Quem é Mestre ou jogador é decidido pelo servidor, pela conta.
 export default function RoleSelector() {
-  const { enterGM, registerPlayer, loginPlayer, playerRecords } = useRole();
+  const { setupGM, registerPlayer, loginPlayer } = useRole();
 
-  const [selected,   setSelected]   = useState(null); // 'gm' | 'player'
-  const [loginMode,  setLoginMode]  = useState(true); // true = login, false = register
-  const [nameInput,  setNameInput]  = useState('');
-  const [passInput,  setPassInput]  = useState('');
-  const [loading,    setLoading]    = useState(false);
-  const [error,      setError]      = useState('');
+  const [status,    setStatus]    = useState(null);   // { needsSetup, canSetup } | { error }
+  const [mode,      setMode]      = useState('login'); // login | register | setup
+  const [nameInput, setNameInput] = useState('');
+  const [passInput, setPassInput] = useState('');
+  const [pass2,     setPass2]     = useState('');
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState('');
+  const [notice,    setNotice]    = useState('');
 
-  const knownPlayer = playerRecords.some(
-    r => r.name.toLowerCase() === nameInput.trim().toLowerCase()
-  );
+  useEffect(() => {
+    api.status().then(r => {
+      if (!r.ok) { setStatus({ error: r.error }); return; }
+      setStatus(r);
+      if (r.needsSetup && r.canSetup) setMode('setup');
+    });
+  }, []);
 
   async function handleConfirm() {
-    if (selected === 'gm') { enterGM(); return; }
-    if (selected === 'player') {
-      if (!nameInput.trim()) { setError('Digite seu nome para continuar.'); return; }
-      if (!passInput) { setError('Digite sua senha.'); return; }
-      setLoading(true);
-      setError('');
-      let result;
-      if (loginMode) {
-        result = await loginPlayer(nameInput.trim(), passInput);
-      } else {
-        if (passInput.length < 4) { setError('Senha deve ter ao menos 4 caracteres.'); setLoading(false); return; }
-        result = await registerPlayer(nameInput.trim(), passInput);
-      }
-      setLoading(false);
-      if (!result.ok) setError(result.error ?? 'Erro desconhecido.');
+    setError(''); setNotice('');
+    const name = nameInput.trim();
+    if (!name) { setError('Digite seu nome.'); return; }
+    if (!passInput) { setError('Digite a senha.'); return; }
+    if (mode !== 'login') {
+      if (passInput.length < 6) { setError('A senha precisa ter ao menos 6 caracteres.'); return; }
+      if (passInput !== pass2) { setError('As senhas não conferem.'); return; }
+    }
+    setLoading(true);
+    let r;
+    if (mode === 'setup') r = await setupGM(name, passInput);
+    else if (mode === 'register') r = await registerPlayer(name, passInput);
+    else r = await loginPlayer(name, passInput);
+    setLoading(false);
+    if (!r.ok) { setError(r.error ?? 'Erro desconhecido.'); return; }
+    if (r.pending) {
+      setMode('login'); setPassInput(''); setPass2('');
+      setNotice('Conta criada! Peça ao Mestre para aprová-la e depois entre com seu nome e senha.');
     }
   }
 
-  const cardBase = {
-    border: '1px solid var(--border)',
-    borderRadius: 8, padding: '16px 18px', cursor: 'pointer',
-    transition: 'border-color 0.15s, background 0.15s',
-    userSelect: 'none',
-  };
+  const tab = (id, label) => (
+    <button
+      className="tbtn"
+      onClick={() => { setMode(id); setError(''); setNotice(''); }}
+      style={{
+        flex: 1, fontSize: 11,
+        borderColor: mode === id ? 'var(--gold)' : 'var(--border)',
+        color: mode === id ? 'var(--gold)' : 'var(--sub)',
+      }}
+    >{label}</button>
+  );
 
-  const isRegister = selected === 'player' && !loginMode;
+  const blocked = status && (status.error || (status.needsSetup && !status.canSetup));
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'var(--bg)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: 24,
+      position: 'fixed', inset: 0, zIndex: 9999, background: 'var(--bg)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24,
     }}>
-      {/* Title */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div style={{
-          fontSize: 22, fontWeight: 700, color: 'var(--gold)',
-          letterSpacing: '0.08em', fontStyle: 'italic', marginBottom: 6,
-        }}>
+        <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--gold)', letterSpacing: '0.08em', fontStyle: 'italic', marginBottom: 6 }}>
           ⚔ Crepúsculo dos Reinos
         </div>
-        <div style={{ fontSize: 13, color: 'var(--sub)', letterSpacing: '0.04em' }}>
-          Mesa Virtual
-        </div>
+        <div style={{ fontSize: 13, color: 'var(--sub)', letterSpacing: '0.04em' }}>Mesa Virtual</div>
       </div>
 
       <div style={{
-        background: 'var(--panel)', border: '1px solid var(--border)',
-        borderRadius: 10, padding: '28px 32px', maxWidth: 400, width: '100%',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.7)',
+        background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 10,
+        padding: '28px 32px', maxWidth: 400, width: '100%', boxShadow: '0 8px 40px rgba(0,0,0,0.7)',
       }}>
-        <div style={{
-          fontSize: 13, color: 'var(--sub)', textAlign: 'center',
-          marginBottom: 20, letterSpacing: '0.03em',
-        }}>
-          Como você quer entrar?
-        </div>
+        {!status && <div style={{ fontSize: 13, color: 'var(--sub)', textAlign: 'center' }}>Conectando à mesa…</div>}
 
-        {/* GM card */}
-        <div
-          onClick={() => { setSelected('gm'); setError(''); }}
-          style={{
-            ...cardBase,
-            marginBottom: 12,
-            borderColor: selected === 'gm' ? 'var(--gold)' : 'var(--border)',
-            background: selected === 'gm' ? 'rgba(201,169,110,0.08)' : 'var(--card)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <span style={{ fontSize: 18 }}>🎭</span>
-            <span style={{
-              fontSize: 14, fontWeight: 700, color: 'var(--gold)',
-              letterSpacing: '0.06em',
-            }}>
-              MESTRE
-            </span>
+        {status?.error && (
+          <div style={{ fontSize: 12, color: '#e05555', textAlign: 'center', lineHeight: 1.6 }}>{status.error}</div>
+        )}
+        {status && !status.error && status.needsSetup && !status.canSetup && (
+          <div style={{ fontSize: 12, color: 'var(--sub)', textAlign: 'center', lineHeight: 1.6 }}>
+            O Mestre ainda não preparou a mesa. A conta do Mestre é criada no computador do servidor.
           </div>
-          <div style={{ fontSize: 11, color: 'var(--sub)', lineHeight: 1.6, paddingLeft: 28 }}>
-            Controle total do jogo. Mapas, NPCs, combate, regras e narrativa.
-          </div>
-        </div>
+        )}
 
-        {/* Player card */}
-        <div
-          onClick={() => { setSelected('player'); setError(''); }}
-          style={{
-            ...cardBase,
-            borderColor: selected === 'player' ? 'var(--gold)' : 'var(--border)',
-            background: selected === 'player' ? 'rgba(201,169,110,0.08)' : 'var(--card)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <span style={{ fontSize: 18 }}>⚔</span>
-            <span style={{
-              fontSize: 14, fontWeight: 700, color: 'var(--text)',
-              letterSpacing: '0.06em',
-            }}>
-              JOGADOR
-            </span>
-          </div>
-          <div style={{ fontSize: 11, color: 'var(--sub)', lineHeight: 1.5, paddingLeft: 28, marginBottom: selected === 'player' ? 10 : 0 }}>
-            Controle seu personagem. Ficha, dados e combate.
-          </div>
-
-          {selected === 'player' && (
-            <div style={{ paddingLeft: 28 }} onClick={e => e.stopPropagation()}>
-              {/* Login / Register toggle */}
-              <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-                <button
-                  className="tbtn"
-                  onClick={() => { setLoginMode(true); setError(''); }}
-                  style={{
-                    flex: 1, fontSize: 11,
-                    borderColor: loginMode ? 'var(--gold)' : 'var(--border)',
-                    color: loginMode ? 'var(--gold)' : 'var(--sub)',
-                  }}
-                >
-                  Entrar
-                </button>
-                <button
-                  className="tbtn"
-                  onClick={() => { setLoginMode(false); setError(''); }}
-                  style={{
-                    flex: 1, fontSize: 11,
-                    borderColor: !loginMode ? 'var(--gold)' : 'var(--border)',
-                    color: !loginMode ? 'var(--gold)' : 'var(--sub)',
-                  }}
-                >
-                  Criar Personagem
-                </button>
+        {status && !blocked && (
+          <>
+            {mode === 'setup' ? (
+              <div style={{ fontSize: 12, color: 'var(--gold)', textAlign: 'center', marginBottom: 14, lineHeight: 1.6 }}>
+                🎭 Primeira vez: crie a conta do <b>Mestre</b>.<br />
+                <span style={{ color: 'var(--sub)' }}>Guarde bem a senha; ela protege a mesa inteira.</span>
               </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                {tab('login', 'Entrar')}
+                {tab('register', 'Criar conta de jogador')}
+              </div>
+            )}
 
+            <input
+              autoFocus className="vtt-input" placeholder="Seu nome..." value={nameInput} autoComplete="username"
+              onChange={e => { setNameInput(e.target.value); setError(''); }}
+              onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); }}
+              style={{ marginBottom: 6 }}
+            />
+            <input
+              className="vtt-input" type="password" value={passInput}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              placeholder={mode === 'login' ? 'Senha...' : 'Criar senha (mín. 6 caracteres)...'}
+              onChange={e => { setPassInput(e.target.value); setError(''); }}
+              onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); }}
+              style={{ marginBottom: 6 }}
+            />
+            {mode !== 'login' && (
               <input
-                autoFocus
-                className="vtt-input"
-                placeholder="Seu nome..."
-                value={nameInput}
-                onChange={e => {
-                  setNameInput(e.target.value);
-                  setError('');
-                  if (playerRecords.some(r => r.name.toLowerCase() === e.target.value.trim().toLowerCase())) {
-                    setLoginMode(true);
-                  }
-                }}
+                className="vtt-input" type="password" value={pass2} autoComplete="new-password" placeholder="Repita a senha..."
+                onChange={e => { setPass2(e.target.value); setError(''); }}
                 onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); }}
-                style={{ marginTop: 2, marginBottom: 6 }}
+                style={{ marginBottom: 6 }}
               />
+            )}
+            {mode === 'register' && (
+              <div style={{ fontSize: 10, color: 'var(--sub)', lineHeight: 1.5 }}>
+                A conta só funciona depois que o Mestre aprovar.
+              </div>
+            )}
+            {error && <div style={{ fontSize: 11, color: '#e05555', marginTop: 6 }}>{error}</div>}
+            {notice && <div style={{ fontSize: 11, color: 'var(--gold)', marginTop: 6, lineHeight: 1.5 }}>{notice}</div>}
 
-              <input
-                className="vtt-input"
-                type="password"
-                placeholder={isRegister ? 'Criar senha (mín. 4 caracteres)...' : 'Senha...'}
-                value={passInput}
-                onChange={e => { setPassInput(e.target.value); setError(''); }}
-                onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); }}
-                style={{ marginBottom: 2 }}
-              />
-
-              {knownPlayer && !loginMode && (
-                <div style={{ fontSize: 10, color: 'var(--gold)', marginTop: 3 }}>
-                  Nome já cadastrado — modo alterado para login.
-                </div>
-              )}
-
-              {error && (
-                <div style={{ fontSize: 10, color: '#e05555', marginTop: 4 }}>{error}</div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Confirm button */}
-        <button
-          className="tbtn"
-          disabled={!selected || loading}
-          onClick={handleConfirm}
-          style={{
-            width: '100%', marginTop: 20, padding: '9px 0',
-            fontSize: 13, fontWeight: 600, letterSpacing: '0.04em',
-            borderColor: selected ? 'var(--gold)' : 'var(--border)',
-            color: selected ? 'var(--gold)' : 'var(--sub)',
-            cursor: selected ? 'pointer' : 'not-allowed',
-            opacity: selected ? 1 : 0.5,
-          }}
-        >
-          {loading ? 'Verificando...' : (isRegister ? 'Criar e Entrar' : 'Entrar')}
-        </button>
+            <button
+              className="tbtn" disabled={loading} onClick={handleConfirm}
+              style={{ width: '100%', marginTop: 16, padding: '9px 0', fontSize: 13, fontWeight: 600,
+                letterSpacing: '0.04em', borderColor: 'var(--gold)', color: 'var(--gold)' }}
+            >
+              {loading ? 'Verificando...' : mode === 'setup' ? 'Criar Mestre e Entrar' : mode === 'register' ? 'Criar conta' : 'Entrar'}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

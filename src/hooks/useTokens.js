@@ -54,6 +54,15 @@ function maxIdFromTokens(tokens) {
   }, 0);
 }
 
+// Sufixo só com letras: evita colisão de ids quando várias pessoas criam tokens ao mesmo tempo
+// e não interfere na leitura do contador (que usa só os dígitos).
+function uniqueSuffix() {
+  const abc = 'abcdefghjkmnpqrstuvwxyz';
+  let s = '';
+  for (let i = 0; i < 5; i++) s += abc[Math.floor(Math.random() * abc.length)];
+  return s;
+}
+
 export function useTokens(initialTokens = []) {
   const [tokens, setTokens] = useState(initialTokens);
   const [selectedId, setSelectedId] = useState(null);
@@ -70,7 +79,7 @@ export function useTokens(initialTokens = []) {
   // ── CRUD ──────────────────────────────────────────────────────────────────
 
   const addToken = useCallback((type, col, row) => {
-    const id = `t${nextIdRef.current++}`;
+    const id = `t${nextIdRef.current++}${uniqueSuffix()}`;
     setTokens(prev => [...prev, makeToken(type, col, row, id)]);
     setSelectedId(id);
     return id;
@@ -103,7 +112,7 @@ export function useTokens(initialTokens = []) {
         !prev.some(t => t.x === p.x && t.y === p.y)
       );
       if (!spot) return prev;
-      return [...prev, { ...src, id: `t${nextIdRef.current++}`, x: spot.x, y: spot.y }];
+      return [...prev, { ...src, id: `t${nextIdRef.current++}${uniqueSuffix()}`, x: spot.x, y: spot.y }];
     });
   }, []);
 

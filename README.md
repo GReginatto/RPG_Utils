@@ -8,7 +8,7 @@
 
 ## O que é isso?
 
-Um **Virtual Tabletop (VTT)** feito do zero no navegador para as sessões do RPG *Crepúsculo dos Reinos*. Funciona 100% offline, sem servidor, sem banco de dados — tudo fica salvo no `localStorage` do navegador.
+Um **Virtual Tabletop (VTT)** feito do zero no navegador para as sessões do RPG *Crepúsculo dos Reinos*. Um servidor pequeno (Node.js) roda no computador do Mestre: ele guarda contas, mapas e o estado da mesa, e sincroniza tudo em tempo real entre os jogadores da rede (LAN ou VPN como o Radmin).
 
 ---
 
@@ -35,31 +35,28 @@ Um **Virtual Tabletop (VTT)** feito do zero no navegador para as sessões do RPG
 
 ---
 
-## Como rodar localmente
+## Jogar com os amigos (Radmin ou rede local)
 
-**Pré-requisitos:** Node.js 18+ e npm.
+**Pré-requisitos:** Node.js 18+ e npm. Na primeira vez, rode `npm install`.
+
+1. No computador do Mestre, dê dois cliques em `INICIAR-MESA.bat` (ou rode `npm run mesa`). Ele compila o VTT e sobe o servidor na porta **3001**, mostrando os endereços.
+2. **Primeira vez:** abra `http://localhost:3001` **no próprio computador do servidor** e crie a conta do Mestre. Pela rede ninguém consegue criar essa conta.
+3. Os jogadores abrem `http://<IP do Radmin do Mestre>:3001`, clicam em **Criar conta de jogador** e esperam a aprovação.
+4. O Mestre aprova em **Fichas → Gerenciar Jogadores** (✅). Ali também bloqueia, troca a senha ou remove contas; quem é bloqueado cai da mesa na hora.
+5. Para encerrar, `Ctrl+C` na janela do servidor (o estado é salvo antes de sair).
+
+O que fica sincronizado: mapa, cenas, tokens, paredes, névoa, desenhos, áreas de efeito, chat e rolagens, combate, fichas, diário, macros. Os jogadores não recebem tokens ocultos, paredes secretas, notas de cena, cenas inativas, o compêndio nem sussurros para outras pessoas, e o servidor recusa alterações que não sejam deles (só mexem no próprio token, na própria ficha e nas próprias mensagens).
+
+**Dados e segurança:** tudo fica em `server-data/` (contas com senha em scrypt, sessões, `state.json`, imagens em `uploads/` e backups automáticos a cada 20 minutos em `backups/`). Essa pasta está no `.gitignore` e **nunca deve ir para o GitHub**. Para fazer backup da campanha, copie a pasta. O servidor não usa HTTPS: use-o só em rede privada (Radmin/LAN) com pessoas de confiança, nunca exposto na internet.
+
+### Desenvolvimento
 
 ```bash
-# Clonar o repositório
-git clone https://github.com/GReginatto/RPG_Utils.git
-cd RPG_Utils
-
-# Instalar dependências
 npm install
-
-# Iniciar em modo de desenvolvimento
-npm start
+npm run server   # servidor da mesa na porta 3001
+npm start        # interface com recarga automática em http://localhost:3000
+npm test         # testes
 ```
-
-O app abre em `http://localhost:3000`.
-
-### Build de produção
-
-```bash
-npm run build
-```
-
-A pasta `build/` pode ser servida por qualquer servidor HTTP estático (nginx, GitHub Pages, etc.).
 
 ---
 
@@ -69,7 +66,7 @@ A pasta `build/` pode ser servida por qualquer servidor HTTP estático (nginx, G
 - CSS-in-JS inline (sem frameworks de UI)
 - Canvas 2D para iluminação e névoa
 - SVG para paredes, AoE e camada de desenho
-- `localStorage` para persistência
+- Servidor Node.js com [ws](https://github.com/websockets/ws) (sincronização por diferenças em JSON) e arquivos JSON em `server-data/`
 
 ---
 

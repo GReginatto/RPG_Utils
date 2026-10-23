@@ -35,7 +35,7 @@ function DropItem({ children, onClick, danger }) {
 
 export default function SheetManager({ sheetState, tokens, onOpenSheet, isGM, playerName, players = [], onRemovePlayer }) {
   const { sheets, addSheet, updateSheet, deleteSheet, duplicateSheet } = sheetState;
-  const { playerRecords, blockPlayer, unblockPlayer, removePlayerAuth, resetPlayerPassword } = useRole();
+  const { playerRecords, approvePlayer, blockPlayer, unblockPlayer, removePlayerAuth, resetPlayerPassword } = useRole();
   const [openMenuId,   setOpenMenuId]   = useState(null);
   const [linkPickerId, setLinkPickerId] = useState(null);
   const [sharePickerId, setSharePickerId] = useState(null);
@@ -436,13 +436,23 @@ export default function SheetManager({ sheetState, tokens, onOpenSheet, isGM, pl
                     <span style={{
                       fontSize: 12, fontWeight: 600,
                       color: r.isActive ? 'var(--text)' : 'var(--sub)',
-                      textDecoration: r.isActive ? 'none' : 'line-through',
+                      textDecoration: r.isActive || !r.approved ? 'none' : 'line-through',
                     }}>
                       {r.name}
-                      {!r.isActive && <span style={{ fontSize: 10, color: '#e05555', marginLeft: 6 }}>bloqueado</span>}
+                      {!r.approved && <span style={{ fontSize: 10, color: 'var(--gold)', marginLeft: 6 }}>aguardando aprovação</span>}
+                      {r.approved && !r.isActive && <span style={{ fontSize: 10, color: '#e05555', marginLeft: 6 }}>bloqueado</span>}
                     </span>
                     <div style={{ display: 'flex', gap: 4 }}>
-                      {r.isActive ? (
+                      {!r.approved ? (
+                        <button
+                          className="tbtn"
+                          onClick={() => approvePlayer(r.name)}
+                          style={{ fontSize: 10, padding: '2px 6px', color: 'var(--gold)', borderColor: 'var(--gold)' }}
+                          title="Aprovar jogador"
+                        >
+                          ✅
+                        </button>
+                      ) : r.isActive ? (
                         <button
                           className="tbtn"
                           onClick={() => blockPlayer(r.name)}
@@ -493,7 +503,7 @@ export default function SheetManager({ sheetState, tokens, onOpenSheet, isGM, pl
                       <input
                         className="vtt-input"
                         type="password"
-                        placeholder="Nova senha..."
+                        placeholder="Nova senha (mín. 6)..."
                         value={newPassInput}
                         onChange={e => setNewPassInput(e.target.value)}
                         style={{ flex: 1 }}
@@ -501,7 +511,7 @@ export default function SheetManager({ sheetState, tokens, onOpenSheet, isGM, pl
                       <button
                         className="tbtn"
                         onClick={async () => {
-                          if (!newPassInput || newPassInput.length < 4) return;
+                          if (!newPassInput || newPassInput.length < 6) return;
                           await resetPlayerPassword(r.name, newPassInput);
                           setResetTarget(null);
                           setNewPassInput('');

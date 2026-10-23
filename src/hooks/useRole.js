@@ -1,30 +1,7 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { api, getToken, sync } from '../sync/client';
 
-const ROLE_KEY         = 'vtt-role';
-const NAME_KEY         = 'vtt-player-name';
-const PLAYERS_AUTH_KEY = 'vtt-players-auth';
-
-const SALT = 'crepusculo-salt-2024';
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_MS   = 60_000;
-
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + SALT);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-function loadAuthRecords() {
-  try { return JSON.parse(localStorage.getItem(PLAYERS_AUTH_KEY) ?? '[]'); }
-  catch { return []; }
-}
-
-function saveAuthRecords(records) {
-  localStorage.setItem(PLAYERS_AUTH_KEY, JSON.stringify(records));
-}
+// Contas e sessão vêm do servidor da mesa (server/index.js); nada de senha no navegador.
 
 export const RoleContext = createContext(null);
 
@@ -32,11 +9,11 @@ export function useRole() {
   const ctx = useContext(RoleContext);
   if (!ctx) {
     return {
-      role: 'gm', playerName: '', isGM: true, players: [], playerRecords: [],
-      enterGM: () => {}, enterPlayer: () => {}, clearRole: () => {},
+      role: 'gm', playerName: '', isGM: true, players: [], playerRecords: [], loading: false,
+      clearRole: () => {}, setupGM: async () => ({ ok: false }),
       registerPlayer: async () => ({ ok: false, error: 'No provider' }),
       loginPlayer: async () => ({ ok: false, error: 'No provider' }),
-      resetPlayerPassword: async () => {},
+      resetPlayerPassword: async () => {}, approvePlayer: () => {},
       blockPlayer: () => {}, unblockPlayer: () => {}, removePlayerAuth: () => {},
       canControlToken: () => true, canEditToken: () => true,
       canSeeToken: () => true, canUseTool: () => true,
@@ -47,106 +24,71 @@ export function useRole() {
 }
 
 export function RoleProvider({ children }) {
-  const [role,          setRole]          = useState(() => localStorage.getItem(ROLE_KEY) ?? null);
-  const [playerName,    setPlayerName]    = useState(() => localStorage.getItem(NAME_KEY) ?? '');
-  const [playerRecords, setPlayerRecords] = useState(loadAuthRecords);
+  const [user,          setUser]          = useState(null);
+  const [loading,       setLoading]       = useState(() => !!getToken());
+  const [playerRecords, setPlayerRecords] = useState([]);
 
-  const recordsRef = useRef(playerRecords);
-  const syncRecords = useCallback((next) => {
-    const val = typeof next === 'function' ? next(recordsRef.current) : next;
-    recordsRef.current = val;
-    setPlayerRecords(val);
-    saveAuthRecords(val);
+  const role = user?.role ?? null;
+  const playerName = user?.name ?? '';
+
+  // sessão salva: confere com o servidor
+  useEffect(() => {
+    if (!getToken()) return;
+    api.me().then(r => { if (r.ok) setUser(r.user); setLoading(false); });
   }, []);
+
+  // sessão expirada (ex.: Mestre bloqueou ou trocou a senha)
+  useEffect(() => sync.subscribe(s => { if (s.status === 'expired') setUser(null); }), []);
+
+  const refreshPlayers = useCallback(async () => {
+    const r = await api.players();
+    if (r.ok) setPlayerRecords(r.players);
+  }, []);
+  useEffect(() => {
+    if (role !== 'gm') { setPlayerRecords([]); return undefined; }
+    refreshPlayers();
+    const h = () => refreshPlayers();
+    window.addEventListener('vtt-players-changed', h);
+    return () => window.removeEventListener('vtt-players-changed', h);
+  }, [role, refreshPlayers]);
 
   const players = playerRecords.filter(r => r.isActive).map(r => r.name);
 
-  const enterGM = useCallback(() => {
-    setRole('gm');
-    localStorage.setItem(ROLE_KEY, 'gm');
+  const clearRole = useCallback(async () => {
+    await api.logout();
+    setUser(null);
   }, []);
 
-  const clearRole = useCallback(() => {
-    setRole(null);
-    setPlayerName('');
-    localStorage.removeItem(ROLE_KEY);
-    localStorage.removeItem(NAME_KEY);
+  const setupGM = useCallback(async (name, password) => {
+    const r = await api.setup(name, password);
+    if (r.ok) setUser(r.user);
+    return r;
   }, []);
 
   const registerPlayer = useCallback(async (name, password) => {
-    const n = name.trim();
-    if (!n) return { ok: false, error: 'Nome inválido.' };
-    const existing = recordsRef.current.find(r => r.name.toLowerCase() === n.toLowerCase());
-    if (existing) return { ok: false, error: 'Nome já cadastrado. Faça login.' };
-    const passwordHash = await hashPassword(password);
-    const record = {
-      id: `player-${Date.now()}`,
-      name: n,
-      passwordHash,
-      createdAt: Date.now(),
-      lastLogin: null,
-      isActive: true,
-      failedAttempts: 0,
-      lockUntil: null,
-    };
-    syncRecords(prev => [...prev, record]);
-    setRole('player');
-    setPlayerName(n);
-    localStorage.setItem(ROLE_KEY, 'player');
-    localStorage.setItem(NAME_KEY, n);
-    return { ok: true };
-  }, [syncRecords]);
+    const r = await api.register(name, password);
+    if (!r.ok) return r;
+    return { ok: true, pending: true };
+  }, []);
 
   const loginPlayer = useCallback(async (name, password) => {
-    const n = name.trim();
-    const record = recordsRef.current.find(r => r.name.toLowerCase() === n.toLowerCase());
-    if (!record) return { ok: false, error: 'Jogador não encontrado.' };
-    if (!record.isActive) return { ok: false, error: 'Conta bloqueada pelo Mestre.' };
-    if (record.lockUntil && Date.now() < record.lockUntil) {
-      const secs = Math.ceil((record.lockUntil - Date.now()) / 1000);
-      return { ok: false, error: `Muitas tentativas. Aguarde ${secs}s.` };
-    }
-    const hash = await hashPassword(password);
-    if (hash !== record.passwordHash) {
-      const failed = (record.failedAttempts ?? 0) + 1;
-      const lockUntil = failed >= MAX_ATTEMPTS ? Date.now() + LOCKOUT_MS : null;
-      syncRecords(prev => prev.map(r => r.id === record.id
-        ? { ...r, failedAttempts: failed, lockUntil }
-        : r
-      ));
-      if (lockUntil) return { ok: false, error: `Senha incorreta. Conta bloqueada por 1 minuto.` };
-      return { ok: false, error: `Senha incorreta. ${MAX_ATTEMPTS - failed} tentativa(s) restante(s).` };
-    }
-    syncRecords(prev => prev.map(r => r.id === record.id
-      ? { ...r, lastLogin: Date.now(), failedAttempts: 0, lockUntil: null }
-      : r
-    ));
-    setRole('player');
-    setPlayerName(record.name);
-    localStorage.setItem(ROLE_KEY, 'player');
-    localStorage.setItem(NAME_KEY, record.name);
-    return { ok: true };
-  }, [syncRecords]);
+    const r = await api.login(name, password);
+    if (r.ok) setUser(r.user);
+    return r;
+  }, []);
 
-  const resetPlayerPassword = useCallback(async (name, newPassword) => {
-    const hash = await hashPassword(newPassword);
-    syncRecords(prev => prev.map(r => r.name === name
-      ? { ...r, passwordHash: hash, failedAttempts: 0, lockUntil: null }
-      : r
-    ));
-  }, [syncRecords]);
-
-  const blockPlayer = useCallback((name) => {
-    syncRecords(prev => prev.map(r => r.name === name ? { ...r, isActive: false } : r));
-  }, [syncRecords]);
-
-  const unblockPlayer = useCallback((name) => {
-    syncRecords(prev => prev.map(r => r.name === name ? { ...r, isActive: true, failedAttempts: 0, lockUntil: null } : r));
-  }, [syncRecords]);
-
-  const removePlayerAuth = useCallback((name) => {
-    syncRecords(prev => prev.filter(r => r.name !== name));
-  }, [syncRecords]);
+  const act = useCallback(async (name, action, body) => {
+    const rec = playerRecords.find(r => r.name === name);
+    if (!rec) return { ok: false };
+    const r = await api.playerAction(rec.id, action, body);
+    await refreshPlayers();
+    return r;
+  }, [playerRecords, refreshPlayers]);
+  const resetPlayerPassword = useCallback((name, pw) => act(name, 'reset', { password: pw }), [act]);
+  const approvePlayer   = useCallback((name) => act(name, 'approve'), [act]);
+  const blockPlayer     = useCallback((name) => act(name, 'block'), [act]);
+  const unblockPlayer   = useCallback((name) => act(name, 'unblock'), [act]);
+  const removePlayerAuth = useCallback((name) => act(name, 'remove'), [act]);
 
   const isGM = role === 'gm';
   const [previewAs, setPreviewAs] = useState(null);
@@ -183,10 +125,10 @@ export function RoleProvider({ children }) {
 
   return (
     <RoleContext.Provider value={{
-      role, playerName, isGM, players, playerRecords,
-      enterGM, clearRole,
+      role, playerName, isGM, players, playerRecords, loading, user,
+      clearRole, setupGM,
       registerPlayer, loginPlayer,
-      resetPlayerPassword, blockPlayer, unblockPlayer, removePlayerAuth,
+      resetPlayerPassword, approvePlayer, blockPlayer, unblockPlayer, removePlayerAuth,
       canControlToken, canEditToken, canSeeToken, canUseTool,
       previewAs, isPreviewMode, startPreview, stopPreview,
     }}>

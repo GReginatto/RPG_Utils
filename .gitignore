@@ -55,3 +55,17 @@ desktop.ini
 
 # ── Misc ──────────────────────────────────────────────────────
 *.local
+
+# ── Servidor da mesa (contas, senhas, sessões, estado, imagens e backups) ──
+# Nunca subir: contém hashes de senha, tokens de sessão e o conteúdo da campanha.
+/server-data/
+server-data/
+*.tmp
+.env.*
+
+# ── Backups e material do livro (não pertencem a este repositório) ──
+*.bak
+*.bak-*
+*.bak.*
+*.tex
+*.pdf
