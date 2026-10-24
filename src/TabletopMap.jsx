@@ -26,6 +26,7 @@ import { processEffectsOnTurnStart } from './components/ActiveEffects';
 import GMPanel from './components/GMPanel';
 import { sync } from './sync/client';
 import SyncBadge from './components/SyncBadge';
+import { makeDefaultAudio } from './components/AudioManager';
 import { equal as deepEqual } from './sync/jsonPatch.mjs';
 
 const { cols: COLS, rows: ROWS } = GRID;
@@ -257,7 +258,7 @@ export default function TabletopMap() {
   const party      = useParty();
   const aoeState     = useAoe(_initScene?.aoes ?? []);
   const drawingState = useDrawing(_initScene?.drawings ?? []);
-  const { pings, addPing } = usePing();
+  const { pings, addPing, addRemotePing } = usePing();
 
   // ── Map state ──────────────────────────────────────────────────────────────
   const [tool,          setTool]          = useState('select');
@@ -305,6 +306,9 @@ export default function TabletopMap() {
   const [timerEnabled,      setTimerEnabled]      = useState(savedState.timerEnabled      ?? false);
   const [timerDuration,     setTimerDuration]     = useState(savedState.timerDuration     ?? 60);
   const [timerSoundEnabled, setTimerSoundEnabled] = useState(savedState.timerSoundEnabled ?? true);
+  // Áudio da mesa (música, ambiente): faz parte do estado sincronizado; só o Mestre altera.
+  const [audio, setAudio] = useState(() => savedState.audio ?? makeDefaultAudio(true));
+  const [remotePointer, setRemotePointer] = useState(null); // ponteiro do Mestre visto pelos jogadores
 
   // ── Combat state ───────────────────────────────────────────────────────────
   const [combatActive,     setCombatActive]     = useState(savedState.combatActive     ?? false);
@@ -436,8 +440,10 @@ export default function TabletopMap() {
   useEffect(() => { selectedIdRef.current = selectedId; }, [selectedId]);
 
   // ── Audio ──────────────────────────────────────────────────────────────────
+  // toca aqui e manda para a mesa toda ouvir também
   const playSfx = useCallback((type) => {
     audioManagerRef.current?.playEffect(type);
+    sync.sendEvent({ kind: 'sfx', type });
   }, []);
 
   // ── Log + Chat bridge ──────────────────────────────────────────────────────
@@ -1449,6 +1455,7 @@ export default function TabletopMap() {
       timerEnabled,
       timerDuration,
       timerSoundEnabled,
+      audio,
     };
   }, [
     tokens, bgImage, fogEnabled, revealedCells, markers, paintedCells, weather, log, showGrid,
@@ -1456,7 +1463,7 @@ export default function TabletopMap() {
     party.order, party.partyData, sceneManager, chatMessages, aoeState.aoes, walls, drawingState.drawings,
     tiles, sheetState.sheets, customConditions, tokenGroups,
     journalEntries, compendiumEntries, rollableTables,
-    macros, timerEnabled, timerDuration, timerSoundEnabled,
+    macros, timerEnabled, timerDuration, timerSoundEnabled, audio,
   ]);
 
 
@@ -1501,6 +1508,7 @@ export default function TabletopMap() {
       ['rollableTables', setRollableTables, []], ['macros', setMacros, []],
       ['timerEnabled', setTimerEnabled, false], ['timerDuration', setTimerDuration, 60],
       ['timerSoundEnabled', setTimerSoundEnabled, true],
+      ['audio', setAudio, makeDefaultAudio()],
     ];
     for (const [k, set, def] of simple) if (has(k) && !same(prev?.[k], s[k])) set(s[k] ?? def);
     if (has('partyData') && !same(prev?.partyData, s.partyData)) party.loadFromSave(s.partyData ?? null);
@@ -1519,6 +1527,24 @@ export default function TabletopMap() {
     return () => { sync.getLocal = null; sync.applyRemote = null; };
   }, []);
   useEffect(() => { sync.schedule(); }, [buildSaveState]);
+  const activeSceneIdRef = useRef(sceneManager.activeSceneId);
+  activeSceneIdRef.current = sceneManager.activeSceneId;
+  useEffect(() => {
+    sync.onEvent = (ev) => {
+      if (ev.kind === 'sfx') audioManagerRef.current?.playEffect(ev.type);
+      else if (ev.kind === 'ping' && ev.sceneId === activeSceneIdRef.current) addRemotePing(ev.x, ev.y, ev.color, ev.author);
+      else if (ev.kind === 'pointer') setRemotePointer(ev.pos && ev.sceneId === activeSceneIdRef.current ? { ...ev.pos, color: ev.color } : null);
+    };
+    return () => { sync.onEvent = null; };
+  }, [addRemotePing]);
+  const pointerSentRef = useRef(0);
+  const shareGMPointer = useCallback((pos) => {
+    setPointerPos(pos);
+    const now = Date.now();
+    if (pos && now - pointerSentRef.current < 50) return; // até ~20 atualizações por segundo
+    pointerSentRef.current = now;
+    sync.sendEvent({ kind: 'pointer', pos, color: '#c9a96e', sceneId: activeSceneIdRef.current });
+  }, []);
 
   const handleSave = useCallback(() => {
     if (sync.status !== 'idle') { sync.flush(); showToast(sync.active ? 'Salvo no servidor da mesa!' : 'Sem conexão: será salvo ao reconectar.'); return; }
@@ -1995,11 +2021,13 @@ export default function TabletopMap() {
               onAddDrawing={drawingState.addDrawing}
               onRemoveByIds={drawingState.removeByIds}
               pings={pings}
-              onMapPing={(mx, my) => addPing(mx, my, pointerColor, drawingAuthor)}
-              pointerPos={isGM ? pointerPos : null}
+              onMapPing={(mx, my) => {
+                if (addPing(mx, my, pointerColor, drawingAuthor)) sync.sendEvent({ kind: 'ping', x: mx, y: my, color: pointerColor, author: drawingAuthor, sceneId: sceneManager.activeSceneId });
+              }}
+              pointerPos={isGM ? pointerPos : (remotePointer ? { x: remotePointer.x, y: remotePointer.y } : null)}
               pointerColor={pointerColor}
-              onPointerMove={isGM ? setPointerPos : null}
-              onPointerClear={isGM ? () => setPointerPos(null) : null}
+              onPointerMove={isGM ? shareGMPointer : null}
+              onPointerClear={isGM ? () => shareGMPointer(null) : null}
               waypointMode={waypointMode}
               waypointToken={waypointToken}
               waypoints={waypoints}
@@ -2302,6 +2330,8 @@ export default function TabletopMap() {
               addChatMessage={addChatMessage}
               clearChat={clearChat}
               audioManagerRef={audioManagerRef}
+              audio={audio}
+              setAudio={isGM ? setAudio : null}
               targetId={targetId}
               setTargetId={setTargetId}
               partyOrder={party.order}

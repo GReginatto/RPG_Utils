@@ -1,5 +1,6 @@
 // Cliente da mesa sincronizada: API HTTP (contas) e conexão WebSocket (estado).
 import { diff, apply } from './jsonPatch.mjs';
+import { playerOpAllowed } from './rules.mjs';
 
 const TOKEN_KEY = 'vtt-session';
 
@@ -51,6 +52,7 @@ class SyncClient {
     this.retry = 0;
     this.closedByUser = false;
     this.pending = null;
+    this.timeOffset = 0;         // hora do servidor - hora local (para sincronizar a música)
   }
   get active() { return this.status === 'online' && !!this.snapshot; }
   subscribe(fn) { this.listeners.add(fn); return () => this.listeners.delete(fn); }
@@ -85,6 +87,7 @@ class SyncClient {
     if (m.type === 'init') {
       const first = !this.initial;
       this.you = m.you;
+      if (typeof m.serverTime === 'number') this.timeOffset = m.serverTime - Date.now();
       if (m.empty) {
         // mesa nova: o Mestre envia o que tem no navegador (sessão local antiga ou mesa vazia)
         this.snapshot = {};
@@ -113,9 +116,11 @@ class SyncClient {
     clearTimeout(this.pending); this.pending = null;
     const cur = this.getLocal();
     if (!cur) return;
-    const ops = diff(this.snapshot, cur);
+    let ops = diff(this.snapshot, cur);
+    // jogador: nem envia o que o servidor recusaria (evita idas e voltas de correção)
+    if (this.you && this.you.role !== 'gm') ops = ops.filter(o => playerOpAllowed(o, this.snapshot, this.you.name));
     if (!ops.length) return;
-    this.snapshot = cur;
+    this.snapshot = apply(this.snapshot, ops);
     this.ws.send(JSON.stringify({ type: 'ops', ops }));
   }
   schedule(ms = 90) {

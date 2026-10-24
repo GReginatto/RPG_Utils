@@ -119,6 +119,10 @@ describe('rules: o que o jogador pode alterar', () => {
     expect(ok({ op: 'upsert', path: ['chatMessages'], value: { id: 'm2', content: 'hack' } })).toBe(false);
     expect(ok({ op: 'remove', path: ['chatMessages'], id: 'm2' })).toBe(false);
   });
+  test('áudio da mesa é só do Mestre', () => {
+    expect(ok({ op: 'set', path: ['audio', 'playing'], value: true })).toBe(false);
+    expect(ok({ op: 'set', path: ['audio'], value: { playlist: [] } })).toBe(false);
+  });
   test('desenhos e combate liberados; compêndio e mapa não', () => {
     expect(ok({ op: 'upsert', path: ['scenes', { id: 's1' }, 'drawings'], value: { id: 'd1' } })).toBe(true);
     expect(ok({ op: 'set', path: ['currentTurnIndex'], value: 2 })).toBe(true);

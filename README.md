@@ -45,7 +45,9 @@ Um **Virtual Tabletop (VTT)** feito do zero no navegador para as sessões do RPG
 4. O Mestre aprova em **Fichas → Gerenciar Jogadores** (✅). Ali também bloqueia, troca a senha ou remove contas; quem é bloqueado cai da mesa na hora.
 5. Para encerrar, `Ctrl+C` na janela do servidor (o estado é salvo antes de sair).
 
-O que fica sincronizado: mapa, cenas, tokens, paredes, névoa, desenhos, áreas de efeito, chat e rolagens, combate, fichas, diário, macros. Os jogadores não recebem tokens ocultos, paredes secretas, notas de cena, cenas inativas, o compêndio nem sussurros para outras pessoas, e o servidor recusa alterações que não sejam deles (só mexem no próprio token, na própria ficha e nas próprias mensagens).
+O que fica sincronizado: mapa, cenas, tokens, paredes, névoa, desenhos, áreas de efeito, chat e rolagens, combate, fichas, diário, macros, pings (Ctrl+clique) e o ponteiro do Mestre (Ctrl+mover).
+
+**Som:** na aba 🔊 Áudio o Mestre envia músicas e sons de ambiente em arquivo (MP3, OGG, WAV, M4A, FLAC); eles ficam no servidor e tocam sincronizados para todos, inclusive para quem entra no meio da faixa. Os efeitos (dados, turno, combate...) tocam para a mesa toda. Cada pessoa ajusta o próprio volume ou fica no mudo. Se o navegador bloquear o som, aparece o botão "🔊 Clique para ouvir o som da mesa". Faixas do YouTube ainda podem ser adicionadas, mas muitas músicas não tocam para quem entra pelo IP (o YouTube bloqueia); prefira arquivos. Os jogadores não recebem tokens ocultos, paredes secretas, notas de cena, cenas inativas, o compêndio nem sussurros para outras pessoas, e o servidor recusa alterações que não sejam deles (só mexem no próprio token, na própria ficha e nas próprias mensagens).
 
 **Dados e segurança:** tudo fica em `server-data/` (contas com senha em scrypt, sessões, `state.json`, imagens em `uploads/` e backups automáticos a cada 20 minutos em `backups/`). Essa pasta está no `.gitignore` e **nunca deve ir para o GitHub**. Para fazer backup da campanha, copie a pasta. O servidor não usa HTTPS: use-o só em rede privada (Radmin/LAN) com pessoas de confiança, nunca exposto na internet.
 

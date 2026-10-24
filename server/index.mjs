@@ -27,6 +27,7 @@ const BACKUPS = path.join(DATA, 'backups');
 const SESSION_DAYS = 30;
 const MAX_JSON = 1 * 1024 * 1024;
 const MAX_UPLOAD = 25 * 1024 * 1024;
+const MAX_AUDIO = 80 * 1024 * 1024;
 const MAX_WS = 64 * 1024 * 1024;
 
 for (const d of [DATA, UPLOADS, BACKUPS]) fs.mkdirSync(d, { recursive: true });
@@ -122,8 +123,11 @@ const isLoopback = ip => ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:12
 
 // ── Imagens: data URLs viram arquivos em server-data/uploads ─────────────────
 const IMG_TYPES = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' };
+// Áudio (músicas e ambientes da mesa): só o Mestre envia.
+const AUDIO_TYPES = { 'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/ogg': 'ogg', 'audio/wav': 'wav', 'audio/x-wav': 'wav',
+  'audio/wave': 'wav', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/aac': 'aac', 'audio/webm': 'webm', 'audio/flac': 'flac', 'audio/x-flac': 'flac' };
 function storeImage(buf, mime) {
-  const ext = IMG_TYPES[mime];
+  const ext = IMG_TYPES[mime] ?? AUDIO_TYPES[mime];
   if (!ext) return null;
   const name = `${crypto.createHash('sha256').update(buf).digest('hex').slice(0, 40)}.${ext}`;
   const file = path.join(UPLOADS, name);
@@ -155,6 +159,7 @@ function extractImages(value) {
 // ── WebSocket: sincronização ─────────────────────────────────────────────────
 const BAD_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 const clients = new Set();
+const EVENT_KINDS = new Set(['ping', 'pointer', 'sfx']);
 const OPS = new Set(['set', 'del', 'upsert', 'remove', 'order', 'sadd', 'sdel']);
 function validOp(o) {
   return !!o && typeof o === 'object' && OPS.has(o.op) && Array.isArray(o.path) && o.path.length > 0 && o.path.length < 12
@@ -174,7 +179,7 @@ function initClient(c) {
   if (empty && c.user.role !== 'gm') { c.waiting = true; send(c, { type: 'wait' }); return; }
   c.view = viewFor(state, c.user);
   c.ready = true; c.waiting = false;
-  send(c, { type: 'init', state: c.view, empty, you: publicUser(c.user) });
+  send(c, { type: 'init', state: c.view, empty, you: publicUser(c.user), serverTime: Date.now() });
   broadcastPresence();
 }
 
@@ -235,11 +240,16 @@ function onSocket(ws, req) {
     if (!c.ready) return;
     if (msg.type === 'ops') handleOps(c, msg.ops);
     else if (msg.type === 'event' && msg.event && typeof msg.event === 'object') {
+      // eventos instantâneos (ping, ponteiro, efeito sonoro): pequenos, de tipos conhecidos e com limite de ritmo
+      if (!EVENT_KINDS.has(msg.event.kind) || String(data).length > 2000) return;
+      const now = Date.now();
+      if (now - (c.evWindow ?? 0) > 1000) { c.evWindow = now; c.evCount = 0; }
+      if (++c.evCount > 40) return;
       const ev = { ...msg.event, from: c.user.name };
       for (const k of clients) if (k !== c && k.ready) send(k, { type: 'event', event: ev });
     } else if (msg.type === 'resync') {
       c.view = viewFor(state, c.user);
-      send(c, { type: 'init', state: c.view, empty: false, you: publicUser(c.user) });
+      send(c, { type: 'init', state: c.view, empty: false, you: publicUser(c.user), serverTime: Date.now() });
     }
   });
   ws.on('close', () => { clearTimeout(authTimer); clients.delete(c); broadcastPresence(); });
@@ -250,10 +260,11 @@ function onSocket(ws, req) {
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif',
   '.webp': 'image/webp', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.woff': 'font/woff',
-  '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.txt': 'text/plain; charset=utf-8', '.map': 'application/json' };
+  '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav', '.m4a': 'audio/mp4', '.aac': 'audio/aac',
+  '.webm': 'audio/webm', '.flac': 'audio/flac', '.txt': 'text/plain; charset=utf-8', '.map': 'application/json' };
 
 function baseHeaders(extra = {}) {
-  return { 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'no-referrer', ...extra };
+  return { 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'SAMEORIGIN', 'Referrer-Policy': 'strict-origin-when-cross-origin', ...extra };
 }
 function json(res, code, body) {
   res.writeHead(code, baseHeaders({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }));
@@ -276,12 +287,28 @@ function authUser(req) {
   return userFromToken(h.startsWith('Bearer ') ? h.slice(7) : null);
 }
 
-async function serveFile(res, file, cache) {
+async function serveFile(res, file, cache, req) {
   try {
     const st = await fsp.stat(file);
     if (!st.isFile()) throw new Error();
-    res.writeHead(200, baseHeaders({ 'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
-      'Content-Length': st.size, 'Cache-Control': cache }));
+    const type = MIME[path.extname(file).toLowerCase()] || 'application/octet-stream';
+    const m = /^bytes=(\d*)-(\d*)$/.exec(req?.headers?.range || '');
+    if (m && (m[1] || m[2])) {
+      let start = m[1] ? Number(m[1]) : Math.max(0, st.size - Number(m[2]));
+      let end = m[1] && m[2] ? Math.min(Number(m[2]), st.size - 1) : st.size - 1;
+      if (start >= st.size || start > end) {
+        res.writeHead(416, baseHeaders({ 'Content-Range': `bytes */${st.size}` }));
+        res.end();
+        return true;
+      }
+      res.writeHead(206, baseHeaders({ 'Content-Type': type, 'Content-Length': end - start + 1, 'Accept-Ranges': 'bytes',
+        'Content-Range': `bytes ${start}-${end}/${st.size}`, 'Cache-Control': cache }));
+      if (req.method === 'HEAD') { res.end(); return true; }
+      fs.createReadStream(file, { start, end }).pipe(res);
+      return true;
+    }
+    res.writeHead(200, baseHeaders({ 'Content-Type': type, 'Content-Length': st.size, 'Accept-Ranges': 'bytes', 'Cache-Control': cache }));
+    if (req?.method === 'HEAD') { res.end(); return true; }
     fs.createReadStream(file).pipe(res);
     return true;
   } catch { return false; }
@@ -351,11 +378,13 @@ async function api(req, res, url) {
 
   if (route === 'POST /api/upload') {
     const mime = String(req.headers['content-type'] || '').split(';')[0].trim();
-    if (!IMG_TYPES[mime]) return json(res, 415, { error: 'Envie PNG, JPG, GIF ou WEBP.' });
+    const isAudio = !!AUDIO_TYPES[mime];
+    if (!IMG_TYPES[mime] && !isAudio) return json(res, 415, { error: 'Envie imagem (PNG, JPG, GIF, WEBP) ou áudio (MP3, OGG, WAV, M4A, FLAC).' });
+    if (isAudio && me.role !== 'gm') return json(res, 403, { error: 'Só o Mestre envia músicas.' });
     try {
-      const buf = await readBody(req, MAX_UPLOAD);
+      const buf = await readBody(req, isAudio ? MAX_AUDIO : MAX_UPLOAD);
       return json(res, 200, { url: storeImage(buf, mime) });
-    } catch { return json(res, 413, { error: 'Imagem grande demais (máx. 25 MB).' }); }
+    } catch { return json(res, 413, { error: isAudio ? 'Áudio grande demais (máx. 80 MB).' : 'Imagem grande demais (máx. 25 MB).' }); }
   }
 
   if (me.role !== 'gm') return json(res, 403, { error: 'Só o Mestre.' });
@@ -387,7 +416,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405, baseHeaders()); return res.end(); }
     if (url.pathname.startsWith('/uploads/')) {
       const file = safeJoin(UPLOADS, decodeURIComponent(url.pathname.slice('/uploads/'.length)));
-      if (file && await serveFile(res, file, 'public, max-age=31536000, immutable')) return;
+      if (file && await serveFile(res, file, 'public, max-age=31536000, immutable', req)) return;
       res.writeHead(404, baseHeaders()); return res.end();
     }
     if (!fs.existsSync(path.join(BUILD, 'index.html'))) {
@@ -397,7 +426,7 @@ const server = http.createServer(async (req, res) => {
     const rel = decodeURIComponent(url.pathname);
     const file = safeJoin(BUILD, rel === '/' ? 'index.html' : rel.slice(1));
     const cache = rel.startsWith('/static/') ? 'public, max-age=31536000, immutable' : 'no-cache';
-    if (file && await serveFile(res, file, cache)) return;
+    if (file && await serveFile(res, file, cache, req)) return;
     await serveFile(res, path.join(BUILD, 'index.html'), 'no-cache'); // SPA
   } catch (e) {
     if (!res.headersSent) json(res, 500, { error: 'Erro interno.' });

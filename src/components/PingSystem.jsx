@@ -8,16 +8,28 @@ export function usePing() {
   const [pings, setPings] = useState([]);
   const lastRef = useRef(0);
 
-  const addPing = useCallback((x, y, color, author) => {
+  const show = useCallback((x, y, color, author) => {
     const now = Date.now();
-    if (now - lastRef.current < RATE_MS) return;
-    lastRef.current = now;
-    const id = `ping-${now}`;
+    const id = `ping-${now}-${Math.random().toString(36).slice(2, 6)}`;
     setPings(prev => [...prev, { id, x, y, color: color ?? '#c9a96e', author: author ?? '?', timestamp: now }]);
     setTimeout(() => setPings(prev => prev.filter(p => p.id !== id)), LIFETIME_MS);
   }, []);
 
-  return { pings, addPing };
+  // devolve true se o ping foi feito (para mandá-lo à mesa)
+  const addPing = useCallback((x, y, color, author) => {
+    const now = Date.now();
+    if (now - lastRef.current < RATE_MS) return false;
+    lastRef.current = now;
+    show(x, y, color, author);
+    return true;
+  }, [show]);
+
+  const addRemotePing = useCallback((x, y, color, author) => {
+    if (typeof x !== 'number' || typeof y !== 'number') return;
+    show(x, y, String(color ?? '#c9a96e').slice(0, 20), String(author ?? '?').slice(0, 30));
+  }, [show]);
+
+  return { pings, addPing, addRemotePing };
 }
 
 // ── PingRipple ────────────────────────────────────────────────────────────────

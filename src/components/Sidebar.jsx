@@ -22,7 +22,7 @@ const TABS = [
   { id: 'fichas',    icon: '📋', label: 'Fichas',     gmOnly: false },
   { id: 'diary',     icon: '📓', label: 'Diário',     gmOnly: false },
   { id: 'compendio', icon: '📚', label: 'Compêndio',  gmOnly: true  },
-  { id: 'audio',     icon: '🔊', label: 'Áudio',      gmOnly: true  },
+  { id: 'audio',     icon: '🔊', label: 'Áudio',      gmOnly: false },
 ];
 
 export default function Sidebar({
@@ -45,6 +45,8 @@ export default function Sidebar({
   addChatMessage,
   clearChat,
   audioManagerRef,
+  audio,
+  setAudio,
   targetId,
   setTargetId,
   // Party
@@ -557,7 +559,7 @@ export default function Sidebar({
         )}
 
         {/* AudioManager always mounted, shown only on audio tab */}
-        <AudioManager ref={audioManagerRef} active={activeTab === 'audio'} />
+        <AudioManager ref={audioManagerRef} active={activeTab === 'audio'} audio={audio} setAudio={setAudio} isGM={isGM} />
       </div>
     </div>
   );
