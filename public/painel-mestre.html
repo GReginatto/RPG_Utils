@@ -301,7 +301,7 @@ var INIMIGO=[null,
  {hp:38,ca:18,at:12,dn:'3d10+6',dm:22.5,cd:22,pj:'5d8',mp:120}];
 // Categorias (R14-2, R14-3): multiplicador de HP, ataque extra, ataques por turno, Ações Lendárias e valor no encontro
 var CATS={lacaio:{l:'Lacaio',hp:0.5,at:0,na:1,al:0,v:0.75},padrao:{l:'Padrão',hp:1,at:0,na:1,al:0,v:1},elite:{l:'Elite',hp:2,at:1,na:2,al:0,v:2},chefe:{l:'Chefe',hp:5,at:1,na:2,al:1,v:4},arco:{l:'Chefe de fim de arco',hp:6,at:1,na:2,al:2,v:5}};
-var DIST_V=0.25; // criatura distorcida (P-098): padrão + 1 traço de Arka selvagem escolhido pelo Mestre, vale ~1¼
+var DIST_V=0; // criatura distorcida: padrão + 1 traço de Arka selvagem; sem valor extra de XP (D-128), conta como a categoria dela
 function catDe(n){return CATS[n.cat]||CATS.padrao}
 function valorDe(n){return catDe(n).v+(n.dist?DIST_V:0)}
 // G-09: inimigo de outro nível conta valor × (nível dele ÷ nível do grupo), válido até 3 níveis de diferença
