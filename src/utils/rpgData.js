@@ -749,7 +749,7 @@ export const AURA_DETAILS = {
 };
 
 // Panteão (PANTEAO, D-49, D-57) e Dons Divinos (PR5 Dons, D-59), texto do cap. 09. n, t (epíteto), mit, dm (domínio), dom (nome do Dom), d (texto)
-// Despertar Divino: qualquer aura no nv 3 + acontecimento de lore, sem PP (D-47, D-51); um só por personagem (D-56); quem nasce Titânico não desperta nenhuma aura (D-59, D-62)
+// Despertar Divino: qualquer aura no nv 3 + acontecimento de lore, sem PP (D-47, D-51); um só por personagem (D-56); a Titânica tem o Ápice Titânico no lugar e as auras compradas ou emprestadas pelo Titânico não despertam (D-59, D-135)
 export const PANTHEON = {
   "Primordial": [
     {
@@ -1178,15 +1178,15 @@ export function profBonus(level) {
 }
 export function attrMod(v) { return Math.floor(((v ?? 10) - 10) / 2); }
 
-// Pontos de Progressão — reforma da progressão (D-89, R13-1; D-28, D-42, D-43, D-47, D-52, D-53, D-60, D-61, D-62)
+// Pontos de Progressão — reforma da progressão (D-89, R13-1; D-28, D-43, D-47, D-52, D-53, D-60, D-61, D-132 a D-135)
 // 1 PP por nível do 4 ao 15 + 1 extra nos níveis 5, 10 e 15 (15 no total); acumulam; só atributos e auras.
 export const PP_EXTRA_LEVELS = [5, 10, 15];
 export function ppAtLevel(n) { return n > LV_MIN && n <= LV_MAX ? 1 + (PP_EXTRA_LEVELS.includes(n) ? 1 : 0) : 0; }
 export const PP_AURA_UP = { 2: 3, 3: 4 };   // 1→2 e 2→3 (R13-1)
 export const PP_NEW_AURA = [1, 2, 2, 3];    // distância 0/1/2/3 a partir da Área da aura de nascença (R13-1)
 export const ATTR_CAP = 20;
-export const BIRTH_ONLY_AURAS = ['Titânica', 'Aura Própria'];
-export const PP_NEW_AURA_TITANIC = 2;       // R13-1 (provisório): nascido Titânico compra qualquer outra aura por 2 PP; sobe a Titânica por 3 e 4
+export const BIRTH_ONLY_AURAS = ['Titânica', 'Aura Própria']; // não se compram: a Titânica vem da história (D-134); o Ícor só de nascença (D-43)
+export const PP_NEW_AURA_TITANIC = 2;       // D-132, D-135: o Titânico compra qualquer outra aura por 2 PP (não despertam); sobe a Titânica por 3 e 4
 export const PP_ECO = 2;                    // versão da economia gravada na ficha (sem campo = antiga, 3 PP/nível)
 // Custo do +1 (D-52, D-60, R13-1): faixa pelo valor COMPRADO antes do +1, sem raça/profissão: até 18 = 1 PP; 19→20 = 2 PP.
 // O teto 20 olha o valor final, com raça/profissão.
@@ -1207,8 +1207,41 @@ export function auraArea(name) {
   return '';
 }
 export function hereditaryAura(auras) { return (auras || []).find(x => x.her); }
-// D-62: quem nasce Titânico não desperta nenhuma aura (nem as compradas), até a Titânica ter regra própria
+// Titânico (de nascença ou convertido): as auras que ele compra não despertam (D-132, D-135)
 export function titanicBorn(auras) { return hereditaryAura(auras)?.n === 'Titânica'; }
+// ── Titânica (D-132 a D-135, pacote T3) ──
+// sheet.emprest = [{ n, fixa, lv, pp, deus }]: emprestadas do Titânico. As soltas ficam no nível da Titânica e ocupam vaga;
+// a fixa (Titânico convertido, D-134) fica sempre carregada, não ocupa vaga, guarda o nível que tinha e os PP gastos nela (pp).
+// sheet.empLivre = escolha do descanso longo aberta (fora dela, trocar custa 10 min + 1 Exaustão de Arka).
+export const TITANIC_SLOTS = { 1: 2, 2: 3, 3: 4 };  // vagas pelo nível da Titânica; +1 com o Ápice Titânico
+export function titanicAura(auras) { return (auras || []).find(x => x.n === 'Titânica'); }
+export function titanicLevel(auras) { const t = titanicAura(auras); return t ? Math.min(3, t.lv || 1) : 0; }
+// Ápice Titânico (no lugar do Despertar Divino): guardado como lv 4, como o Despertar; a Titânica continua no nv 3
+export function titanicApex(auras) { return titanicAura(auras)?.lv === 4; }
+export function titanicSlots(auras) { const l = titanicLevel(auras); return l ? TITANIC_SLOTS[l] + (titanicApex(auras) ? 1 : 0) : 0; }
+export function borrowedLevel(auras, e) { return e.fixa ? (e.lv || 1) : titanicLevel(auras); }
+// Corpo Titânico: +1 na CA e em todos os testes de resistência; +2 com a Titânica no nv 3
+export function titanicBody(auras) { const l = titanicLevel(auras); return l >= 3 ? 2 : l ? 1 : 0; }
+// Auras ativas = próprias + emprestadas (contam para passivas, Compatibilidade, resistências e licença)
+export function activeAuras(sheet) {
+  const au = sheet?.auras || [];
+  return [...au, ...(sheet?.emprest || []).map(e => ({ n: e.n, lv: borrowedLevel(au, e), emp: true, fixa: !!e.fixa, ...(e.deus ? { deus: e.deus } : {}) })).filter(x => x.lv >= 1)];
+}
+// PP que continuam gastos nas emprestadas fixas (D-134: não se perdem)
+export function borrowedSpent(emprest) { return (emprest || []).reduce((c, e) => c + (e.fixa ? (e.pp || 0) : 0), 0); }
+// Auras que o Titânico pode emprestar: qualquer uma do catálogo, nunca o Ícor, fora as que já tem
+export function borrowOptions(sheet) {
+  const own = [...(sheet?.auras || []).map(x => x.n), ...(sheet?.emprest || []).map(e => e.n)];
+  return Object.keys(AURA_DETAILS).filter(k => k !== 'Ícor').map(k => ({ area: k, auras: AURA_DETAILS[k].filter(a => !a.dev && !own.includes(a.n)).map(a => a.n) })).filter(g => g.auras.length);
+}
+// Titânico convertido (D-134): a aura de nascença vira emprestada fixa (nível e PP preservados) e a Titânica entra no nv 1
+export function convertToTitanic(sheet) {
+  const au = sheet.auras || [], h = hereditaryAura(au);
+  if (!h || h.n === 'Titânica') return null;
+  const fixa = { n: h.n, lv: h.lv, fixa: true, pp: auraSpent(h), ...(h.deus ? { deus: h.deus } : {}) };
+  const ppConf = sheet.ppConf ? { ...sheet.ppConf, auras: { ...(sheet.ppConf.auras || {}), 'Titânica': 1 } } : { attrUps: {}, auras: { 'Titânica': 1 } };
+  return { auras: [{ n: 'Titânica', lv: 1, her: true }, ...au.filter(x => x !== h)], emprest: [...(sheet.emprest || []), fixa], auraInit: 'Titânica', ppConf, empLivre: true };
+}
 // D-61: aura hereditária Primordial é possível, mas raríssima (só com aprovação do Mestre): aviso, sem bloquear
 export function rareHereditary(name) { return auraArea(name) === 'Primordial'; }
 // Custo de aura nova; null = não comprável (Titânica/Ícor só de nascença) ou fora do catálogo
@@ -1248,7 +1281,7 @@ export function ppPending(sheet) {
   (sheet.auras || []).forEach(x => { n += Math.max(0, (x.lv || 1) - auraConfirmed(sheet, x)); });
   return n;
 }
-// Despertar Divino: um só por personagem (D-56); nascido Titânico não desperta (D-62, ver titanicBorn)
+// Despertar Divino: um só por personagem (D-56); o Ápice Titânico conta como ele (D-135). Para incluir a fixa do convertido que já tinha despertado, passe activeAuras(sheet)
 export function awakenedAura(auras) { return (auras || []).find(x => x.lv === 4); }
 // Teto de dados das técnicas criadas (PR5-07, D-58, R13-2): 5d8 fixo, o máximo do Projetar em qualquer nível
 export function techDiceCap() { return 5; }
@@ -1300,7 +1333,7 @@ export function hitDieHeal(roll, conMod) { return Math.max(1, roll + conMod); }
 export function restGain(cur, max, gain, vestigar) { const g = Math.max(0, Math.min(max - cur, gain)); return vestigar ? Math.floor(g * 0.75) : g; }
 // Corpo Renovado (Rejuvenescimento 3, passivo, R9-3): +1 HP máximo por nível de personagem
 export function corpoRenovado(auras) { return (auras || []).some(x => x.n === 'Rejuvenescimento' && x.lv >= 3); }
-// Ação Lendária de jogador (D-68, R11-2): quem despertou; 1 por rodada, máx. 2 por combate
+// Ação Lendária de jogador (D-68, R11-2, D-135): quem despertou ou alcançou o Ápice Titânico; 1 por rodada, máx. 2 por combate
 export const LEGENDARY_MAX = 2;
 // XP por sessão (R9-4): [mínimo, típico, máximo] pelo nível atual (tabela-base); o XP de combate vale sempre (D-93), então a ficha aplica ×0,8 (×0,7 com 3+ lutas)
 export const XP_SESSION = { 3: [130, 160, 190], 4: [170, 210, 250], 5: [220, 275, 330], 6: [290, 360, 430], 7: [380, 470, 560], 8: [460, 580, 700], 9: [540, 670, 800], 10: [640, 800, 960], 11: [660, 820, 980], 12: [730, 910, 1090], 13: [800, 1000, 1200], 14: [800, 1000, 1200] };
@@ -1356,7 +1389,7 @@ export function convertOldPP(sheet) {
 }
 // Lembretes condicionais (P-095): não entram nos números
 export function sheetReminders(sheet) {
-  const l = [], au = sheet.auras || [], dz = awakenedAura(au);
+  const l = [], au = activeAuras(sheet), dz = awakenedAura(au); // emprestadas do Titânico contam (D-135)
   if (au.some(x => x.n === 'Luz' && x.lv >= 3)) l.push('Halo (Luz 3): ataques corpo a corpo contra você sofrem −1 (−2 se o atacante for criatura das trevas, distorcida ou morto-vivo)');
   if (dz?.deus === 'Xing Tian') l.push('Xing Tian: regenera 1 HP por rodada enquanto tiver ao menos 1 HP; 1×/dia, ao cair a 0 HP, levanta-se com HP igual ao nível; imune a venenos e doenças naturais');
   if (au.some(x => auraArea(x.n) === 'Primordial' && x.lv >= 3)) l.push('Primordial no nível 3: sofre 30% a mais de dano de técnicas de Ícor');
@@ -1395,6 +1428,7 @@ export function blankSheet(overrides = {}) {
     ppConf: null,       // compras de PP confirmadas (D-53); null = nada confirmado ainda
     ppEco: PP_ECO, ppAntigo: '', herLivre: false, // economia D-89; aviso da conversão; aura de nascença destravada (P-097)
     escamas: false, vestigar: false, furiaUsada: false, adaptUsos: 0, tonicoUsado: false, despGuarda: null, // P-095, P-089, R13-5, P-083, E15-02, G-09
+    emprest: [], empLivre: true, // D-135: auras emprestadas do Titânico [{ n, fixa, lv, pp, deus }]; escolha do descanso longo aberta
     // Inventory / Gold
     gold: 0, inventory: [],
     // XP / Level

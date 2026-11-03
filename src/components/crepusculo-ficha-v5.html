@@ -150,7 +150,7 @@ var AG=[
   {n:"Deformadora",ag:240,c:"#b07cd8",i:"◉"},
   {n:"Mental",ag:300,c:"#f0a050",i:"◎"}
 ];
-// Progressão por Pontos de Progressão (PP) — reforma da progressão (D-89, R13-1), D-28, D-42, D-43, D-47
+// Progressão por Pontos de Progressão (PP) — reforma da progressão (D-89, R13-1), D-28, D-43, D-47, D-132, D-134
 // 1 PP por nível do 4 ao 15 + 1 extra nos níveis 5, 10 e 15 (15 no total); PP não gastos acumulam. Só atributos e auras.
 var PP_EXTRA=[5,10,15];
 function ppNoNivel(n){return n>LV_MIN&&n<=LV_MAX?1+(PP_EXTRA.indexOf(n)>=0?1:0):0}
@@ -160,8 +160,10 @@ var ATR_TETO=20;                    // teto do atributo no valor final
 // Custo do +1 (D-52, D-60, R13-1): a faixa olha o valor COMPRADO antes do +1 (compra de pontos + aumentos anteriores com PP), sem raça e profissão.
 // Até o valor comprado 18: 1 PP; de 19 para 20: 2 PP. O teto 20 olha o valor final, com raça e profissão.
 function ppAtrCost(v){return v<=18?1:2}
-var AURA_SO_NASCENCA=["Titânica","Aura Própria"]; // Titânica (D-42) e Ícor/Aura Própria (D-43) não se compram
-var PP_AURA_NOVA_TITANICO=2;        // R13-1 (provisório): quem nasce Titânico compra qualquer outra aura por 2 PP e sobe a Titânica por 3 e 4
+var AURA_SO_NASCENCA=["Titânica","Aura Própria"]; // não se compram: a Titânica vem da história (D-134); Ícor/Aura Própria só de nascença (D-43)
+var PP_AURA_NOVA_TITANICO=2;        // D-132, D-135: o Titânico compra qualquer outra aura por 2 PP (não despertam) e sobe a Titânica por 3 e 4
+// Titânica (D-132 a D-135, pacote T3): emprestadas no nível da Titânica; vagas pelo nível 1/2/3 da Titânica, +1 com o Ápice Titânico
+var TIT_VAGAS={1:2,2:3,3:4};
 var PP_ECO=2;                       // versão da economia de PP gravada na ficha (1 = antiga, 3 PP/nível; 2 = D-89)
 
 // Catálogo (D-32, D-38): auras nas categorias originais do livro. Dracônica = Forma de Besta Lendária da Animalesca 3 (D-06, D-31, D-44).
@@ -210,7 +212,7 @@ Mental:[
 };
 
 // Despertar Divino (nv 4): qualquer aura no nv 3 + acontecimento de lore, sem PP (D-47, D-51); um único Despertar por personagem (D-56);
-// o jogador escolhe um deus da Área da aura (D-48, D-49) e recebe o Dom dele (PR5 Dons, D-59). Quem nasce Titânico não desperta nenhuma aura, nem as compradas (D-59, D-62). Texto do cap. 09.
+// o jogador escolhe um deus da Área da aura (D-48, D-49) e recebe o Dom dele (PR5 Dons, D-59). A Titânica não desperta: no lugar, tem o Ápice Titânico, que conta como o único Despertar; as auras compradas ou emprestadas pelo Titânico não despertam (D-59, D-135). Texto do cap. 09.
 var PANTEAO={
 "Primordial":[{n:"Nun",t:"as Águas Antes do Mundo",mit:"Egípcia",dm:"O oceano primordial que cercava e continha toda a criação",dom:"Águas que Contêm",d:"2×/dia, abre um campo de 10 m de raio por 1 minuto. Dentro dele, ativar uma técnica de tier Intermediário ou superior exige um teste de DOM contra a CD de técnica do usuário. Pode conter um Surto de Arka a até 1 km (o Surto não acontece)."},
   {n:"Pangu",t:"o que Separou Céu e Terra",mit:"Chinesa",dm:"O gigante cujo corpo virou montanhas, rios e veios do mundo",dom:"Ossos do Mundo",d:"sente os veios de Arka num raio de 1 km. 1×/dia, meditar 1 hora sobre um veio recupera 50% do MP. 1×/dia, rasga o chão numa linha de 20 m: 4d8 de dano do tipo da aura (teste de DEX contra a CD de técnica reduz à metade) e terreno difícil até o fim do combate."},
@@ -249,10 +251,23 @@ function ppEarned(lv){lv=lv||S.level||LV_MIN;var c=0;for(var n=LV_MIN+1;n<=Math.
 function ppAtrSpent(a){var b=S.attrs[a]||PB_BASE,n=(S.attrUps&&S.attrUps[a])||0,c=0;for(var k=0;k<n;k++)c+=ppAtrCost(b+k);return c} // D-52: valor comprado, sem raça/profissão
 function auraArea(n){var r='';Object.keys(AD).forEach(function(k){AD[k].forEach(function(x){if(x.n===n)r=k})});return r}
 function auraHer(){return (S.auras||[]).filter(function(x){return x.her})[0]}
+// ── Titânica (D-132 a D-135) ──
+// S.emprest = [{n, fixa, lv, pp, deus}]: emprestadas do Titânico. As soltas ficam no nível da Titânica e ocupam vaga;
+// a fixa (Titânico convertido, D-134) fica sempre carregada, não ocupa vaga, guarda o nível que tinha e os PP gastos nela (pp).
+function titAura(){return (S.auras||[]).filter(function(x){return x.n==='Titânica'})[0]}
+function titLv(){var t=titAura();return t?Math.min(3,t.lv||1):0}
+function titApice(){var t=titAura();return !!t&&t.lv===4} // Ápice Titânico: a Titânica fica no nv 3 (guardado como lv 4, como o Despertar)
+function titVagas(){var l=titLv();return l?TIT_VAGAS[l]+(titApice()?1:0):0}
+function empLv(e){return e.fixa?(e.lv||1):titLv()}
+function empSoltas(){return (S.emprest||[]).filter(function(e){return !e.fixa})}
+// Corpo Titânico: +1 na CA e em todos os testes de resistência; +2 com a Titânica no nv 3 (D-135)
+function corpoTit(){var l=titLv();return l>=3?2:l?1:0}
+// Auras ativas = próprias + emprestadas (contam para passivas, Compatibilidade, resistências e licença, D-135)
+function aurasAtivas(){return (S.auras||[]).concat((S.emprest||[]).map(function(e){var y={n:e.n,lv:empLv(e),emp:true,fixa:!!e.fixa};if(e.deus)y.deus=e.deus;return y}).filter(function(y){return y.lv>=1}))}
 // Custo da aura nova pela distância no anel a partir da Área da hereditária. null = não comprável / não definido
 function auraNovaCost(n){var h=auraHer();if(!h||AURA_SO_NASCENCA.indexOf(n)>=0)return null;if(h.n==='Titânica')return auraArea(n)?PP_AURA_NOVA_TITANICO:null;var ha=auraArea(h.n),na=auraArea(n);if(!ha||!na)return null;return PP_AURA_NOVA[aDist(ha,na)]}
 function auraSpent(x){var c=x.her?0:(x.pago||0);for(var l=2;l<=Math.min(3,x.lv||1);l++)c+=PP_AURA_UP[l];return c} // Despertar Divino (nv 4) não custa PP (D-47)
-function ppSpent(){var c=0;A.forEach(function(a){c+=ppAtrSpent(a)});(S.auras||[]).forEach(function(x){c+=auraSpent(x)});return c}
+function ppSpent(){var c=0;A.forEach(function(a){c+=ppAtrSpent(a)});(S.auras||[]).forEach(function(x){c+=auraSpent(x)});(S.emprest||[]).forEach(function(e){if(e.fixa)c+=e.pp||0});return c} // D-134: os PP da aura que virou emprestada fixa não se perdem
 function ppLeft(){return ppEarned()-ppSpent()}
 // Compras definitivas (D-53): uma compra com PP só pode ser desfeita durante a criação/level-up em que foi feita.
 // "Confirmar compras" (ou subir de nível) trava o estado atual em S.ppConf; depois disso, sem reembolso.
@@ -272,12 +287,12 @@ function pbCost(from,to){var c=0;if(to<from)return to-from;for(var v=from+1;v<=t
 // Armaduras (PB-10 + itens do mundo, relatório da rodada 2). t: L=leve, M=média (DEX máx. 2), P=pesada (sem DEX)
 var ARMORS=[{n:"Sem armadura",ca:10,t:"N"},{n:"Sobretudo acolchoado",ca:11,t:"L"},{n:"Casaco de couro",ca:11,t:"L"},{n:"Casaco de caça reforçado",ca:12,t:"L"},{n:"Colete de malha",ca:13,t:"M"},{n:"Couraça",ca:14,t:"M"},{n:"Couraça de cavalaria",ca:15,t:"M"},{n:"Brigantina de prata (Anjos)",ca:14,t:"M"},{n:"Cota de anéis",ca:14,t:"P",mv:-1},{n:"Cota de talas",ca:15,t:"P",mv:-1},{n:"Placas completas",ca:18,t:"P",mv:-2},{n:"Armadura a vapor",ca:19,t:"P",mv:-2}] // P-073: anéis e talas −1 m; placas e vapor −2 m;
 
-var S={name:"",player:"",age:"",gender:"",origin:"",alignment:"",appearance:"",personality:"",background:"",motivation:"",notes:"",race:"Humano",humAttr:"",prof:"custom",customProf:{name:"Profissão montada",m:{},hp:"1d8",mp:"1d8",sk:"",per:[],res:[],pac:"",exc:false,exd:"",co:0},attrs:{FOR:8,DEX:8,CON:8,SAB:8,INT:8,CAR:8,DOM:8},proficiencies:[],customProfs:[],curHP:0,maxHP:0,curMP:0,maxMP:0,falls:0,auraInit:"",auraDesc:"",techs:"",extraAuras:"",gold:0,inventory:[],xp:0,level:3,fluxoDeseq:0,fluxoActive:false,fluxoLog:[],exTreino:0,sessoesTreino:[],arkaLocal:3,arkaCap:3,tecMax:"",devTechs:[],hpRolls:[],mpRolls:[],hpDice:[],mpDice:[],shortRests:0,hdUsed:0,especialista:"",acaoLend:0,armor:"Sem armadura",shield:false,attrUps:{FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0},auras:[],toolProfs:["",""],ppConf:null,ppEco:2,ppAntigo:"",herLivre:false,escamas:false,vestigar:false,furiaUsada:false,adaptUsos:0,tonicoUsado:false,despGuarda:null};
+var S={name:"",player:"",age:"",gender:"",origin:"",alignment:"",appearance:"",personality:"",background:"",motivation:"",notes:"",race:"Humano",humAttr:"",prof:"custom",customProf:{name:"Profissão montada",m:{},hp:"1d8",mp:"1d8",sk:"",per:[],res:[],pac:"",exc:false,exd:"",co:0},attrs:{FOR:8,DEX:8,CON:8,SAB:8,INT:8,CAR:8,DOM:8},proficiencies:[],customProfs:[],curHP:0,maxHP:0,curMP:0,maxMP:0,falls:0,auraInit:"",auraDesc:"",techs:"",extraAuras:"",gold:0,inventory:[],xp:0,level:3,fluxoDeseq:0,fluxoActive:false,fluxoLog:[],exTreino:0,sessoesTreino:[],arkaLocal:3,arkaCap:3,tecMax:"",devTechs:[],hpRolls:[],mpRolls:[],hpDice:[],mpDice:[],shortRests:0,hdUsed:0,especialista:"",acaoLend:0,armor:"Sem armadura",shield:false,attrUps:{FOR:0,DEX:0,CON:0,SAB:0,INT:0,CAR:0,DOM:0},auras:[],toolProfs:["",""],ppConf:null,ppEco:2,ppAntigo:"",herLivre:false,escamas:false,vestigar:false,furiaUsada:false,adaptUsos:0,tonicoUsado:false,despGuarda:null,emprest:[],empLivre:true};
 // Rodada 9: humAttr = +1 do Humano; ppEco = economia de PP (2 = D-89); ppAntigo = compras reembolsadas da economia antiga; herLivre = aura de nascença destravada pelo Mestre (P-097);
 // escamas = escamas da Animalesca ativas (P-095); vestigar = descansos a 75% (P-089); furiaUsada/adaptUsos = Fúria Ancestral (R13-5) e Adaptação (P-083)
 // attrUps = +1 comprados com PP; auras = [{n, lv, her(hereditária), pago, deus}] (D-28, D-29)
 // ppConf = compras de PP já confirmadas {attrUps:{FOR:n…}, auras:{nome:nível}} (D-53): só o que passa disso pode ser desfeito
-var selA=null,dAr=false,invF='all',crnPrev=false;
+var selA=null,dAr=false,invF='all',crnPrev=false,ctPrev=0;
 
 function $(id){return document.getElementById(id)}
 function gv(id){var e=$(id);return parseInt(e?e.textContent:"0")||0}
@@ -290,16 +305,16 @@ function gF0(a){var p=gP();return S.attrs[a]+(p.m[a]||0)+rBonus(a)}
 function gF(a){return gF0(a)+((S.attrUps&&S.attrUps[a])||0)}
 function gM(v){return Math.floor((v-10)/2)}
 // ── Perícias, resistências e armaduras por profissão (P-060, P-049, R10-5, R10-2, D-71, D-74, D-77) ──
-function temAura(n,lv){return (S.auras||[]).some(function(x){return x.n===n&&x.lv>=(lv||1)})}
+function temAura(n,lv){return aurasAtivas().some(function(x){return x.n===n&&x.lv>=(lv||1)})}
 // Lembretes condicionais (P-095): Halo, Xing Tian, fraquezas
 function lembretes(){var l=[],dz=despertada();
   if(temAura('Luz',3))l.push('Halo (Luz 3): ataques corpo a corpo contra você sofrem −1 (−2 se o atacante for criatura das trevas, distorcida ou morto-vivo)');
   if(dz&&dz.deus==='Xing Tian')l.push('Xing Tian: regenera 1 HP por rodada enquanto tiver ao menos 1 HP; 1×/dia, ao cair a 0 HP, levanta-se com HP igual ao nível; imune a venenos e doenças naturais');
-  if((S.auras||[]).some(function(x){return auraArea(x.n)==='Primordial'&&x.lv>=3}))l.push('Primordial no nível 3: sofre 30% a mais de dano de técnicas de Ícor');
+  if(aurasAtivas().some(function(x){return auraArea(x.n)==='Primordial'&&x.lv>=3}))l.push('Primordial no nível 3: sofre 30% a mais de dano de técnicas de Ícor');
   if(S.race==='Anjo')l.push('Anjo: recebe 150% de dano de Trevas');
   if(S.race==='Demônio')l.push('Demônio: 50% de resistência a fogo');
   return l}
-function corpoRenovado(){return (S.auras||[]).some(function(x){return x.n==='Rejuvenescimento'&&x.lv>=3})}
+function corpoRenovado(){return aurasAtivas().some(function(x){return x.n==='Rejuvenescimento'&&x.lv>=3})}
 function profPer(){return gP().per||[]}
 // Diplomata: o Especialista dá proficiência em Persuasão mesmo que não escolhida (D-71)
 function temPer(n){return S.proficiencies.indexOf(n)>=0||(S.prof==='Diplomata'&&n==='Persuasão')}
@@ -308,7 +323,7 @@ function perMult(n){if(!temPer(n))return 0;if(S.prof==='Diplomata'&&(n==='Persua
 function perTotal(n,a){return gM(gF(a))+perMult(n)*gProf()}
 // Teste de resistência (P-030, R10-5): d20 + mod + proficiência se a profissão é proficiente; Anão +2 em CON (cap. 07)
 function resProf(a){return (gP().res||[]).indexOf(a)>=0}
-function resTotal(a){var rc=RACES[S.race];return gM(gF(a))+(resProf(a)?gProf():0)+((rc&&rc.res&&rc.res[a])||0)}
+function resTotal(a){var rc=RACES[S.race];return gM(gF(a))+(resProf(a)?gProf():0)+((rc&&rc.res&&rc.res[a])||0)+corpoTit()} // Corpo Titânico (D-135)
 // Armadura sem proficiência: desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX (P-049)
 function armSemProf(){var p=profPac();if(!p)return '';var ar=ARMORS.filter(function(x){return x.n===S.armor})[0];var f=[];if(ar&&ar.t!=='N'&&(p.arm||[]).indexOf(ar.t)<0)f.push('armadura '+{L:'leve',M:'média',P:'pesada'}[ar.t]);if(S.shield&&!p.esc)f.push('escudo');return f.join(' e ')}
 function toast(m){var d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
@@ -471,6 +486,8 @@ function uAt(){
   var caS=ar.t==='P'?'pesada':ar.t==='M'?ar.ca+'+DEX(máx 2)':ar.ca+'+DEX';if(S.shield)caS+='+2';
   // P-095, R15-7: escamas da Animalesca 2+ (botão "escamas ativas": +1 de CA; não soma com a CA natural da Forma de Besta Lendária)
   var escOk=temAura('Animalesca',2);if(escOk&&S.escamas){ca+=1;caS+='+1 escamas'}
+  // Corpo Titânico (D-135): +1 de CA; +2 com a Titânica no nível 3
+  var ctB=corpoTit();if(ctB){ca+=ctB;caS+='+'+ctB+' Corpo Titânico'}
   var mvR=RACES[S.race]?RACES[S.race].mv:9,mov=mvR+(ar.mv||0);
   var mvS=S.race+(ar.mv?' '+ar.mv+' m armadura':'');
   // P-095: Dom de Hachiman (+10 m de movimento) entra no cálculo
@@ -565,7 +582,9 @@ function vestRec(cur,max,ganho){var g=Math.max(0,Math.min(max-cur,ganho));return
 function restLong(){
   S.shortRests=0;S.hdUsed=0;S.furiaUsada=false;S.tonicoUsado=false;S.adaptUsos=0;S.curHP=gv('curHP')+vestRec(gv('curHP'),S.maxHP,S.maxHP);sv('curHP',S.curHP);S.curMP=gv('curMP')+vestRec(gv('curMP'),S.maxMP,S.maxMP);sv('curMP',S.curMP);S.falls=0;sv('falls',0);rFalls();if(typeof rRaca==='function')rRaca();
   S.exTreino=Math.max(0,(S.exTreino||0)-1);uBa();rRests();if(typeof rExh==='function')rExh();
-  toast('Descanso longo: '+(S.vestigar?'HP e MP a 75% (Vestigar)':'HP e MP cheios')+' · dados de vida recuperados · Quedas zeradas · Exaustão de Arka → '+S.exTreino)
+  // D-135: ao fim do descanso longo o Titânico escolhe de novo as emprestadas, sem custo
+  var tEmp=titLv()>0;if(tEmp){S.empLivre=true;if(typeof rEmp==='function')rEmp()}
+  toast('Descanso longo: '+(S.vestigar?'HP e MP a 75% (Vestigar)':'HP e MP cheios')+' · dados de vida recuperados · Quedas zeradas · Exaustão de Arka → '+S.exTreino+(tEmp?' · escolha das emprestadas aberta (aba Auras)':''))
 }
 function rRests(){var e=$('srCt');if(e)e.textContent=(S.shortRests||0)+'/2 curtos';var h=$('hdCt');if(h)h.textContent='· dados de vida: '+hdLeft()+'/'+(S.level||LV_MIN)+' (até '+hdMaxRest()+' por descanso curto)'}
 // Meditação (P-071): 2d8 + mod DOM de MP
@@ -577,10 +596,10 @@ function rRaca(){var el=$('racaPanel');if(!el)return;var h='';
   else if(S.race==='Anjo')h='<b style="color:#f0e68c">Planagem</b> (P-084): se puder abrir as asas, não sofre dano de queda e avança 1 m na horizontal a cada 1 m de queda; não ganha altura.';
   el.innerHTML=h}
 function rollReac(a,nm){var d=Math.floor(Math.random()*20)+1,m=gM(gF(a));toast(nm+': d20 ['+d+'] '+(m>=0?'+':'')+m+' '+a+' = '+(d+m)+(nm==='Aparar'&&d===20?' · 20 natural: vantagem no próximo ataque contra o atacante':''))}
-// Ação Lendária de jogador (D-68, R11-2): quem fez o Despertar Divino; 1 por rodada, no fim do turno de outra criatura, máx. 2 por combate; 1 ataque ou 1 Projetar Básico (até 12 MP, pago normalmente); não gasta a reação
+// Ação Lendária de jogador (D-68, R11-2, D-135): quem fez o Despertar Divino ou o Ápice Titânico; 1 por rodada, no fim do turno de outra criatura, máx. 2 por combate; 1 ataque ou 1 Projetar Básico (até 12 MP, pago normalmente); não gasta a reação
 var AL_MAX=2;
-function rAL(){var el=$('alPanel');if(!el)return;var dz=despertada();if(!dz){el.innerHTML='<b style="color:var(--tx)">Ação Lendária</b>: só para quem fez o Despertar Divino (1 por rodada, máx. 2 por combate).';return}
-  var u=S.acaoLend||0;el.innerHTML='<b style="color:#f4d03f">✦ Ação Lendária</b> ('+esc(dz.n)+' desperta): 1 por rodada, no fim do turno de outra criatura; 1 ataque ou 1 Projetar Básico (até 12 MP, pago normalmente); não gasta a reação. <span style="color:var(--tx)">Usadas neste combate: <b>'+u+'/'+AL_MAX+'</b></span> <button class="bt bp bsm" style="padding:1px 6px" onclick="useAL()">Usar</button> <button class="bt bo bsm" style="padding:1px 6px" onclick="S.acaoLend=0;rAL()">Novo combate</button>'}
+function rAL(){var el=$('alPanel');if(!el)return;var dz=despertada();if(!dz){el.innerHTML='<b style="color:var(--tx)">Ação Lendária</b>: só para quem fez o Despertar Divino ou o Ápice Titânico (1 por rodada, máx. 2 por combate).';return}
+  var u=S.acaoLend||0;el.innerHTML='<b style="color:#f4d03f">✦ Ação Lendária</b> ('+(dz.n==='Titânica'?'Ápice Titânico':esc(dz.n)+' desperta')+'): 1 por rodada, no fim do turno de outra criatura; 1 ataque ou 1 Projetar Básico (até 12 MP, pago normalmente); não gasta a reação. <span style="color:var(--tx)">Usadas neste combate: <b>'+u+'/'+AL_MAX+'</b></span> <button class="bt bp bsm" style="padding:1px 6px" onclick="useAL()">Usar</button> <button class="bt bo bsm" style="padding:1px 6px" onclick="S.acaoLend=0;rAL()">Novo combate</button>'}
 function useAL(){if((S.acaoLend||0)>=AL_MAX){toast('Máximo de '+AL_MAX+' Ações Lendárias por combate (R11-2)');return}S.acaoLend=(S.acaoLend||0)+1;rAL();toast('Ação Lendária '+S.acaoLend+'/'+AL_MAX)}
 function rFalls(){var e=$('fallsNote');if(!e)return;var f=gv('falls');S.falls=f;e.style.color=f>=4?'var(--dn)':'var(--td)';e.textContent=f>=4?'4ª Queda: o personagem morre.':QUEDAS_TXT}
 var QUEDAS_TXT='Cair a 0 HP marca 1 Queda. Na 4ª Queda o personagem morre. Teste contra a morte: 1d20 + mod CON, CD 10. Medicina (SAB) CD 10 estabiliza com 1 HP. As Quedas zeram no descanso longo. Sobredano de 75% ou mais do HP máximo = morte, sem testes (D-27, D-93).';
@@ -590,7 +609,7 @@ function uBa(){var h=$('hpB'),m=$('mpB');if(h)h.style.width=Math.max(0,(gv('curH
 
 // ═══ PROFICIENCIES ═══
 function bPr(){
-  $('t-profs').innerHTML='<div class="st">Testes de Resistência</div><div style="font-size:11px;color:var(--td);margin-bottom:6px">1d20 + mod do atributo + proficiência, se proficiente. Cada profissão é proficiente em 2 (R10-5); Anão: +2 em CON. Veneno e doença pedem CON; explosões e armadilhas, DEX; empurrões e agarrões, FOR; medo e efeitos mentais, SAB (a perícia Vontade fica para situações fora de combate, D-83).</div><div id="resList" class="f fw g6" style="margin-bottom:14px"></div><div class="st">Perícias</div><div style="font-size:11px;color:var(--td);margin-bottom:6px">Clique no círculo para marcar proficiência. Bônus = mod do atributo + proficiência (+2 nv 3–6, +3 nv 7–10, +4 nv 11–14, +5 nv 15). ◆ = perícia da lista da profissão.</div><div style="font-size:11px;color:var(--td);margin-bottom:10px"><b style="color:var(--tx)">Na criação:</b> 4 perícias da lista da profissão + 2 livres, de qualquer atributo (P-060). <span id="perCt"></span></div><div id="espSel"></div><div id="pList"></div><div class="st" style="margin-top:14px">Proficiências de Arma ou Ferramenta</div><div style="font-size:11px;color:var(--td);margin-bottom:6px" id="armProfTxt"></div><div class="f g8 fw" id="toolPr"></div><div class="st" style="margin-top:14px">Perícias Personalizadas</div><div id="cpList"></div><div class="f g6 ai" style="margin-top:8px"><input type="text" id="npN" placeholder="Nome..." style="width:130px"><select id="npA" style="width:65px">'+A.map(function(a){return'<option value="'+a+'">'+a+'</option>'}).join('')+'</select><button class="bt bp bsm" onclick="aCP()">+ Adicionar</button></div>';
+  $('t-profs').innerHTML='<div class="st">Testes de Resistência</div><div style="font-size:11px;color:var(--td);margin-bottom:6px">1d20 + mod do atributo + proficiência, se proficiente. Cada profissão é proficiente em 2 (R10-5); Anão: +2 em CON; Titânico: +1 em todos (+2 com a Titânica no nível 3), Corpo Titânico (D-135). Veneno e doença pedem CON; explosões e armadilhas, DEX; empurrões e agarrões, FOR; medo e efeitos mentais, SAB (a perícia Vontade fica para situações fora de combate, D-83).</div><div id="resList" class="f fw g6" style="margin-bottom:14px"></div><div class="st">Perícias</div><div style="font-size:11px;color:var(--td);margin-bottom:6px">Clique no círculo para marcar proficiência. Bônus = mod do atributo + proficiência (+2 nv 3–6, +3 nv 7–10, +4 nv 11–14, +5 nv 15). ◆ = perícia da lista da profissão.</div><div style="font-size:11px;color:var(--td);margin-bottom:10px"><b style="color:var(--tx)">Na criação:</b> 4 perícias da lista da profissão + 2 livres, de qualquer atributo (P-060). <span id="perCt"></span></div><div id="espSel"></div><div id="pList"></div><div class="st" style="margin-top:14px">Proficiências de Arma ou Ferramenta</div><div style="font-size:11px;color:var(--td);margin-bottom:6px" id="armProfTxt"></div><div class="f g8 fw" id="toolPr"></div><div class="st" style="margin-top:14px">Perícias Personalizadas</div><div id="cpList"></div><div class="f g6 ai" style="margin-top:8px"><input type="text" id="npN" placeholder="Nome..." style="width:130px"><select id="npA" style="width:65px">'+A.map(function(a){return'<option value="'+a+'">'+a+'</option>'}).join('')+'</select><button class="bt bp bsm" onclick="aCP()">+ Adicionar</button></div>';
   rPr()
 }
 function rPr(){
@@ -598,7 +617,7 @@ function rPr(){
   // P-060: 4 da lista da profissão + 2 livres (as livres podem ser da lista); Persuasão dada pelo Especialista não conta (D-71)
   var lst=profPer(),mk=DP.filter(function(p){return S.proficiencies.indexOf(p.n)>=0}).map(function(p){return p.n}),nOn=mk.length,nL=mk.filter(function(n){return lst.indexOf(n)>=0}).length;
   var pc=$('perCt');if(pc){pc.innerHTML=lst.length?'Marcadas: <b style="color:'+(nOn>PER_CRIACAO?'#b83030':'var(--ac)')+'">'+nOn+'/'+PER_CRIACAO+'</b> · da lista da profissão: <b style="color:'+(nL<Math.min(PER_PROF,nOn)&&nOn>=PER_CRIACAO?'#b83030':'var(--ac)')+'">'+nL+'</b> (mín. '+PER_PROF+')'+(nOn>=PER_CRIACAO&&nL<PER_PROF?' <b style="color:#b83030">— faltam perícias da lista</b>':''):'Marcadas: <b style="color:'+(nOn>PER_CRIACAO?'#b83030':'var(--ac)')+'">'+nOn+'/'+PER_CRIACAO+'</b> (profissão montada: monte a lista de 8 perícias no Perfil)'}
-  var rl=$('resList');if(rl)rl.innerHTML=A.map(function(a){var on=resProf(a),t=resTotal(a),rc=RACES[S.race],rb=rc&&rc.res&&rc.res[a];return '<div class="sb" style="min-width:64px;'+(on?'border-color:var(--ad)':'')+(S.prof==='custom'?';cursor:pointer':'')+'"'+(S.prof==='custom'?' onclick="tRes(\''+a+'\')" title="Profissão montada: clique para marcar"':'')+'><div class="sbl">'+a+(on?' ●':'')+'</div><div class="sbv" style="font-size:15px;color:'+(t>=0?'#3a7a4c':'#b83030')+'">'+(t>=0?'+':'')+t+'</div><div class="sbs">'+(on?'prof.':'')+(rb?' +'+rb+' raça':'')+'</div></div>'}).join('');
+  var rl=$('resList');if(rl)rl.innerHTML=A.map(function(a){var on=resProf(a),t=resTotal(a),rc=RACES[S.race],rb=rc&&rc.res&&rc.res[a];return '<div class="sb" style="min-width:64px;'+(on?'border-color:var(--ad)':'')+(S.prof==='custom'?';cursor:pointer':'')+'"'+(S.prof==='custom'?' onclick="tRes(\''+a+'\')" title="Profissão montada: clique para marcar"':'')+'><div class="sbl">'+a+(on?' ●':'')+'</div><div class="sbv" style="font-size:15px;color:'+(t>=0?'#3a7a4c':'#b83030')+'">'+(t>=0?'+':'')+t+'</div><div class="sbs">'+(on?'prof.':'')+(rb?' +'+rb+' raça':'')+(corpoTit()?' +'+corpoTit()+' Titânica':'')+'</div></div>'}).join('');
   var at=$('armProfTxt');if(at){var gp=profPac()||{};at.innerHTML=(gp.armas?'<b style="color:var(--tx)">Da profissão:</b> armas '+gp.armas.toLowerCase()+'; armaduras '+gp.arm.map(function(t){return ARM_NOME[t]}).join(', ')+(gp.esc?' e escudo':'')+' (P-049). ':'')+'Mais 2 livres de arma ou ferramenta, nunca categoria de armadura (D-45). Arma sem proficiência: não soma a proficiência ao ataque. Armadura sem proficiência: desvantagem nos ataques (inclusive de Arka) e nos testes de FOR e DEX.<br><b style="color:var(--tx)">Ferramentas</b> (P-080): '+FERRAMENTAS.join(', ')+'. Proficiente na ferramenta: soma a proficiência ao teste feito com ela. Perícia e ferramenta do mesmo teste: vantagem, sem somar a proficiência duas vezes.'}
   var es=$('espSel');if(es){if(S.prof==='Diplomata'){var eo=PP.Diplomata.per.filter(function(n){return n!=='Persuasão'});es.innerHTML='<div class="f ai g6" style="margin-bottom:8px;font-size:11px"><span style="color:var(--ac)">Especialista (Diplomata):</span><span style="color:var(--td)">Persuasão e</span><select style="width:190px" onchange="S.especialista=this.value;rPr()"><option value="">— 1 perícia da lista —</option>'+eo.map(function(n){return '<option'+(S.especialista===n?' selected':'')+'>'+n+'</option>'}).join('')+'</select><span style="color:var(--tm)">proficiência dobrada (precisa ser proficiente)</span></div>'}else es.innerHTML=''}
   var tp=$('toolPr');if(tp){if(!S.toolProfs)S.toolProfs=['',''];var th='';for(var ti=0;ti<PROF_LIVRES;ti++)th+='<input type="text" list="ferrList" style="flex:1;min-width:140px" placeholder="Arma ou ferramenta '+(ti+1)+'..." value="'+esc(S.toolProfs[ti]||'')+'" onchange="S.toolProfs['+ti+']=this.value;sync()">';tp.innerHTML=th+'<datalist id="ferrList">'+FERRAMENTAS.map(function(f){return '<option value="'+f+'">'}).join('')+'</datalist>'}
@@ -645,14 +664,15 @@ function bAu(){
   AG.forEach(function(g){h+='<optgroup label="'+g.n+(g.n==='Primordial'?' (raríssima — requer aprovação do Mestre, D-61)':'')+'">';(AD[g.n]||[]).forEach(function(a){if(a.dev)return;h+='<option value="'+a.n+'">'+a.n+'</option>'});h+='</optgroup>'});
   h+='<optgroup label="Centro do hexagrama"><option value="Titânica">Titânica</option></optgroup></select></div>';
   h+='<div id="myAuras" style="margin-bottom:8px"></div>';
+  h+='<div id="empAuras"></div>'; // D-135: auras emprestadas do Titânico
   h+='<div class="f g6 ai fw" style="margin-bottom:6px"><span style="font-size:10px;color:var(--td)">Comprar aura nova:</span><select id="buyAura" style="flex:1;min-width:150px"></select><button class="bt bp bsm" onclick="buyAura()">Comprar</button></div>';
-  h+='<div style="font-size:10px;color:var(--td);margin:0 0 10px;line-height:1.5">Progressão por Pontos de Progressão (PP): 1 por nível do 4 ao 15, +1 nos níveis 5, 10 e 15 (15 no total; D-89). <b style="color:var(--tx)">Subir aura:</b> 1→2 = 3 PP, 2→3 = 4 PP (R13-1); os níveis são cumulativos (D-59); em território imperial, nível 2 exige a licença Intermediária (30 CO) e nível 3 a Avançada (250 CO, exige a Intermediária) (R10-6, D-66). <b style="color:var(--tx)">Aura nova</b> (entra no nível 1): 1 / 2 / 2 / 3 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura de nascença (R13-1). Titânica e Ícor (Aura Própria) só de nascença. Quem nasce Titânico compra qualquer outra aura por 2 PP e sobe a Titânica por 3/4 PP (provisório). Sem nível mínimo de personagem. <b style="color:var(--tx)">Compras definitivas</b> (D-53): só podem ser desfeitas antes de confirmadas (botão na barra de PP) ou do próximo level-up; depois, sem reembolso. <b style="color:var(--tx)">Despertar Divino</b> (nível 4): qualquer aura no nível 3 + um acontecimento de lore que o justifique, sob controle do Mestre; não custa PP nem vem com o nível (D-89); <b style="color:var(--tx)">um único Despertar por personagem</b> (D-56); o jogador escolhe um deus da Área da aura e recebe o Dom dele (D-49) e ganha 1 Ação Lendária por rodada, no máximo 2 por combate (D-68, R11-2; aba Atributos). <b style="color:var(--tx)">Quem nasce Titânico não desperta nenhuma aura</b>, nem as compradas, até a Titânica ter regra própria (D-59, D-62). <b style="color:var(--tx)">Aura hereditária Primordial</b>: possível, mas raríssima — requer aprovação do Mestre; o caminho normal é comprar com PP (D-61).<b style="color:var(--tx)">Todas as auras ficam ativas ao mesmo tempo</b> (D-29): o custo de combiná-las vem da Compatibilidade e da Exaustão. Entre auras, vale só a <b style="color:var(--tx)">maior</b> resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP <b style="color:var(--tx)">se somam</b> (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de <b style="color:var(--tx)">50%</b> da tabela.</div>';
+  h+='<div style="font-size:10px;color:var(--td);margin:0 0 10px;line-height:1.5">Progressão por Pontos de Progressão (PP): 1 por nível do 4 ao 15, +1 nos níveis 5, 10 e 15 (15 no total; D-89). <b style="color:var(--tx)">Subir aura:</b> 1→2 = 3 PP, 2→3 = 4 PP (R13-1); os níveis são cumulativos (D-59); em território imperial, nível 2 exige a licença Intermediária (30 CO) e nível 3 a Avançada (250 CO, exige a Intermediária) (R10-6, D-66). <b style="color:var(--tx)">Aura nova</b> (entra no nível 1): 1 / 2 / 2 / 3 PP para a mesma Área / vizinha / a 2 passos / oposta, contando a partir da Área da aura de nascença (R13-1). Titânica e Ícor (Aura Própria) não se compram: o Ícor é só de nascença e a Titânica vem da história (sorteio 1d20 na criação com 20 natural, Titânico latente ou Marca do Surto; o Mestre confirma, D-134). O Titânico compra qualquer outra aura por 2 PP e sobe a Titânica por 3/4 PP (D-132). Sem nível mínimo de personagem. <b style="color:var(--tx)">Compras definitivas</b> (D-53): só podem ser desfeitas antes de confirmadas (botão na barra de PP) ou do próximo level-up; depois, sem reembolso. <b style="color:var(--tx)">Despertar Divino</b> (nível 4): qualquer aura no nível 3 + um acontecimento de lore que o justifique, sob controle do Mestre; não custa PP nem vem com o nível (D-89); <b style="color:var(--tx)">um único Despertar por personagem</b> (D-56); o jogador escolhe um deus da Área da aura e recebe o Dom dele (D-49) e ganha 1 Ação Lendária por rodada, no máximo 2 por combate (D-68, R11-2; aba Atributos). <b style="color:var(--tx)">Titânica</b>: não desperta; no lugar, com a Titânica no nível 3 e um acontecimento de lore, alcança o Ápice Titânico (+1 emprestada e Ação Lendária, sem Dom), que conta como o único Despertar. As auras compradas ou emprestadas pelo Titânico não despertam (D-135). <b style="color:var(--tx)">Aura hereditária Primordial</b>: possível, mas raríssima — requer aprovação do Mestre; o caminho normal é comprar com PP (D-61).<b style="color:var(--tx)">Todas as auras ficam ativas ao mesmo tempo</b> (D-29): o custo de combiná-las vem da Compatibilidade e da Exaustão. Entre auras, vale só a <b style="color:var(--tx)">maior</b> resistência a cada tipo de dano (raça × aura segue multiplicativa); descontos de MP <b style="color:var(--tx)">se somam</b> (ex.: −10% e −15% = −25%), mas nunca baixam o custo abaixo de <b style="color:var(--tx)">50%</b> da tabela.</div>';
   h+='<div class="fd"><label class="fl">Descrição</label><textarea id="pAuraDesc" rows="2" placeholder="Como manifesta..." oninput="sync()"></textarea></div>';
   h+='<div class="fd"><label class="fl">Técnicas <span style="font-weight:400;color:var(--tm)">(ver aba Técnicas)</span></label><div id="pTechsSummary" style="font-size:11px;color:var(--td);padding:6px 9px;background:var(--cd);border:1px solid var(--bd);border-radius:4px;min-height:28px"></div></div>';
   h+='<div class="fd"><label class="fl">Notas sobre as auras</label><textarea id="pExtraAuras" rows="2" placeholder="Como foram conquistadas, licenças, mentores..." oninput="sync()"></textarea></div>';
   $('t-auras').innerHTML=h;iHex();rCat();syncTechsText();rMyAuras()
 }
-// ── Auras do personagem (D-28, D-29, D-42, D-43, D-47; PG economia) ──
+// ── Auras do personagem (D-28, D-29, D-43, D-47, D-132 a D-135; PG economia) ──
 // P-097: a aura de nascença é escolhida na criação e não muda depois; trava quando as compras são confirmadas (ou no level-up).
 // Só o Mestre destrava, num caso excepcional.
 function herTravada(){var h=auraHer();return !!h&&!S.herLivre&&ppConf().auras[h.n]!==undefined}
@@ -662,19 +682,26 @@ function setHer(n){
   if(!S.auras)S.auras=[];
   S.auras=S.auras.filter(function(x){return !x.her&&x.n!==n});
   if(n)S.auras.unshift({n:n,lv:1,her:true});
-  // D-62: quem nasce Titânico não desperta nenhuma aura (nem as compradas)
-  if(n==='Titânica')S.auras.forEach(function(x){if(x.lv>3){x.lv=3;delete x.deus}});
+  // D-135: as auras compradas pelo Titânico não despertam; sem a Titânica, as emprestadas soltas saem (as fixas ficam)
+  if(n==='Titânica')S.auras.forEach(function(x){if(x.lv>3&&x.n!=='Titânica'){x.lv=3;delete x.deus}});
+  else S.emprest=(S.emprest||[]).filter(function(e){return e.fixa});
   S.auraInit=n;rMyAuras();sync();
+  if(n==='Titânica')toast('Titânica: não se escolhe. Vem do sorteio na criação (1d20, 20 natural), do Titânico latente ou da Marca do Surto; o Mestre confirma (D-134)');
   if(n&&auraArea(n)==='Primordial')toast(n+': aura Primordial de nascença é raríssima — requer aprovação do Mestre (D-61)')
 }
-function nascTitanico(){var h=auraHer();return !!h&&h.n==='Titânica'} // D-62
+function nascTitanico(){var h=auraHer();return !!h&&h.n==='Titânica'} // Titânico, de nascença ou convertido (D-132 a D-135)
 function auraUp(i,d){
   var x=S.auras[i];if(!x)return;
   if(d>0){
     if(x.lv>=4){toast('Nível máximo');return}
     if(x.lv===3){
-      // Despertar Divino (D-47, D-51, D-56, D-59, D-62): qualquer aura no nv 3, sem PP, um só por personagem; quem nasce Titânico não desperta nenhuma aura
-      if(nascTitanico()){toast('Quem nasce Titânico não desperta nenhuma aura, nem as compradas, até a Titânica ter regra própria (D-62)');return}
+      // Despertar Divino (D-47, D-51, D-56, D-59): qualquer aura no nv 3, sem PP, um só por personagem.
+      // Titânica (D-135): no lugar do Despertar, o Ápice Titânico (nv 3 + evento de lore, 0 PP; +1 emprestada e Ação Lendária, sem Dom; conta como o único Despertar)
+      if(x.n==='Titânica'){var dt=despertada();if(dt){toast('O Ápice Titânico conta como o único Despertar do personagem (D-135, D-56): já há '+dt.n);return}
+        if(!confirm('Ápice Titânico: exige a Titânica no nível 3 e um acontecimento de lore aprovado pelo Mestre. Não custa PP. Dá +1 aura emprestada (5 no total) e a Ação Lendária de jogador (1 por rodada, máx. 2 por combate); não há Dom. Conta como o único Despertar do personagem (D-135). Confirmar?'))return;
+        x.lv=4;delete x.deus;rMyAuras();rPP();sync();toast('Titânica: Ápice Titânico');return}
+      // As auras compradas pelo Titânico não despertam (D-132, D-135)
+      if(nascTitanico()){toast('As auras compradas pelo Titânico não despertam (D-135); só a Titânica alcança o Ápice Titânico');return}
       var dz=despertada();if(dz){toast('Só um Despertar Divino por personagem (D-56): '+dz.n+(dz.deus?' sob '+dz.deus:''));return}
       var ar=auraArea(x.n),gs=PANTEAO[ar]||[];if(!gs.length){toast(x.n+': Área sem deuses no panteão');return}
       if(!confirm('Despertar Divino (nível 4) de '+x.n+': exige a aura no nível 3 e um acontecimento de lore aprovado pelo Mestre. Não custa PP. Só um Despertar por personagem (D-56). Deus da Área '+ar+': '+gs.map(function(g){return g.n}).join(', ')+'. Confirmar?'))return;
@@ -693,7 +720,7 @@ function auraUp(i,d){
   }
   rMyAuras();rPP();sync()
 }
-function despertada(){return (S.auras||[]).filter(function(y){return y.lv===4})[0]}
+function despertada(){return (S.auras||[]).filter(function(y){return y.lv===4})[0]||(S.emprest||[]).filter(function(e){return e.fixa&&e.lv===4})[0]} // D-56; inclui a fixa do convertido que já tinha despertado
 function setDeus(i,v){var x=S.auras[i];if(!x)return;x.deus=v;rMyAuras();sync()}
 function buyAura(){
   var sel=$('buyAura');if(!sel||!sel.value)return;var n=sel.value;
@@ -702,18 +729,66 @@ function buyAura(){
   if(ppLeft()<c){toast('PP insuficientes: '+n+' custa '+c+' PP');return}
   S.auras.push({n:n,lv:1,her:false,pago:c});rMyAuras();rPP();sync();toast(n+' comprada ('+c+' PP)')
 }
+// ── Auras emprestadas do Titânico (D-135) e Titânico convertido (D-134) ──
+function rEmp(){
+  var el=$('empAuras');if(!el)return;if(!S.emprest)S.emprest=[];
+  var tl=titLv(),fx=S.emprest.filter(function(e){return e.fixa});
+  if(!tl&&!fx.length){el.innerHTML='';return}
+  var vg=titVagas(),so=empSoltas().length;
+  var h='<div class="crd" style="border-left:3px solid #ff6600;margin-bottom:8px;padding:8px 10px"><div style="font-family:Cinzel,serif;font-size:11px;font-weight:700;color:#ff6600;margin-bottom:4px">⬢ Auras emprestadas</div>';
+  h+='<div style="font-size:10px;color:var(--td);line-height:1.5;margin-bottom:6px">'+(tl?'Titânica no nível '+tl+(titApice()?' com o Ápice Titânico':'')+': <b style="color:'+(so>vg?'#b83030':'var(--tx)')+'">'+so+'/'+vg+' vagas</b>, todas no <b style="color:var(--tx)">nível '+tl+'</b>. ':'Sem a Titânica, só a emprestada fixa continua. ')+'Escolha ao fim de cada descanso longo, entre as auras que já viu em uso (o Mestre confirma a lista). Ficam todas ativas e contam para a Compatibilidade, as resistências e a licença; podem ser Primordiais, nunca o Ícor; não sobem com PP e não despertam.</div>';
+  S.emprest.forEach(function(e,i){var ar=auraArea(e.n),g=AG.find(function(q){return q.n===ar}),c=g?g.c:'#ff6600',lv=empLv(e);
+    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-left:3px solid '+c+';background:var(--cd);border-radius:4px;margin-bottom:4px;padding:5px 9px"><span style="font-weight:600;font-size:12px;min-width:110px">'+esc(e.n)+'</span><span style="font-size:9px;color:'+c+'">'+(ar||'fora do catálogo')+' · emprestada'+(e.fixa?' · <b style="color:#ff6600">fixa</b> (não ocupa vaga'+(e.pp?', '+e.pp+' PP gastos nela':'')+')':'')+'</span>';
+    h+='<span style="margin-left:auto;font-size:11px;color:var(--ac);font-weight:700">nível '+(lv===4?'4 ✦':lv)+'</span>';
+    if(lv>=2)h+='<span style="font-size:9px;color:var(--dn)" title="Território imperial (R10-6)">licença '+(lv>=3?'Avançada':'Intermediária')+'</span>';
+    if(lv===4&&e.deus)h+='<span style="font-size:9px;color:#f4d03f">Despertar sob '+esc(e.deus)+'</span>';
+    h+='<label style="font-size:9px;color:var(--td);display:flex;align-items:center;gap:3px;cursor:pointer" title="Titânico convertido (D-134): sempre carregada, não ocupa vaga, fica no nível em que estava; só com o Mestre"><input type="checkbox"'+(e.fixa?' checked':'')+' onchange="empFixa('+i+',this.checked)">fixa</label>';
+    h+='<button class="nb" onclick="empDel('+i+')" title="Tirar a emprestada" style="color:var(--dn);font-size:10px">✕</button></div>'});
+  if(tl){var own=(S.auras||[]).map(function(x){return x.n}).concat(S.emprest.map(function(e){return e.n})),o='';
+    AG.forEach(function(g){if(g.n==='Ícor')return;var op='';(AD[g.n]||[]).forEach(function(a){if(a.dev||own.indexOf(a.n)>=0)return;op+='<option value="'+a.n+'">'+a.n+'</option>'});if(op)o+='<optgroup label="'+g.n+'">'+op+'</optgroup>'});
+    h+='<div class="f g6 ai fw" style="margin-top:6px"><span style="font-size:10px;color:var(--td)">Emprestar:</span><select id="empSel" style="flex:1;min-width:150px"><option value="">Escolha uma aura já vista em uso</option>'+o+'</select><button class="bt bp bsm" onclick="empAdd()">Emprestar</button></div>';
+    h+='<div style="font-size:10px;line-height:1.5;margin-top:6px">'+(S.empLivre?'<span style="color:var(--sc)">Escolha do descanso longo aberta: as emprestadas entram sem custo.</span> <button class="bt bo bsm" style="padding:1px 6px" onclick="empFechar()">Fechar a escolha</button>':'<span style="color:var(--td)">Escolha fechada: trocar uma emprestada antes do próximo descanso longo exige 10 minutos de concentração e dá +1 nível de Exaustão de Arka.</span> <button class="bt bo bsm" style="padding:1px 6px" onclick="empAbrir()">reabrir (Mestre)</button>')+'</div>'}
+  el.innerHTML=h+'</div>'
+}
+function empAdd(){
+  var sel=$('empSel');if(!sel||!sel.value)return;var n=sel.value;if(!S.emprest)S.emprest=[];
+  if(!titLv()){toast('Só o Titânico empresta auras (D-135)');return}
+  if(empSoltas().length>=titVagas()){toast('Sem vaga: a Titânica no nível '+titLv()+(titApice()?' com o Ápice':'')+' carrega '+titVagas()+' emprestadas (D-135)');return}
+  var ex=false;if(!S.empLivre){if(!confirm('Trocar uma emprestada antes do próximo descanso longo exige 10 minutos de concentração e dá +1 nível de Exaustão de Arka (D-135). Confirmar?'))return;S.exTreino=Math.min(5,(S.exTreino||0)+1);ex=true;if(typeof rExh==='function')rExh()}
+  S.emprest.push({n:n});rMyAuras();sync();toast(n+' emprestada no nível '+titLv()+(ex?' · Exaustão de Arka → '+S.exTreino:''))
+}
+function empDel(i){var e=(S.emprest||[])[i];if(!e)return;
+  if(e.fixa&&!confirm('Tirar a emprestada fixa '+e.n+'? Só o Mestre decide isso.'+(e.pp?' Os '+e.pp+' PP gastos nela voltam.':'')))return;
+  S.emprest.splice(i,1);rMyAuras();rPP();sync()}
+function empFixa(i,on){var e=(S.emprest||[])[i];if(!e)return;
+  if(on){if(!confirm('Marcar '+e.n+' como emprestada fixa (Titânico convertido, D-134)? Fica sempre carregada no nível '+empLv(e)+', não ocupa vaga, não sobe mais com PP e não desperta. Só com o Mestre.')){rEmp();return}e.lv=empLv(e);e.fixa=true}
+  else{if(!confirm('Desmarcar a fixa de '+e.n+'? Ela volta a ocupar uma vaga, no nível da Titânica.'+(e.pp?' Os '+e.pp+' PP guardados nela voltam.':''))){rEmp();return}e.fixa=false;delete e.lv;delete e.pp;delete e.deus}
+  rMyAuras();rPP();sync()}
+function empFechar(){S.empLivre=false;rEmp();sync();toast('Emprestadas escolhidas até o próximo descanso longo')}
+function empAbrir(){if(!confirm('Reabrir a escolha das emprestadas sem custo? Só o Mestre (por exemplo, a Titânica subiu de nível e ganhou vaga).'))return;S.empLivre=true;rEmp();sync()}
+// Titânico convertido (D-134): a aura de nascença vira emprestada fixa (nível e PP preservados) e a Titânica entra no nível 1
+function titConverter(){var h=auraHer();if(!h){toast('Escolha primeiro a aura de nascença');return}if(h.n==='Titânica')return;
+  if(!confirm('Titânico convertido (D-134): '+h.n+' vira emprestada fixa (sempre carregada, não ocupa vaga, fica no nível '+h.lv+', não sobe mais com PP e não desperta; os PP gastos nela não se perdem) e a Titânica entra no nível 1. Só com o Mestre (Titânico latente ou Marca do Surto). Confirmar?'))return;
+  if(!S.emprest)S.emprest=[];var e={n:h.n,lv:h.lv,fixa:true,pp:auraSpent(h)};if(h.deus)e.deus=h.deus;S.emprest.push(e);
+  S.auras=S.auras.filter(function(x){return x!==h});S.auras.unshift({n:'Titânica',lv:1,her:true});S.auraInit='Titânica';ppConf().auras['Titânica']=1;S.empLivre=true;
+  rMyAuras();rPP();sync();toast(h.n+' agora é emprestada fixa; escolha as emprestadas da Titânica')}
+function titSorteio(){var d=Math.floor(Math.random()*20)+1;toast('Sorteio Titânico (D-134): 1d20 ['+d+']'+(d===20?' · 20 natural: nasce Titânico! Escolha a Titânica como aura de nascença (o Mestre confirma)':' · não nasce Titânico'))}
 function rMyAuras(){
   var el=$('myAuras');if(!el)return;if(!S.auras)S.auras=[];
   var her=auraHer();var pi=$('pAuraInit');if(pi){pi.value=her?her.n:'';pi.disabled=herTravada()}
-  var hl=$('herLock');if(hl)hl.innerHTML=herTravada()?'<span style="color:var(--dn)">🔒 travada</span> <button class="bt bo bsm" style="padding:0 5px;font-size:7px" onclick="herDestravar()">destravar (Mestre)</button>':(S.herLivre&&her?'<span style="color:var(--ac)">🔓 destravada pelo Mestre</span>':'');
+  var hl=$('herLock');if(hl)hl.innerHTML=herTravada()?'<span style="color:var(--dn)">🔒 travada</span> <button class="bt bo bsm" style="padding:0 5px;font-size:7px" onclick="herDestravar()">destravar (Mestre)</button>':(S.herLivre&&her?'<span style="color:var(--ac)">🔓 destravada pelo Mestre</span>':'')
+    +(!herTravada()?' <button class="bt bo bsm" style="padding:0 5px;font-size:7px" onclick="titSorteio()" title="D-134: cada jogador rola 1d20 na criação; 20 natural = nasce Titânico">🎲 sorteio Titânico (1d20)</button>':'')
+    +(her&&her.n!=='Titânica'?' <button class="bt bo bsm" style="padding:0 5px;font-size:7px" onclick="titConverter()" title="Titânico latente ou Marca do Surto (D-134)">tornar Titânico (Mestre)</button>':'');
   if(!S.auras.length){el.innerHTML='<div style="font-size:11px;color:var(--tm);font-style:italic">Nenhuma aura. Escolha a hereditária acima.</div>'}
   else el.innerHTML=S.auras.map(function(x,i){var ar=x.n==='Titânica'?'Centro':auraArea(x.n);var g=AG.find(function(q){return q.n===ar});var c=g?g.c:'#ff6600';
     var dz=despertada(),cf=ppAuraConf(x);
-    var nx=x.lv<3?(PP_AURA_UP[x.lv+1]+' PP'+(S.despGuarda&&S.despGuarda.n===x.n&&x.lv===2?' (restaura o Despertar)':'')):x.lv===3?(nascTitanico()?'não desperta (Titânico, D-62)':dz?'Despertar já usado (D-56)':'Despertar (evento, 0 PP)'):'máx.';
-    var h='<div class="crd" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-left:3px solid '+c+';margin-bottom:4px;padding:6px 9px"><span style="font-weight:600;font-size:12px;min-width:110px">'+esc(x.n)+'</span><span style="font-size:9px;color:'+c+'">'+ar+(x.her?' · hereditária'+(ar==='Primordial'?' · <b style="color:var(--dn)">raríssima — requer aprovação do Mestre (D-61)</b>':''):' · comprada ('+(x.pago||0)+' PP)')+(x.lv>cf?' · <b style="color:var(--ac)">pendente</b>':'')+'</span>';
-    h+='<div class="nc" style="margin-left:auto"><button class="nb" onclick="auraUp('+i+',-1)">−</button><span class="nv" style="color:var(--ac)">'+(x.lv===4?'4 ✦':x.lv)+'</span><button class="nb" onclick="auraUp('+i+',1)">+</button></div><span style="font-size:9px;color:var(--tm);min-width:90px">próx.: '+nx+'</span>';
+    var nx=x.lv<3?(PP_AURA_UP[x.lv+1]+' PP'+(S.despGuarda&&S.despGuarda.n===x.n&&x.lv===2?' (restaura o Despertar)':'')):x.lv===3?(x.n==='Titânica'?(dz?'Despertar já usado (D-56)':'Ápice Titânico (evento, 0 PP)'):nascTitanico()?'não desperta (Titânico, D-135)':dz?'Despertar já usado (D-56)':'Despertar (evento, 0 PP)'):'máx.';
+    var h='<div class="crd" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-left:3px solid '+c+';margin-bottom:4px;padding:6px 9px"><span style="font-weight:600;font-size:12px;min-width:110px">'+esc(x.n)+'</span><span style="font-size:9px;color:'+c+'">'+ar+(x.her?(x.n==='Titânica'&&(S.emprest||[]).some(function(e){return e.fixa})?' · Titânico convertido':' · hereditária')+(ar==='Primordial'?' · <b style="color:var(--dn)">raríssima — requer aprovação do Mestre (D-61)</b>':''):' · comprada ('+(x.pago||0)+' PP)')+(x.lv>cf?' · <b style="color:var(--ac)">pendente</b>':'')+'</span>';
+    h+='<div class="nc" style="margin-left:auto"><button class="nb" onclick="auraUp('+i+',-1)">−</button><span class="nv" style="color:var(--ac)">'+(x.lv===4?(x.n==='Titânica'?'3 ✦':'4 ✦'):x.lv)+'</span><button class="nb" onclick="auraUp('+i+',1)">+</button></div><span style="font-size:9px;color:var(--tm);min-width:90px">próx.: '+nx+'</span>';
     if(x.lv>=2)h+='<span style="font-size:9px;color:var(--dn)" title="Território imperial (R10-6)">licença '+(x.lv>=3?'Avançada':'Intermediária')+'</span>';
-    if(x.lv===4){
+    if(x.n==='Titânica')h+='<span style="font-size:9px;color:#ff6600" title="Corpo Titânico (D-135)">Corpo Titânico +'+corpoTit()+' CA e resistências · '+titVagas()+' emprestadas no nível '+titLv()+'</span>';
+    if(x.lv===4&&x.n==='Titânica')h+='<div style="flex-basis:100%;font-size:10px;color:var(--td);line-height:1.5"><b style="color:#ff6600">⬢ Ápice Titânico:</b> +1 emprestada (5 no nível 3) e a Ação Lendária de jogador (aba Atributos); sem Dom. Conta como o único Despertar do personagem (D-135).</div>';
+    else if(x.lv===4){
       // Deus do Despertar: um da Área da aura (D-48, D-49); o Dom vale para essa aura e o tipo de dano dela
       var gs=PANTEAO[auraArea(x.n)]||[],gd=gs.filter(function(g){return g.n===x.deus})[0],trav=cf>=4&&!!x.deus;
       var op='<option value="">— deus da Área '+esc(ar)+' —</option>'+gs.map(function(g){return '<option value="'+g.n+'"'+(x.deus===g.n?' selected':'')+'>'+g.n+' — '+g.dom+'</option>'}).join('');
@@ -721,13 +796,13 @@ function rMyAuras(){
       h+='<select onchange="setDeus('+i+',this.value)" style="font-size:10px;max-width:230px"'+(trav?' disabled':'')+'>'+op+'</select>';
       if(gd)h+='<div style="flex-basis:100%;font-size:10px;color:var(--td);line-height:1.5"><b style="color:#f4d03f">✦ '+gd.n+', '+gd.t+' — '+gd.dom+':</b> '+gd.d+'</div>'}
     return h+'</div>'}).join('');
-  var b=$('buyAura');if(b){var own=S.auras.map(function(x){return x.n}),o='';
+  var b=$('buyAura');if(b){var own=S.auras.map(function(x){return x.n}).concat((S.emprest||[]).filter(function(e){return e.fixa}).map(function(e){return e.n})),o='';
     if(!her)o='<option value="">— escolha a hereditária primeiro —</option>';
-    else AG.forEach(function(g){var opts='';(AD[g.n]||[]).forEach(function(a){if(a.dev||own.indexOf(a.n)>=0)return;var c=auraNovaCost(a.n);if(c==null)return;opts+='<option value="'+a.n+'">'+a.n+' — '+c+' PP</option>'});if(opts)o+='<optgroup label="'+g.n+(her.n==='Titânica'?' (nascido Titânico: '+PP_AURA_NOVA_TITANICO+' PP, provisório)':' (distância '+aDist(auraArea(her.n),g.n)+')')+'">'+opts+'</optgroup>'});
+    else AG.forEach(function(g){var opts='';(AD[g.n]||[]).forEach(function(a){if(a.dev||own.indexOf(a.n)>=0)return;var c=auraNovaCost(a.n);if(c==null)return;opts+='<option value="'+a.n+'">'+a.n+' — '+c+' PP</option>'});if(opts)o+='<optgroup label="'+g.n+(her.n==='Titânica'?' (Titânico: '+PP_AURA_NOVA_TITANICO+' PP, não desperta)':' (distância '+aDist(auraArea(her.n),g.n)+')')+'">'+opts+'</optgroup>'});
     b.innerHTML=o}
-  rPP();if(typeof rAL==='function')rAL();
-  var tms=$('tmStatus');if(tms)tms.innerHTML=(S.auras||[]).some(function(x){return x.lv>=3})?'<span style="color:var(--sc)">Você tem aura no nível 3.</span>':'<span style="color:var(--dn)">Nenhuma aura no nível 3 ainda.</span>';
-  if($('dSt')&&corpoRenovado()!==crnPrev){crnPrev=corpoRenovado();uAt()} // Corpo Renovado muda o HP máximo
+  rEmp();rPP();if(typeof rAL==='function')rAL();
+  var tms=$('tmStatus');if(tms)tms.innerHTML=aurasAtivas().some(function(x){return x.lv>=3})?'<span style="color:var(--sc)">Você tem aura no nível 3.</span>':'<span style="color:var(--dn)">Nenhuma aura no nível 3 ainda.</span>';
+  if($('dSt')&&(corpoRenovado()!==crnPrev||corpoTit()!==ctPrev)){crnPrev=corpoRenovado();ctPrev=corpoTit();uAt()} // Corpo Renovado muda o HP máximo; Corpo Titânico, a CA e as resistências
 }
 function iHex(){
   var hex=$('aHex');if(!hex)return;var cx=130,cy=130,r=96;
@@ -747,7 +822,7 @@ function rAI(){
   var t=$('a_T');if(t){t.style.background=selA==='Titânica'?'#ff660012':'#0a0a18';t.style.borderColor=selA==='Titânica'?'#ff6600':'#444'}
   var info=$('aInfo');if(!info)return;
   if(!selA){info.innerHTML='';return}
-  if(selA==='Titânica'){info.innerHTML='<div class="crd" style="border-left:3px solid #ff6600"><div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:#ff6600;margin-bottom:4px">⬢ Titânica</div><div style="font-size:11px;color:var(--td);line-height:1.5">No centro do hexagrama, fora das seis Áreas. Usa outras auras que já tenha visto em uso; nunca acessa Ícor nem as Divinas (nível 4). Quem nasce Titânico não desperta nenhuma aura, nem as compradas (D-59, D-62). Só de nascença: não se compra com PP (D-42). Provisório até ter regra própria: sobe 3 PP (1→2) e 4 PP (2→3); quem nasce Titânico compra qualquer outra aura por 2 PP (R13-1).</div></div>';return}
+  if(selA==='Titânica'){info.innerHTML='<div class="crd" style="border-left:3px solid #ff6600"><div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:#ff6600;margin-bottom:4px">⬢ Titânica</div><div style="font-size:11px;color:var(--td);line-height:1.5">No centro do hexagrama, fora das seis Áreas. Não se escolhe nem se compra com PP: vem da história (sorteio 1d20 na criação com 20 natural, Titânico latente ou Marca do Surto; D-134). Toma emprestadas as auras que já viu em uso, nunca o Ícor, no nível da Titânica: 2 no nível 1, 3 no nível 2, 4 no nível 3 (5 com o Ápice). Sobe 3 PP (1→2) e 4 PP (2→3); o Titânico compra qualquer outra aura por 2 PP (D-132). Corpo Titânico: +1 na CA e em todos os testes de resistência (+2 com a Titânica no nível 3). No lugar do Despertar, o Ápice Titânico (D-135).</div></div>';return}
   var g=AG.find(function(x){return x.n===selA});
   // Compatibilidade (P-004): técnica com auras todas da mesma Área = −15% de MP (soma com outros descontos, piso 50%); vizinhas e a 2 passos = neutras;
   // alguma oposta = +25% de MP e 10% de chance de 1d6 de dano de Arka no usuário + fim do Fluxo; não acumula com Técnica em Conjunto
@@ -761,11 +836,14 @@ function rCat(){
   var h='';
   if(selA==='Titânica'){
     h+='<div style="font-family:Cinzel,serif;font-size:13px;font-weight:700;color:#ff6600;margin-bottom:8px;letter-spacing:.1em">⬢ TITÂNICA</div>';
-    h+='<div class="crd" style="border-left:3px solid #ff6600;margin-bottom:10px"><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px">No centro do hexagrama, fora das seis Áreas. Só de nascença: não se compra com PP (D-42). <b style="color:var(--tx)">Progressão provisória</b> (D-50), até que a Titânica ganhe regra própria: sobe como uma aura comum (3 PP do nível 1 ao 2, 4 PP do 2 ao 3); quem nasce Titânico compra qualquer outra aura por 2 PP (R13-1). Não desperta: sem Área e sem deus (D-59); e quem nasce Titânico também não desperta as auras que comprar (D-62). Uma aura extremamente rara e poderosa que transcende as limitações das auras convencionais. Permite ao usuário acessar e utilizar outras auras sem restrições de especialização, com dois limites: só pode usar auras que já tenha visto em uso, e nunca acessa Ícor nem as Divinas (o Despertar Divino, nível 4).</div><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px"><b style="color:var(--tx)">Leitura provisória</b> (P-056): além das auras das seis Áreas, a Titânica pode emprestar auras Primordiais que já tenha visto em uso. Os limites de auras simultâneas dos níveis abaixo (uma, duas, três) valem só para as auras emprestadas; as auras que o Titânico comprou com PP ficam todas ativas, como as de qualquer personagem (D-29).</div><div style="font-size:12px;color:var(--td);line-height:1.6;margin-bottom:8px"><b style="color:var(--tx)">Limitações:</b> Mesmo com este poder imenso, o usuário deve aprender a controlar cada aura individualmente. O domínio da aura Titânica evolui com o tempo e dedicação:</div></div>';
-    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Nível 1</div><div style="font-size:11px;color:var(--td);line-height:1.6">Acesso a três auras diferentes por dia, uma de cada vez, no nível 1. Cada troca de aura requer 1 minuto de concentração. Usar qualquer aura por mais de 10 minutos consecutivos causa 1d6 de dano por minuto adicional.</div></div>';
-    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Nível 2</div><div style="font-size:11px;color:var(--td);line-height:1.6">Acesso a cinco auras por dia, podendo usar duas simultaneamente, até o nível 2. Cada troca requer 30 segundos. Pode manter auras ativas por até 30 minutos antes de começar a sofrer dano.</div></div>';
-    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Nível 3</div><div style="font-size:11px;color:var(--td);line-height:1.6">Acesso a todas as auras que já viu em uso, podendo usar até três simultaneamente, em qualquer nível até o 3. Trocas são instantâneas (ação bônus). Pode manter auras ativas por até 1 hora antes de sofrer efeitos negativos.</div></div>';
-    h+='<div class="alv" style="border-color:#b83030;margin-top:6px"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#b83030;margin-bottom:3px">Efeito Colateral</div><div style="font-size:11px;color:var(--td);line-height:1.6">Usar múltiplas auras simultaneamente causa fadiga proporcional ao número e poder das auras combinadas. Após atingir o limite de tempo, o usuário deve fazer um teste de Constituição (dificuldade aumenta com o tempo de uso) ou ficará incapacitado por 1d4 horas.</div></div>';
+    // Titânica (D-40, D-132 a D-135; cap. 09). Revogados: D-42, D-50, P-056, D-62 e a fadiga/teste de CON antigos
+    h+='<div class="crd" style="border-left:3px solid #ff6600;margin-bottom:10px"><div style="font-size:12px;color:var(--td);line-height:1.6">Uma aura raríssima, no centro do hexagrama e fora das seis Áreas. Quem é Titânico toma emprestadas as auras que já viu em uso. Nunca empresta o Ícor. A Titânica não pode ser comprada com pontos de progressão: ela vem da história.</div></div>';
+    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Como se obtém (D-134)</div><div style="font-size:11px;color:var(--td);line-height:1.6">Ninguém escolhe ser Titânico. <b style="color:var(--tx)">Sorteio na criação:</b> cada jogador rola 1d20 ao criar o personagem; com 20 natural, nasce Titânico, no lugar da aura que escolheria, e as auras da família e da infância contam como já vistas em uso (o Mestre confirma). <b style="color:var(--tx)">Titânico latente:</b> o Mestre pode decidir, ou sortear em segredo, que um personagem nasceu com a Titânica adormecida; ela acorda num momento dramático (uma quase morte, o contato com um Selo, um Surto). <b style="color:var(--tx)">Marca do Surto:</b> quem sobrevive a um Surto de Arka perto de um Selo e tira um resultado extremo no teste que o Mestre pedir pode sair dele Titânico.</div></div>';
+    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Progressão (D-132)</div><div style="font-size:11px;color:var(--td);line-height:1.6">Sobe como uma aura comum: 3 PP do nível 1 ao 2 e 4 PP do nível 2 ao 3. O Titânico compra qualquer outra aura por 2 PP, como se fosse de Área vizinha. As auras compradas não despertam.</div></div>';
+    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Empréstimo (D-135)</div><div style="font-size:11px;color:var(--td);line-height:1.6">Ao fim de cada descanso longo, o Titânico escolhe as auras que vai carregar até o próximo descanso longo, entre as que já viu em uso (o Mestre confirma a lista). As emprestadas ficam no nível da Titânica:<br><b style="color:var(--tx)">Titânica no nível 1:</b> duas emprestadas, no nível 1.<br><b style="color:var(--tx)">Titânica no nível 2:</b> três emprestadas, no nível 2.<br><b style="color:var(--tx)">Titânica no nível 3:</b> quatro emprestadas, no nível 3.<br>Funcionam como auras do personagem: ficam todas ativas ao mesmo tempo e contam para a Compatibilidade, as resistências e a licença. Podem ser Primordiais. Não sobem com PP e não despertam. Trocar uma emprestada antes do próximo descanso longo exige 10 minutos de concentração e dá +1 nível de Exaustão de Arka.</div></div>';
+    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Corpo Titânico (D-135)</div><div style="font-size:11px;color:var(--td);line-height:1.6">A Arka bruta do centro do hexagrama endurece o corpo do Titânico: +1 na CA e em todos os testes de resistência; com a Titânica no nível 3, +2. A ficha já soma esse bônus.</div></div>';
+    h+='<div class="alv" style="border-color:#f4d03f"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#f4d03f;margin-bottom:3px">Ápice Titânico (no lugar do Despertar Divino, D-135)</div><div style="font-size:11px;color:var(--td);line-height:1.6">A Titânica não desperta, porque não tem Área nem deus. No lugar do Despertar Divino, com a Titânica no nível 3 e um acontecimento de lore que o justifique (sob controle do Mestre, sem custo de PP), o Titânico alcança o Ápice: carrega uma emprestada a mais (cinco, no nível 3) e ganha a Ação Lendária de jogador (1 por rodada, no máximo 2 por combate). Não há Dom. O Ápice conta como o único Despertar do personagem.</div></div>';
+    h+='<div class="alv" style="border-color:#ff6600"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#ff6600;margin-bottom:3px">Titânico convertido (D-134)</div><div style="font-size:11px;color:var(--td);line-height:1.6">Quem se torna Titânico no meio da campanha (latente ou pela Marca do Surto) mantém a aura que tinha como emprestada fixa. Ela fica sempre carregada, não ocupa uma das vagas e continua no nível em que estava, com os PP já gastos nela. Não sobe mais com PP e não desperta. Na ficha: botão "tornar Titânico (Mestre)" ao lado da aura de nascença.</div></div>';
     cat.innerHTML=h;return}
   var g=AG.find(function(x){return x.n===selA});if(!g)return;
   var auras=AD[g.n];if(!auras){cat.innerHTML='<div style="text-align:center;padding:16px;color:var(--tm);font-style:italic;font-size:12px">Sem auras catalogadas para este grupo.</div>';return}
@@ -779,7 +857,7 @@ function rCat(){
     h+='</div></div>'});
   // Despertar Divino (nv 4): o Catálogo não descreve o nv 4 aura por aura; cada Área tem seus deuses e Dons (D-49, D-51, PR5 Dons)
   var pg=PANTEAO[g.n]||[];
-  if(pg.length){h+='<div class="alv" style="border-color:#f4d03f;margin-top:8px"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#f4d03f;margin-bottom:3px">Nível 4 — Despertar Divino: deuses da Área '+g.n+'</div><div style="font-size:10px;color:var(--td);line-height:1.5;margin-bottom:4px">Qualquer aura '+g.n+' no nível 3 pode despertar: acontecimento de lore (pacto, provação, relíquia) sob controle do Mestre, sem nível mínimo e sem custo de PP (D-47, D-51). Um único Despertar por personagem (D-56). Quem nasce Titânico não desperta (D-62). O jogador escolhe um deus da Área e recebe o Dom dele, que se soma à aura no nível 3; onde o Dom fala em “a aura”, vale a aura que despertou e o tipo de dano dela. Todos os Dons têm o mesmo peso. CD de técnica = 10 + mod DOM + proficiência. Descontos de MP de um Dom se somam aos outros, com piso de metade do custo de tabela.</div>';
+  if(pg.length){h+='<div class="alv" style="border-color:#f4d03f;margin-top:8px"><div style="font-family:Cinzel,serif;font-size:10px;font-weight:700;color:#f4d03f;margin-bottom:3px">Nível 4 — Despertar Divino: deuses da Área '+g.n+'</div><div style="font-size:10px;color:var(--td);line-height:1.5;margin-bottom:4px">Qualquer aura '+g.n+' no nível 3 pode despertar: acontecimento de lore (pacto, provação, relíquia) sob controle do Mestre, sem nível mínimo e sem custo de PP (D-47, D-51). Um único Despertar por personagem (D-56). As auras compradas ou emprestadas pelo Titânico não despertam; a Titânica tem o Ápice Titânico no lugar (D-135). O jogador escolhe um deus da Área e recebe o Dom dele, que se soma à aura no nível 3; onde o Dom fala em “a aura”, vale a aura que despertou e o tipo de dano dela. Todos os Dons têm o mesmo peso. CD de técnica = 10 + mod DOM + proficiência. Descontos de MP de um Dom se somam aos outros, com piso de metade do custo de tabela.</div>';
     pg.forEach(function(d){h+='<div style="font-size:10px;color:var(--td);line-height:1.5;margin-top:5px"><b style="color:#f4d03f">'+d.n+', '+d.t+'</b> <span style="color:var(--tm)">('+d.mit+' · '+d.dm+')</span><br><b style="color:var(--tx)">'+d.dom+':</b> '+d.d+'</div>'});
     h+='</div>'}
   cat.innerHTML=h;
@@ -1282,7 +1360,8 @@ function lS(d){
   if(!d.toolProfs)S.toolProfs=['',''];
   S.proficiencies=S.proficiencies.map(function(n){return DP_MIGRA[n]||n});
   if(!d.auras){S.auras=[];var ai=S.auraInit==='Dracônica'?'Animalesca':S.auraInit;if(ai&&(ai==='Titânica'||auraArea(ai)))S.auras.push({n:ai,lv:1,her:true})}
-  if(nascTitanico())S.auras.forEach(function(x){if(x.lv>3){x.lv=3;delete x.deus}}); // D-62: Titânico não desperta (fichas antigas)
+  if(nascTitanico())S.auras.forEach(function(x){if(x.lv>3&&x.n!=='Titânica'){x.lv=3;delete x.deus}}); // D-135: as compradas do Titânico não despertam (a Titânica pode ter o Ápice)
+  if(!Array.isArray(d.emprest))S.emprest=[];if(d.empLivre===undefined)S.empLivre=true; // D-135: emprestadas do Titânico (campos novos)
   // Rodada 8: Arkano → Canalizador (P-040); dados de vida, Especialista e Ação Lendária (campos novos)
   if(PROF_MIGRA[S.prof])S.prof=PROF_MIGRA[S.prof];
   if(d.hdUsed===undefined)S.hdUsed=0;if(d.especialista===undefined)S.especialista='';if(d.acaoLend===undefined)S.acaoLend=0;

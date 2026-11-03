@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import CharacterSheet from './CharacterSheet';
 import { blankSheet } from '../utils/rpgData';
 
@@ -63,18 +63,55 @@ test('ficha sem ppConf recebe as compras como confirmadas (D-53)', () => {
   expect(onUpdate).toHaveBeenCalledWith({ ppConf: expect.objectContaining({ auras: { 'Água': 2 } }) });
 });
 
-test("Titânico não desperta nenhuma aura, nem as compradas (D-62)", () => {
+test("Titânico: as compradas não despertam; a Titânica alcança o Ápice Titânico (D-135)", () => {
   const sheet = blankSheet({ level: 15, auras: [{ n: "Titânica", lv: 3, her: true }, { n: "Fogo", lv: 3, her: false, pago: 2 }], ppConf: { attrUps: {}, auras: { "Titânica": 3, Fogo: 3 } } });
+  const onUpdate = jest.fn();
+  const alerts = []; window.alert = m => alerts.push(m); window.confirm = () => true;
+  render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  expect(screen.getAllByText(/Titânico, D-135/)).toHaveLength(1);
+  expect(screen.getAllByText(/Ápice Titânico \(evento, 0 PP\)/)).toHaveLength(1);
+  expect(screen.queryByText(/D-62/)).toBeNull();
+  onUpdate.mockClear();
+  const plus = screen.getAllByText("+");
+  fireEvent.click(plus[plus.length - 1]); // + da Fogo comprada (última aura da lista)
+  expect(alerts.some(m => /D-135/.test(m))).toBe(true);
+  expect(onUpdate).not.toHaveBeenCalledWith(expect.objectContaining({ auras: expect.anything() }));
+  fireEvent.click(plus[plus.length - 2]); // + da Titânica: Ápice, sem deus
+  expect(onUpdate).toHaveBeenCalledWith({ auras: [{ n: "Titânica", lv: 4, her: true }, { n: "Fogo", lv: 3, her: false, pago: 2 }] });
+});
+
+test("Titânica: emprestadas no nível da Titânica, limite de vagas e Corpo Titânico na CA (D-135)", () => {
+  const sheet = blankSheet({ level: 9, auras: [{ n: "Titânica", lv: 2, her: true }], emprest: [{ n: "Fogo" }, { n: "Dreno" }, { n: "Luz" }], ppConf: { attrUps: {}, auras: { "Titânica": 2 } } });
   const onUpdate = jest.fn();
   const alerts = []; window.alert = m => alerts.push(m);
   render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
   fireEvent.click(screen.getAllByText("Auras")[0]);
-  expect(screen.getAllByText(/Titânico, D-62/)).toHaveLength(2);
-  onUpdate.mockClear();
-  const plus = screen.getAllByText("+");
-  fireEvent.click(plus[plus.length - 1]); // + da Fogo comprada (última aura da lista)
-  expect(alerts.some(m => /D-62/.test(m))).toBe(true);
-  expect(onUpdate).not.toHaveBeenCalledWith(expect.objectContaining({ auras: expect.anything() }));
+  expect(screen.getByText("3/3 vagas")).toBeInTheDocument();
+  expect(screen.getAllByText("nível 2")).toHaveLength(4); // "todas no nível 2" + as 3 emprestadas
+  const empSel = screen.getByDisplayValue("Escolha uma aura já vista em uso");
+  expect(within(empSel).queryByRole("option", { name: "Aura Própria" })).toBeNull(); // nunca o Ícor
+  expect(within(empSel).getByRole("option", { name: "Selamento" })).toBeInTheDocument(); // Primordial pode
+  fireEvent.change(empSel, { target: { value: "Água" } });
+  fireEvent.click(screen.getByText("Emprestar"));
+  expect(alerts.some(m => /Sem vaga/.test(m))).toBe(true);
+  expect(onUpdate).not.toHaveBeenCalledWith(expect.objectContaining({ emprest: expect.anything() }));
+  fireEvent.click(screen.getAllByText("Atributos")[0]);
+  expect(screen.getAllByText(/\+1 Corpo Titânico/).length).toBeGreaterThan(0); // CA 9 + 1 = 10 (DEX 8, sem armadura)
+});
+
+test("Ápice Titânico dá a Ação Lendária; Titânico convertido guarda a aura antiga como fixa (D-134, D-135)", () => {
+  const apice = blankSheet({ level: 15, auras: [{ n: "Titânica", lv: 4, her: true }], ppConf: { attrUps: {}, auras: { "Titânica": 4 } } });
+  const { unmount } = render(<CharacterSheet sheet={apice} onUpdate={jest.fn()} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Atributos")[0]);
+  expect(screen.getByText(/\(Ápice Titânico\): 1 por rodada/)).toBeInTheDocument(); // Ação Lendária do Ápice
+  unmount();
+  const conv = blankSheet({ level: 9, auras: [{ n: "Fogo", lv: 3, her: true }], ppConf: { attrUps: {}, auras: { Fogo: 3 } } });
+  const onUpdate = jest.fn(); window.confirm = () => true;
+  render(<CharacterSheet sheet={conv} onUpdate={onUpdate} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  fireEvent.click(screen.getByText("tornar Titânico (Mestre)"));
+  expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ auras: [{ n: "Titânica", lv: 1, her: true }], emprest: [{ n: "Fogo", lv: 3, fixa: true, pp: 7 }], auraInit: "Titânica" }));
 });
 
 test("hereditária Primordial: aviso de raríssima, sem bloquear (D-61)", () => {
