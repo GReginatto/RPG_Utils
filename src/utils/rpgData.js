@@ -1212,7 +1212,9 @@ export function titanicBorn(auras) { return hereditaryAura(auras)?.n === 'Titân
 // ── Titânica (D-132 a D-135, pacote T3) ──
 // sheet.emprest = [{ n, fixa, lv, pp, deus }]: emprestadas do Titânico. As soltas ficam no nível da Titânica e ocupam vaga;
 // a fixa (Titânico convertido, D-134) fica sempre carregada, não ocupa vaga, guarda o nível que tinha e os PP gastos nela (pp).
-// sheet.empLivre = escolha do descanso longo aberta (fora dela, trocar custa 10 min + 1 Exaustão de Arka).
+// sheet.empLivre = escolha do descanso longo aberta. Fora dela, preencher vaga vazia é grátis e só a troca custa (D-136):
+// sheet.empTiradas conta as vagas abertas tirando uma solta com a escolha fechada; pôr outra nelas = 10 min + 1 Exaustão de Arka.
+// sheet.vistas = auras já vistas em uso (D-136): só elas podem ser emprestadas; nunca o Ícor.
 export const TITANIC_SLOTS = { 1: 2, 2: 3, 3: 4 };  // vagas pelo nível da Titânica; +1 com o Ápice Titânico
 export function titanicAura(auras) { return (auras || []).find(x => x.n === 'Titânica'); }
 export function titanicLevel(auras) { const t = titanicAura(auras); return t ? Math.min(3, t.lv || 1) : 0; }
@@ -1229,18 +1231,25 @@ export function activeAuras(sheet) {
 }
 // PP que continuam gastos nas emprestadas fixas (D-134: não se perdem)
 export function borrowedSpent(emprest) { return (emprest || []).reduce((c, e) => c + (e.fixa ? (e.pp || 0) : 0), 0); }
-// Auras que o Titânico pode emprestar: qualquer uma do catálogo, nunca o Ícor, fora as que já tem
+// Auras que o Titânico pode emprestar: só as anotadas como já vistas em uso (D-136), nunca o Ícor, fora as que já tem
 export function borrowOptions(sheet) {
-  const own = [...(sheet?.auras || []).map(x => x.n), ...(sheet?.emprest || []).map(e => e.n)];
-  return Object.keys(AURA_DETAILS).filter(k => k !== 'Ícor').map(k => ({ area: k, auras: AURA_DETAILS[k].filter(a => !a.dev && !own.includes(a.n)).map(a => a.n) })).filter(g => g.auras.length);
+  const own = [...(sheet?.auras || []).map(x => x.n), ...(sheet?.emprest || []).map(e => e.n)], seen = sheet?.vistas || [];
+  return Object.keys(AURA_DETAILS).filter(k => k !== 'Ícor').map(k => ({ area: k, auras: AURA_DETAILS[k].filter(a => !a.dev && seen.includes(a.n) && !own.includes(a.n)).map(a => a.n) })).filter(g => g.auras.length);
 }
+// Auras que ainda podem ser anotadas como vistas (catálogo sem o Ícor, fora as já anotadas)
+export function seenOptions(sheet) {
+  const seen = sheet?.vistas || [];
+  return Object.keys(AURA_DETAILS).filter(k => k !== 'Ícor').map(k => ({ area: k, auras: AURA_DETAILS[k].filter(a => !a.dev && !seen.includes(a.n)).map(a => a.n) })).filter(g => g.auras.length);
+}
+export function withSeen(vistas, n) { const v = vistas || []; return !n || v.includes(n) || auraArea(n) === 'Ícor' ? v : [...v, n]; }
 // Titânico convertido (D-134): a aura de nascença vira emprestada fixa (nível e PP preservados) e a Titânica entra no nv 1
 export function convertToTitanic(sheet) {
   const au = sheet.auras || [], h = hereditaryAura(au);
   if (!h || h.n === 'Titânica') return null;
   const fixa = { n: h.n, lv: h.lv, fixa: true, pp: auraSpent(h), ...(h.deus ? { deus: h.deus } : {}) };
   const ppConf = sheet.ppConf ? { ...sheet.ppConf, auras: { ...(sheet.ppConf.auras || {}), 'Titânica': 1 } } : { attrUps: {}, auras: { 'Titânica': 1 } };
-  return { auras: [{ n: 'Titânica', lv: 1, her: true }, ...au.filter(x => x !== h)], emprest: [...(sheet.emprest || []), fixa], auraInit: 'Titânica', ppConf, empLivre: true };
+  // D-136: as compradas ficam como estão; a fixa entra na lista de vistas
+  return { auras: [{ n: 'Titânica', lv: 1, her: true }, ...au.filter(x => x !== h)], emprest: [...(sheet.emprest || []), fixa], auraInit: 'Titânica', ppConf, empLivre: true, empTiradas: 0, vistas: withSeen(sheet.vistas, h.n) };
 }
 // D-61: aura hereditária Primordial é possível, mas raríssima (só com aprovação do Mestre): aviso, sem bloquear
 export function rareHereditary(name) { return auraArea(name) === 'Primordial'; }
@@ -1428,7 +1437,7 @@ export function blankSheet(overrides = {}) {
     ppConf: null,       // compras de PP confirmadas (D-53); null = nada confirmado ainda
     ppEco: PP_ECO, ppAntigo: '', herLivre: false, // economia D-89; aviso da conversão; aura de nascença destravada (P-097)
     escamas: false, vestigar: false, furiaUsada: false, adaptUsos: 0, tonicoUsado: false, despGuarda: null, // P-095, P-089, R13-5, P-083, E15-02, G-09
-    emprest: [], empLivre: true, // D-135: auras emprestadas do Titânico [{ n, fixa, lv, pp, deus }]; escolha do descanso longo aberta
+    emprest: [], empLivre: true, empTiradas: 0, vistas: [], // D-135, D-136: emprestadas do Titânico [{ n, fixa, lv, pp, deus }]; escolha aberta; vagas de troca; auras já vistas em uso
     // Inventory / Gold
     gold: 0, inventory: [],
     // XP / Level

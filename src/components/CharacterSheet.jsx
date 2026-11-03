@@ -13,7 +13,7 @@ import {
   hitDiceLeft, hitDicePerRest, corpoRenovado, LEGENDARY_MAX, XP_SESSION, auraLicense,
   TOOLS, hitDieHeal, restGain, raceBonus, PROF_DICE, profRuler, heritageLocked, SIGNATURE_MAX, convertOldPP,
   sheetReminders, scalesAvailable, hachimanBonus,
-  titanicLevel, titanicApex, titanicSlots, borrowedLevel, titanicBody, activeAuras, borrowedSpent, borrowOptions, convertToTitanic,
+  titanicLevel, titanicApex, titanicSlots, borrowedLevel, titanicBody, activeAuras, borrowedSpent, borrowOptions, convertToTitanic, seenOptions, withSeen,
 } from '../utils/rpgData';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -342,7 +342,7 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
       addLog?.(`☕ ${sheet.name} descanso curto (${(sheet.shortRests??0)+1}/2)${vest?' em Vestigar (75%)':''}. MP: ${curMP}→${newMp}${n?` · ${n} dado(s) de vida [${rolls.join(',')}] ${conMod>=0?'+':''}${conMod} CON cada (mín. 1): HP ${curHP}→${newHp}`:''}`,'heal');
     } else {
       const vest=!!sheet.vestigar, nh=curHP+restGain(curHP,maxHP,maxHP,vest), nm=curMP+restGain(curMP,maxMP,maxMP,vest);
-      u({curHP:nh,curMP:nm,shortRests:0,hdUsed:0,falls:0,furiaUsada:false,adaptUsos:0,tonicoUsado:false,exTreino:Math.max(0,(sheet.exTreino??0)-1),...(titanicLevel(sheet.auras)?{empLivre:true}:{})}); // D-135: o Titânico escolhe de novo as emprestadas
+      u({curHP:nh,curMP:nm,shortRests:0,hdUsed:0,falls:0,furiaUsada:false,adaptUsos:0,tonicoUsado:false,exTreino:Math.max(0,(sheet.exTreino??0)-1),...(titanicLevel(sheet.auras)?{empLivre:true,empTiradas:0}:{})}); // D-135: o Titânico escolhe de novo as emprestadas
       addLog?.(`🛏 ${sheet.name} descanso longo. ${vest?`HP ${nh}/${maxHP} e MP ${nm}/${maxMP} (Vestigar, 75%)`:'HP/MP cheios'}, dados de vida recuperados, Quedas zeradas, −1 Exaustão de Arka.`,'heal');
     }
     playSfx?.('heal');
@@ -736,6 +736,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
   const [selGroup,setSelGroup] = useState(null);
   const [buySel,setBuySel] = useState('');
   const [empSel,setEmpSel] = useState('');
+  const [vistaSel,setVistaSel] = useState('');
   // Fichas antigas (sem a lista de auras): a aura inicial vira a hereditária no nível 1 (Dracônica → Animalesca, D-06)
   const legacy = sheet.auraInit==='Dracônica' ? 'Animalesca' : sheet.auraInit;
   const auras = sheet.auras?.length ? sheet.auras : (legacy && (legacy==='Titânica' || auraArea(legacy)) ? [{ n: legacy, lv: 1, her: true }] : []);
@@ -821,24 +822,28 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
     if (!empSel) return;
     const tl = titanicLevel(auras), vg = titanicSlots(auras);
     if (!tl) return;
+    if (!(sheet.vistas || []).includes(empSel)) { window.alert(`${empSel}: só auras anotadas como já vistas em uso (D-136).`); return; }
     if (emp.filter(e => !e.fixa).length >= vg) { window.alert(`Sem vaga: a Titânica no nível ${tl}${titanicApex(auras)?' com o Ápice':''} carrega ${vg} emprestadas (D-135).`); return; }
     const ch = { emprest: [...emp, { n: empSel }] };
-    if (!empOpen) {
-      if (!window.confirm('Trocar uma emprestada antes do próximo descanso longo exige 10 minutos de concentração e dá +1 nível de Exaustão de Arka (D-135). Confirmar?')) return;
+    // D-136: preencher vaga vazia é grátis a qualquer hora; só a troca (tirar uma para pôr outra) fora do descanso longo custa
+    if (!empOpen && (sheet.empTiradas ?? 0) > 0) {
+      if (!window.confirm('Troca de emprestada antes do próximo descanso longo: 10 minutos de concentração e +1 nível de Exaustão de Arka (D-136). Confirmar?')) return;
       ch.exTreino = Math.min(5, (sheet.exTreino ?? 0) + 1);
+      ch.empTiradas = (sheet.empTiradas ?? 0) - 1;
     }
     u(ch); setEmpSel('');
   }
   function empDel(i) {
     const e = emp[i]; if (!e) return;
     if (e.fixa && !window.confirm(`Tirar a emprestada fixa ${e.n}? Só o Mestre decide isso.${e.pp?` Os ${e.pp} PP gastos nela voltam.`:''}`)) return;
-    u({ emprest: emp.filter((_, j) => j !== i) });
+    // D-136: tirar uma solta com a escolha fechada abre uma vaga de troca
+    u({ emprest: emp.filter((_, j) => j !== i), ...(!e.fixa && !empOpen ? { empTiradas: (sheet.empTiradas ?? 0) + 1 } : {}) });
   }
   function empFixa(i, on) {
     const e = emp[i]; if (!e) return;
     if (on) {
       if (!window.confirm(`Marcar ${e.n} como emprestada fixa (Titânico convertido, D-134)? Fica sempre carregada no nível ${borrowedLevel(auras, e)}, não ocupa vaga, não sobe mais com PP e não desperta. Só com o Mestre.`)) return;
-      u({ emprest: emp.map((y, j) => j === i ? { ...y, fixa: true, lv: borrowedLevel(auras, y) } : y) });
+      u({ emprest: emp.map((y, j) => j === i ? { ...y, fixa: true, lv: borrowedLevel(auras, y) } : y), vistas: withSeen(sheet.vistas, e.n) });
     } else {
       if (!window.confirm(`Desmarcar a fixa de ${e.n}? Ela volta a ocupar uma vaga, no nível da Titânica.${e.pp?` Os ${e.pp} PP guardados nela voltam.`:''}`)) return;
       u({ emprest: emp.map((y, j) => { if (j !== i) return y; const z = { ...y, fixa: false }; delete z.lv; delete z.pp; delete z.deus; return z; }) });
@@ -907,10 +912,10 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
           <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6}}>Uma aura raríssima, no centro do hexagrama e fora das seis Áreas. Quem é Titânico toma emprestadas as auras que já viu em uso. Nunca empresta o Ícor. A Titânica não pode ser comprada com pontos de progressão: ela vem da história.</div>
           <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6,marginTop:5}}><b style={{color:'var(--text)'}}>Como se obtém (D-134):</b> ninguém escolhe ser Titânico. <b style={{color:'var(--text)'}}>Sorteio na criação:</b> cada jogador rola 1d20; com 20 natural, nasce Titânico, no lugar da aura que escolheria, e as auras da família e da infância contam como já vistas em uso (o Mestre confirma). <b style={{color:'var(--text)'}}>Titânico latente:</b> o Mestre pode decidir, ou sortear em segredo, que um personagem nasceu com a Titânica adormecida; ela acorda num momento dramático (uma quase morte, o contato com um Selo, um Surto). <b style={{color:'var(--text)'}}>Marca do Surto:</b> quem sobrevive a um Surto de Arka perto de um Selo e tira um resultado extremo no teste que o Mestre pedir pode sair dele Titânico.</div>
           <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6,marginTop:5}}><b style={{color:'var(--text)'}}>Progressão (D-132):</b> sobe como uma aura comum, 3 PP do nível 1 ao 2 e 4 PP do nível 2 ao 3. O Titânico compra qualquer outra aura por 2 PP, como se fosse de Área vizinha; as compradas não despertam.</div>
-          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6,marginTop:5}}><b style={{color:'var(--text)'}}>Empréstimo (D-135):</b> ao fim de cada descanso longo, escolhe as auras que vai carregar até o próximo, entre as que já viu em uso (o Mestre confirma a lista). Ficam no nível da Titânica: <b style={{color:'var(--text)'}}>nível 1</b>, duas emprestadas no nível 1; <b style={{color:'var(--text)'}}>nível 2</b>, três no nível 2; <b style={{color:'var(--text)'}}>nível 3</b>, quatro no nível 3. Funcionam como auras do personagem: ficam todas ativas e contam para a Compatibilidade, as resistências e a licença. Podem ser Primordiais. Não sobem com PP e não despertam. Trocar uma emprestada antes do próximo descanso longo exige 10 minutos de concentração e dá +1 nível de Exaustão de Arka.</div>
+          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6,marginTop:5}}><b style={{color:'var(--text)'}}>Empréstimo (D-135):</b> ao fim de cada descanso longo, escolhe as auras que vai carregar até o próximo, entre as que já viu em uso (o Mestre confirma a lista). Ficam no nível da Titânica: <b style={{color:'var(--text)'}}>nível 1</b>, duas emprestadas no nível 1; <b style={{color:'var(--text)'}}>nível 2</b>, três no nível 2; <b style={{color:'var(--text)'}}>nível 3</b>, quatro no nível 3. Funcionam como auras do personagem: ficam todas ativas e contam para a Compatibilidade, as resistências e a licença. Podem ser Primordiais. Não sobem com PP e não despertam. Trocar uma emprestada antes do próximo descanso longo exige 10 minutos de concentração e dá +1 nível de Exaustão de Arka; preencher uma vaga vazia é grátis a qualquer hora. A ficha guarda a lista de auras já vistas em uso; só elas podem ser emprestadas (D-136).</div>
           <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6,marginTop:5}}><b style={{color:'var(--text)'}}>Corpo Titânico (D-135):</b> +1 na CA e em todos os testes de resistência; com a Titânica no nível 3, +2. A ficha já soma esse bônus.</div>
           <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6,marginTop:5}}><b style={{color:'#f4d03f'}}>Ápice Titânico</b> (no lugar do Despertar Divino, D-135): a Titânica não desperta, porque não tem Área nem deus. Com a Titânica no nível 3 e um acontecimento de lore que o justifique (sob controle do Mestre, sem custo de PP), o Titânico carrega uma emprestada a mais (cinco, no nível 3) e ganha a Ação Lendária de jogador (1 por rodada, no máximo 2 por combate). Não há Dom. O Ápice conta como o único Despertar do personagem.</div>
-          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6,marginTop:5}}><b style={{color:'var(--text)'}}>Titânico convertido (D-134):</b> quem se torna Titânico no meio da campanha mantém a aura que tinha como emprestada fixa: sempre carregada, não ocupa vaga, continua no nível em que estava, com os PP já gastos nela; não sobe mais com PP e não desperta. Na ficha: botão "tornar Titânico (Mestre)" ao lado da aura de nascença.</div>
+          <div style={{fontSize:11,color:'var(--sub)',lineHeight:1.6,marginTop:5}}><b style={{color:'var(--text)'}}>Titânico convertido (D-134):</b> quem se torna Titânico no meio da campanha mantém a aura que tinha como emprestada fixa: sempre carregada, não ocupa vaga, continua no nível em que estava, com os PP já gastos nela; não sobe mais com PP e não desperta. Se ela já tinha despertado, fica fixa no nível 4 com o deus, e esse é o único Despertar (sem Ápice); as auras compradas antes da conversão ficam como estão e não despertam mais (D-136). Na ficha: botão "tornar Titânico (Mestre)" ao lado da aura de nascença.</div>
         </div>
       )}
       {/* Compatibilidade e custo de aura nova */}
@@ -1029,7 +1034,9 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
                 <label style={{fontSize:9,color:'var(--sub)',display:'flex',alignItems:'center',gap:3}} title="Titânico convertido (D-134): sempre carregada, não ocupa vaga, fica no nível em que estava; só com o Mestre"><input type="checkbox" checked={!!e.fixa} disabled={isReadOnly} onChange={ev=>empFixa(i,ev.target.checked)}/>fixa</label>
                 {!isReadOnly&&<button className="tbtn" style={{fontSize:9,padding:'0 5px',color:'#b83030'}} title="Tirar a emprestada" onClick={()=>empDel(i)}>✕</button>}
               </div>); })}
-            {tl>0&&!isReadOnly&&(
+            {tl>0&&!(sheet.vistas||[]).length&&<div style={{fontSize:10,color:'#d4a017',marginTop:6}}>Anote as auras que viu em uso (lista abaixo): só elas podem ser emprestadas (D-136).</div>}
+            {tl>0&&(sheet.vistas||[]).length>0&&!borrowOptions({...sheet,auras}).length&&<div style={{fontSize:10,color:'var(--sub)',fontStyle:'italic',marginTop:6}}>Nenhuma aura vista disponível: as anotadas já são suas ou já estão emprestadas.</div>}
+            {tl>0&&!isReadOnly&&borrowOptions({...sheet,auras}).length>0&&(
               <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginTop:6}}>
                 <span style={{fontSize:10,color:'var(--sub)'}}>Emprestar:</span>
                 <select className="vtt-select" value={empSel} onChange={e=>setEmpSel(e.target.value)} style={{flex:1,minWidth:150}}>
@@ -1040,8 +1047,26 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
               </div>
             )}
             {tl>0&&<div style={{fontSize:10,lineHeight:1.5,marginTop:6}}>{empOpen
-              ?<><span style={{color:'#3a7a4c'}}>Escolha do descanso longo aberta: as emprestadas entram sem custo.</span> {!isReadOnly&&<RBtn onClick={()=>u({empLivre:false})}>Fechar a escolha</RBtn>}</>
-              :<><span style={{color:'var(--sub)'}}>Escolha fechada: trocar uma emprestada antes do próximo descanso longo exige 10 minutos de concentração e dá +1 nível de Exaustão de Arka.</span> {!isReadOnly&&<RBtn onClick={()=>{ if(window.confirm('Reabrir a escolha das emprestadas sem custo? Só o Mestre (por exemplo, a Titânica subiu de nível e ganhou vaga).')) u({empLivre:true}); }}>reabrir (Mestre)</RBtn>}</>}</div>}
+              ?<><span style={{color:'#3a7a4c'}}>Escolha do descanso longo aberta: as emprestadas entram e saem sem custo.</span> {!isReadOnly&&<RBtn onClick={()=>u({empLivre:false,empTiradas:0})}>Fechar a escolha</RBtn>}</>
+              :<><span style={{color:'var(--sub)'}}>Escolha fechada: preencher uma vaga vazia é grátis; trocar uma emprestada por outra (tirar uma para pôr outra) antes do próximo descanso longo exige 10 minutos de concentração e dá +1 nível de Exaustão de Arka (D-136).{(sheet.empTiradas??0)>0&&<b style={{color:'#b83030'}}> {sheet.empTiradas} vaga(s) aberta(s) por troca.</b>}</span> {!isReadOnly&&<RBtn onClick={()=>{ if(window.confirm('Reabrir a escolha das emprestadas sem custo? Só o Mestre (por exemplo, a Titânica subiu de nível e ganhou vaga).')) u({empLivre:true,empTiradas:0}); }}>reabrir (Mestre)</RBtn>}</>}</div>}
+            {/* Auras já vistas em uso (D-136): lista editável, sem o Ícor; o Mestre confirma */}
+            <div style={{marginTop:8,borderTop:'1px solid var(--border)',paddingTop:6}}>
+              <div style={{fontSize:10,fontWeight:600,color:'var(--text)',marginBottom:4}}>Auras já vistas em uso <span style={{fontWeight:400,color:'var(--sub)'}}>(o Mestre confirma, D-136)</span></div>
+              <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:4}}>
+                {(sheet.vistas||[]).length?(sheet.vistas||[]).map((n,i)=>(
+                  <span key={n} style={{fontSize:10,border:'1px solid var(--border)',borderRadius:3,padding:'1px 6px'}}>{n}{!isReadOnly&&<button className="tbtn" style={{fontSize:9,padding:'0 4px',marginLeft:3,color:'#b83030'}} title="Tirar da lista" onClick={()=>u({vistas:(sheet.vistas||[]).filter((_,j)=>j!==i)})}>✕</button>}</span>
+                )):<span style={{fontSize:10,color:'var(--sub)',fontStyle:'italic'}}>Nenhuma anotada.</span>}
+              </div>
+              {!isReadOnly&&seenOptions(sheet).length>0&&(
+                <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
+                  <select className="vtt-select" value={vistaSel} onChange={e=>setVistaSel(e.target.value)} style={{flex:1,minWidth:150}}>
+                    <option value="">Anotar aura vista em uso</option>
+                    {seenOptions(sheet).map(g=><optgroup key={g.area} label={g.area}>{g.auras.map(n=><option key={n} value={n}>{n}</option>)}</optgroup>)}
+                  </select>
+                  <RBtn onClick={()=>{ if(!vistaSel)return; u({vistas:withSeen(sheet.vistas,vistaSel)}); setVistaSel(''); }}>Anotar</RBtn>
+                </div>
+              )}
+            </div>
           </div>
         );
       })()}

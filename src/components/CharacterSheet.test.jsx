@@ -82,7 +82,7 @@ test("Titânico: as compradas não despertam; a Titânica alcança o Ápice Tit�
 });
 
 test("Titânica: emprestadas no nível da Titânica, limite de vagas e Corpo Titânico na CA (D-135)", () => {
-  const sheet = blankSheet({ level: 9, auras: [{ n: "Titânica", lv: 2, her: true }], emprest: [{ n: "Fogo" }, { n: "Dreno" }, { n: "Luz" }], ppConf: { attrUps: {}, auras: { "Titânica": 2 } } });
+  const sheet = blankSheet({ level: 9, auras: [{ n: "Titânica", lv: 2, her: true }], emprest: [{ n: "Fogo" }, { n: "Dreno" }, { n: "Luz" }], vistas: ["Fogo", "Dreno", "Luz", "Água", "Selamento"], ppConf: { attrUps: {}, auras: { "Titânica": 2 } } });
   const onUpdate = jest.fn();
   const alerts = []; window.alert = m => alerts.push(m);
   render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
@@ -100,6 +100,47 @@ test("Titânica: emprestadas no nível da Titânica, limite de vagas e Corpo Tit
   expect(screen.getAllByText(/\+1 Corpo Titânico/).length).toBeGreaterThan(0); // CA 9 + 1 = 10 (DEX 8, sem armadura)
 });
 
+test("D-136: vaga vazia é grátis, só a troca custa Exaustão; sem auras vistas, aviso no lugar do seletor", () => {
+  const base = { level: 9, auras: [{ n: "Titânica", lv: 2, her: true }], emprest: [{ n: "Fogo" }], vistas: ["Fogo", "Água", "Dreno"], empLivre: false, ppConf: { attrUps: {}, auras: { "Titânica": 2 } } };
+  window.confirm = () => true;
+  let onUpdate = jest.fn();
+  const { unmount } = render(<CharacterSheet sheet={blankSheet(base)} onUpdate={onUpdate} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  const sel = screen.getByDisplayValue("Escolha uma aura já vista em uso");
+  expect(within(sel).queryByRole("option", { name: "Luz" })).toBeNull(); // não anotada como vista
+  fireEvent.change(sel, { target: { value: "Água" } });
+  fireEvent.click(screen.getByText("Emprestar"));
+  expect(onUpdate).toHaveBeenCalledWith({ emprest: [{ n: "Fogo" }, { n: "Água" }] }); // vaga vazia: sem Exaustão
+  onUpdate.mockClear();
+  fireEvent.click(screen.getByTitle("Tirar a emprestada"));
+  expect(onUpdate).toHaveBeenCalledWith({ emprest: [], empTiradas: 1 });
+  unmount();
+  onUpdate = jest.fn();
+  const r2 = render(<CharacterSheet sheet={blankSheet({ ...base, emprest: [], empTiradas: 1 })} onUpdate={onUpdate} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  fireEvent.change(screen.getByDisplayValue("Escolha uma aura já vista em uso"), { target: { value: "Dreno" } });
+  fireEvent.click(screen.getByText("Emprestar"));
+  expect(onUpdate).toHaveBeenCalledWith({ emprest: [{ n: "Dreno" }], exTreino: 1, empTiradas: 0 }); // troca: +1 Exaustão
+  r2.unmount();
+  render(<CharacterSheet sheet={blankSheet({ ...base, vistas: [] })} onUpdate={jest.fn()} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  expect(screen.getByText(/Anote as auras que viu em uso/)).toBeInTheDocument();
+  expect(screen.queryByDisplayValue("Escolha uma aura já vista em uso")).toBeNull();
+  expect(within(screen.getByDisplayValue("Anotar aura vista em uso")).queryByRole("option", { name: "Aura Própria" })).toBeNull();
+});
+
+test("D-136: convertido que já tinha despertado não alcança o Ápice", () => {
+  const sheet = blankSheet({ level: 15, auras: [{ n: "Titânica", lv: 3, her: true }], emprest: [{ n: "Fogo", lv: 4, fixa: true, pp: 7, deus: "Agni" }], vistas: ["Fogo"], ppConf: { attrUps: {}, auras: { "Titânica": 3 } } });
+  const onUpdate = jest.fn(); const alerts = []; window.alert = m => alerts.push(m); window.confirm = () => true;
+  render(<CharacterSheet sheet={sheet} onUpdate={onUpdate} onClose={() => {}} />);
+  fireEvent.click(screen.getAllByText("Auras")[0]);
+  expect(screen.getAllByText(/Despertar já usado/).length).toBeGreaterThan(0);
+  const plus = screen.getAllByText("+");
+  fireEvent.click(plus[plus.length - 1]); // + da Titânica (única aura própria)
+  expect(alerts.some(m => /único Despertar/.test(m))).toBe(true);
+  expect(onUpdate).not.toHaveBeenCalledWith(expect.objectContaining({ auras: expect.anything() }));
+});
+
 test("Ápice Titânico dá a Ação Lendária; Titânico convertido guarda a aura antiga como fixa (D-134, D-135)", () => {
   const apice = blankSheet({ level: 15, auras: [{ n: "Titânica", lv: 4, her: true }], ppConf: { attrUps: {}, auras: { "Titânica": 4 } } });
   const { unmount } = render(<CharacterSheet sheet={apice} onUpdate={jest.fn()} onClose={() => {}} />);
@@ -111,7 +152,7 @@ test("Ápice Titânico dá a Ação Lendária; Titânico convertido guarda a aur
   render(<CharacterSheet sheet={conv} onUpdate={onUpdate} onClose={() => {}} />);
   fireEvent.click(screen.getAllByText("Auras")[0]);
   fireEvent.click(screen.getByText("tornar Titânico (Mestre)"));
-  expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ auras: [{ n: "Titânica", lv: 1, her: true }], emprest: [{ n: "Fogo", lv: 3, fixa: true, pp: 7 }], auraInit: "Titânica" }));
+  expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ auras: [{ n: "Titânica", lv: 1, her: true }], emprest: [{ n: "Fogo", lv: 3, fixa: true, pp: 7 }], auraInit: "Titânica", vistas: ["Fogo"] }));
 });
 
 test("hereditária Primordial: aviso de raríssima, sem bloquear (D-61)", () => {

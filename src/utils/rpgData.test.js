@@ -2,7 +2,7 @@ import {
   SKILLS, AURA_GROUPS, AURA_DETAILS, RACES_DATA, XP_TABLE, ppAtLevel, profRuler, convertOldPP, heritageLocked, hitDieHeal, restGain, raceBonus, sheetReminders, scalesAvailable, hachimanBonus, TOOLS, ARMORS,
   pointBuyCost, profBonus, ppAttrCost, ppEarned, areaDistance, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
   PANTHEON, GENERIC_TECHS, PROFESSIONS_DATA, skillProfMult, saveBonus, armorWithoutProf, armorName, hitDiceLeft, hitDicePerRest, corpoRenovado, XP_SESSION, auraLicense, ATTR_FULL, ppConfirmState, ppPending, attrConfirmed, auraConfirmed, awakenedAura, techDiceCap, titanicBorn, rareHereditary,
-  titanicLevel, titanicApex, titanicSlots, borrowedLevel, titanicBody, activeAuras, borrowedSpent, borrowOptions, convertToTitanic, blankSheet,
+  titanicLevel, titanicApex, titanicSlots, borrowedLevel, titanicBody, activeAuras, borrowedSpent, borrowOptions, convertToTitanic, blankSheet, seenOptions, withSeen,
 } from './rpgData';
 
 // Casos calculados à mão a partir do canon (rodadas 5 e 6 do artífice)
@@ -108,20 +108,24 @@ describe('regras do canon', () => {
     // Titânica sobe 3 + 4 PP; o Ápice não custa PP
     expect(auraSpent({ n: 'Titânica', lv: 4, her: true })).toBe(7);
     // emprestadas ativas: contam para passivas (Halo da Luz 3) e somem sem a Titânica (a fixa fica)
-    const s = { auras: T(3), emprest: [{ n: 'Luz' }, { n: 'Rejuvenescimento' }, { n: 'Água', lv: 2, fixa: true, pp: 3 }] };
+    const s = { auras: T(3), emprest: [{ n: 'Luz' }, { n: 'Rejuvenescimento' }, { n: 'Água', lv: 2, fixa: true, pp: 3 }], vistas: ['Luz', 'Rejuvenescimento', 'Água', 'Dreno', 'Fogo'] };
     expect(activeAuras(s).map(x => `${x.n}${x.lv}`)).toEqual(['Titânica3', 'Luz3', 'Rejuvenescimento3', 'Água2']);
     expect(sheetReminders(s).some(l => /Halo/.test(l))).toBe(true);
     expect(corpoRenovado(activeAuras(s))).toBe(true);
     expect(activeAuras({ auras: [{ n: 'Fogo', lv: 1, her: true }], emprest: [{ n: 'Luz' }, { n: 'Água', lv: 2, fixa: true }] }).map(x => x.n)).toEqual(['Fogo', 'Água']);
     expect(borrowedSpent(s.emprest)).toBe(3);
-    // opções: nunca o Ícor; Primordiais podem; sem as que já tem
+    // opções (D-136): só as vistas, nunca o Ícor; Primordiais podem; sem as que já tem
     const op = borrowOptions(s), nomes = op.flatMap(g => g.auras);
     expect(op.some(g => g.area === 'Ícor')).toBe(false);
-    expect(nomes).toContain('Dreno');
-    expect(nomes.includes('Luz') || nomes.includes('Água')).toBe(false);
+    expect(nomes.sort()).toEqual(['Dreno', 'Fogo']);
+    expect(borrowOptions({ ...s, vistas: [] })).toEqual([]);
+    expect(seenOptions(s).some(g => g.area === 'Ícor')).toBe(false);
+    expect(seenOptions(s).flatMap(g => g.auras)).not.toContain('Luz');
+    expect(withSeen(['Fogo'], 'Aura Própria')).toEqual(['Fogo']);
+    expect(withSeen(['Fogo'], 'Luz')).toEqual(['Fogo', 'Luz']);
     // a fixa do convertido que já tinha despertado conta como o único Despertar
     expect(awakenedAura(activeAuras({ auras: T(3), emprest: [{ n: 'Fogo', lv: 4, fixa: true, deus: 'Agni' }] })).deus).toBe('Agni');
-    expect(blankSheet().emprest).toEqual([]);
+    expect([blankSheet().emprest, blankSheet().vistas, blankSheet().empTiradas]).toEqual([[], [], 0]);
   });
 
   test('Titânico convertido (D-134): a aura antiga vira emprestada fixa e os PP ficam', () => {
@@ -129,6 +133,12 @@ describe('regras do canon', () => {
     const ch = convertToTitanic(sheet);
     expect(ch.auras).toEqual([{ n: 'Titânica', lv: 1, her: true }, { n: 'Terra', lv: 1, her: false, pago: 1 }]);
     expect(ch.emprest).toEqual([{ n: 'Fogo', lv: 3, fixa: true, pp: 7 }]);
+    expect(ch.vistas).toEqual(['Fogo']); // D-136: a fixa entra na lista de vistas
+    // D-136: já despertada, a fixa fica no nv 4 com o deus e é o único Despertar; compradas no nv 4 ficam como estão
+    const ch2 = convertToTitanic({ auras: [{ n: 'Fogo', lv: 4, her: true, deus: 'Agni' }, { n: 'Luz', lv: 4, her: false, pago: 2, deus: 'Chronos' }] });
+    expect(ch2.emprest).toEqual([{ n: 'Fogo', lv: 4, fixa: true, pp: 7, deus: 'Agni' }]);
+    expect(ch2.auras[1]).toEqual({ n: 'Luz', lv: 4, her: false, pago: 2, deus: 'Chronos' });
+    expect(awakenedAura(activeAuras({ auras: [{ n: 'Titânica', lv: 3, her: true }], emprest: ch2.emprest })).n).toBe('Fogo');
     expect(ch.ppConf.auras).toEqual({ Fogo: 3, Terra: 1, 'Titânica': 1 }); // a Titânica já entra travada
     expect(titanicSlots(ch.auras)).toBe(2); // a fixa não ocupa vaga
     expect(convertToTitanic({ auras: [{ n: 'Titânica', lv: 1, her: true }] })).toBeNull();
