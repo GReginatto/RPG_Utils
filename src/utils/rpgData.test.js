@@ -3,6 +3,7 @@ import {
   pointBuyCost, profBonus, ppAttrCost, ppEarned, areaDistance, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
   PANTHEON, GENERIC_TECHS, PROFESSIONS_DATA, skillProfMult, saveBonus, armorWithoutProf, armorName, hitDiceLeft, hitDicePerRest, corpoRenovado, XP_SESSION, auraLicense, ATTR_FULL, ppConfirmState, ppPending, attrConfirmed, auraConfirmed, awakenedAura, techDiceCap, titanicBorn, rareHereditary,
   titanicLevel, titanicApex, titanicSlots, borrowedLevel, titanicBody, activeAuras, borrowedSpent, borrowOptions, convertToTitanic, blankSheet, seenOptions, withSeen,
+  regionRename,
 } from './rpgData';
 
 // Casos calculados à mão a partir do canon (rodadas 5 e 6 do artífice)
@@ -197,6 +198,17 @@ describe('regras do canon', () => {
     expect(armorName("Couro")).toBe("Casaco de couro");
     expect(armorName("Couro batido")).toBe("Casaco de caça reforçado");
     expect(armorName("Placas completas")).toBe("Placas completas");
+  });
+
+  test("mundo novo (D-138 a D-154): região de origem antiga vira a nova", () => {
+    expect(regionRename("Capitólio Imperial")).toBe("Império de Aldwynn");
+    expect(regionRename(" As Forjas ")).toBe("Montes de Durn");
+    expect(regionRename("Picos Celestes")).toBe("Planalto Celeste");
+    expect(regionRename("Selva Profunda")).toBe("Khartheon, interior");
+    expect(regionRename("Ruínas da Passagem")).toBe("Pharos");
+    expect(regionRename("Costa de Marés")).toBe(null);
+    expect(regionRename("Valdrecht")).toBe(null);
+    expect(regionRename(undefined)).toBe(null);
   });
 
   test("rodada 8: dados de vida, Corpo Renovado, XP por sessão, licenças", () => {

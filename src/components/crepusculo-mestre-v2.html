@@ -106,33 +106,37 @@ $('tabs').querySelectorAll('.tb').forEach(b=>{b.onclick=()=>{$('tabs').querySele
 // ═══ REGIÕES ═══
 var REGIONS={
   'Padrão':{mult:1.0,color:'var(--ac)',desc:'Preço base sem ajuste regional.',moeda:'Coroas de Ouro (CO)',icon:'⚖'},
-  'Capitólio Imperial':{mult:1.0,taxa:0.1,color:'#ffd54f',desc:'Coração do Império. Base (×1,0); taxa imperial de +10% à parte sobre todo preço de tabela (D-86). Arka regulamentada; lei imperial plena (P-088).',moeda:'Áureos Imperiais',icon:'🦅'},
-  'Costa de Marés':{mult:0.85,color:'#4fc3f7',desc:'Porto livre. Peixe e especiarias abundantes. Comércio com Khartheon.',moeda:'Pérolas de Marella',icon:'🌊'},
-  'Picos Celestes':{mult:1.25,color:'#e0e0ff',desc:'Fortalezas dos Anjos. Isolados, itens sagrados exclusivos. Acesso difícil.',moeda:'Halos de Luz',icon:'✦'},
-  'As Forjas':{mult:0.8,color:'#90a4ae',desc:'Três clãs anões. Metal e armas muito baratos. Comida cara (importada).',moeda:'Lingotes-Selo',icon:'⚒'},
-  'Bosque de Eryn':{mult:1.1,color:'#66bb6a',desc:'Elfos Eryndori e Nytheri. Itens naturais baratos, metal caro.',moeda:'Folhas de Prata',icon:'🌿'},
-  'Planícies de Cinza':{mult:0.7,color:'#e53935',desc:'Tribos demoníacas. Escambo, estoque imprevisível.',moeda:'Dentes / Escambo',icon:'🦴'},
-  'Ruínas da Passagem':{mult:1.0,multMin:1.0,multMax:2.0,color:'#8d6e63',desc:'Terra de ninguém. Preço depende do vendedor (×1.0–2.0). Contrabando.',moeda:'Qualquer moeda',icon:'🏚'},
-  'Selva Profunda':{mult:0,color:'#2e5a2e',desc:'Sem comércio. Sobrevivência pura. Ninguém vende nada aqui.',moeda:'N/A',icon:'🐊'},
-  'As Fissuras':{mult:0.7,color:'#ff7043',desc:'Escambo demoníaco. Armas de fogo via Clã do Magma (pioneiro).',moeda:'Escambo',icon:'🌋'},
-  'Vestigar':{mult:2.0,color:'#a855f7',desc:'Proibido. Só contrabandistas. Tudo absurdamente caro.',moeda:'Fragmentos de Arka',icon:'💀'}
+  'Império de Aldwynn':{mult:1.0,taxa:0.1,color:'#ffd54f',desc:'Valdrecht e campos. Base (×1,0); taxa imperial de +10% à parte sobre todo preço de tabela (D-86). Arka regulamentada; lei imperial plena (P-088). O maior Selo do mundo, em Valdrecht.',moeda:'Áureos Imperiais',icon:'🦅'},
+  'Costa de Marés':{mult:0.85,color:'#4fc3f7',desc:'Ilha a oeste, capital Camlann. Tributária do Império: reconhece a licença imperial, com leis próprias. Portos mercantes; peixe e especiarias abundantes.',moeda:'Pérolas de Marella',icon:'🌊'},
+  'Montes de Durn':{mult:0.8,color:'#90a4ae',desc:'Confederação de clãs anões (Gelo, Bigorna, Magma), capital Karak Durn. Parceiro do Império. Metal e armas muito baratos. Comida cara (importada).',moeda:'Lingotes-Selo',icon:'⚒'},
+  'Planalto Celeste':{mult:1.25,color:'#e0e0ff',desc:'Teocracia dos Anjos, capital Sereth. Isolado, itens sagrados exclusivos (Prata dos Anjos). Acesso difícil.',moeda:'Halos de Luz',icon:'✦'},
+  'Reinos do Norte':{mult:1.1,color:'#66bb6a',desc:'Skarheim (Jarnholm), Lesnavia (Volkov) e Glenmoor (Dun Eidyn), em guerra com o Império. Elfos nos enclaves do Bosque de Eryn. Itens naturais baratos, metal caro.',moeda:'Marcos de prata',icon:'🌿'},
+  'Khartheon, cidades-estado':{mult:1.0,color:'#ffb74d',desc:'Cidades-estado mercantes no litoral e nos oásis; Varanash é a maior. Rica em Arka, por isso cobiçada.',moeda:'Dinares',icon:'🏛'},
+  'Khartheon, interior':{mult:0.7,color:'#e53935',desc:'Tribos e reinos demônios (desertos, savanas, selvas). Escambo, estoque imprevisível.',moeda:'Dentes / Escambo',icon:'🦴'},
+  'As Fissuras':{mult:0.7,color:'#ff7043',desc:'Terras profundas de Khartheon. Escambo demoníaco. Armas de fogo via Clã do Magma (pioneiro).',moeda:'Escambo',icon:'🌋'},
+  'Pharos':{mult:1.0,multMin:1.0,multMax:2.0,color:'#8d6e63',desc:'Porto neutro numa ilha na saída do Mar do Meio, sede dos Sete Selos e partida das expedições a Vestigar. Preço depende do vendedor (×1.0 a 2.0). Contrabando.',moeda:'Qualquer moeda',icon:'🗼'},
+  'Vestigar':{mult:2.0,color:'#a855f7',desc:'Fechado pelo tratado dos Sete Selos: só expedições licenciadas e contrabandistas. Tudo absurdamente caro.',moeda:'Fragmentos de Arka',icon:'💀'}
 };
+// Mundo novo (D-138 a D-154): nomes antigos de região (arquivos salvos do painel) → região nova
+var REG_ANTIGA={'Capitólio Imperial':'Império de Aldwynn','As Forjas':'Montes de Durn','Picos Celestes':'Planalto Celeste','Bosque de Eryn':'Reinos do Norte','Planícies de Cinza':'Khartheon, interior','Ruínas da Passagem':'Pharos','Selva Profunda':'Khartheon, interior'};
+function regNova(k){return REG_ANTIGA.hasOwnProperty(k)?REG_ANTIGA[k]:k}
 // Câmbio regional (P-042, R10-1; cap. 14): cot = valor de 1 unidade da moeda local em CO; agio = custo de trocar/pagar em Coroas (forasteiro).
-// Preço na moeda local = preço base × multiplicador ÷ cotação. Ruínas: qualquer moeda; Selva: sem comércio.
+// Preço na moeda local = preço base × multiplicador ÷ cotação. Pharos: qualquer moeda.
 var CAMBIO={
-  'Capitólio Imperial':{un:'Áureo Imperial',cot:10,agio:0,nota:'1 Áureo = 10 CO; a Coroa circula ao par'},
+  'Império de Aldwynn':{un:'Áureo Imperial',cot:10,agio:0,nota:'1 Áureo = 10 CO; a Coroa circula ao par'},
   'Costa de Marés':{un:'Pérola de Marella',cot:5,agio:5},
-  'Picos Celestes':{un:'Halo de Luz',cot:2,agio:5},
-  'As Forjas':{un:'Lingote-Selo',cot:10,agio:5},
-  'Bosque de Eryn':{un:'Folha de Prata',cot:0.1,agio:5,nota:'1 Folha = 0,1 CO (1 LP)'},
-  'Planícies de Cinza':{un:'dente comum',cot:0.1,agio:10,nota:'Dente comum = 0,1 CO; presa = 1 CO; presa de fera de Arka = 10 CO'},
-  'Ruínas da Passagem':{un:'',cot:0,agio:10,nota:'Qualquer moeda, pela cotação dela'},
-  'As Fissuras':{un:'dente comum',cot:0.1,agio:10,nota:'Escambo demoníaco; dentes aceitos, como nas Planícies'},
+  'Montes de Durn':{un:'Lingote-Selo',cot:10,agio:5},
+  'Planalto Celeste':{un:'Halo de Luz',cot:2,agio:5},
+  'Reinos do Norte':{un:'Marco de prata',cot:1,agio:5,nota:'1 Marco de prata = 1 CO (cada reino cunha o seu)'},
+  'Khartheon, cidades-estado':{un:'Dinar',cot:1,agio:10,nota:'1 Dinar = 1 CO'},
+  'Khartheon, interior':{un:'dente comum',cot:0.1,agio:10,nota:'Dente comum = 0,1 CO; presa = 1 CO; presa de fera de Arka = 10 CO'},
+  'As Fissuras':{un:'dente comum',cot:0.1,agio:10,nota:'Escambo demoníaco; dentes aceitos, como no interior de Khartheon'},
+  'Pharos':{un:'',cot:0,agio:10,nota:'Qualquer moeda, pela cotação dela'},
   'Vestigar':{un:'Fragmento de Arka',cot:20,agio:20}
 };
 function precoLocal(fc){var c=CAMBIO[curRegion];if(!c||!c.cot||!fc)return '';var v=fc/100/c.cot;return (v>=10?Math.round(v):Math.round(v*10)/10).toString().replace('.',',')+' '+c.un}
 // P-096 (opção 1): o painel segue o livro. Sem preços por categoria (o antigo RCAT saiu); os detalhes regionais de preço
-// ("comida barata", "metal caro"…) ficam como sabor nas descrições, sem regra. No Capitólio, +10% em tudo (taxa imperial, D-86).
+// ("comida barata", "metal caro"…) ficam como sabor nas descrições, sem regra. No Império, +10% em tudo (taxa imperial, D-86).
 
 // ═══ ITENS (em FC) ═══
 var ITEMS=[
@@ -168,7 +172,7 @@ var ITEMS=[
 {cat:'Armas de Fogo',name:'Munição (10 tiros)',price:200,notes:'Sensível à água.'},
 {cat:'Armas a Vapor',name:'Lança-vapor',price:20000,notes:'2d6 fogo, cone 3m. 3 jatos por caldeira (1 min para reaquecer). Teste de DEX (CD 8 + prof + DEX do usuário) para metade; alvo fica Encharcado.'},
 {cat:'Armas a Vapor',name:'Martelo pneumático',price:12000,notes:'1d12 conc. Corpo a corpo, 2 mãos; soma FOR ao dano. 1×/turno, ao acertar, empurra 1,5m (FOR, CD 8 + prof + FOR).'},
-{cat:'Prata dos Anjos',name:'Banho de prata (arma corpo a corpo)',price:10000,notes:'Dano conta como Luz para resistências; +1d4 de Luz contra criaturas distorcidas, mortos-vivos e entidades de Vestigar; pode servir de foco de técnica, sem bônus.'},
+{cat:'Prata dos Anjos',name:'Banho de prata (arma corpo a corpo)',price:10000,notes:'Dano conta como Luz para resistências; +1d4 de Luz contra criaturas distorcidas, mortos-vivos e entidades de Vestigar; pode servir de foco de técnica, sem bônus. Só no Planalto Celeste.'},
 {cat:'Prata dos Anjos',name:'Munição de prata (+10 tiros)',price:1000,notes:'Acréscimo sobre a munição comum. Mesmos efeitos do banho de prata.'},
 {cat:'Armaduras Leves',name:'Sobretudo acolchoado',price:500,notes:'CA 11+DEX. Desv. furtividade.'},
 {cat:'Armaduras Leves',name:'Casaco de couro',price:1000,notes:'CA 11+DEX.'},
@@ -176,7 +180,7 @@ var ITEMS=[
 {cat:'Armaduras Médias',name:'Colete de malha',price:5000,notes:'CA 13+DEX (máx 2). Desv. furtividade.'},
 {cat:'Armaduras Médias',name:'Couraça',price:40000,notes:'CA 14+DEX (máx 2).'},
 {cat:'Armaduras Médias',name:'Couraça de cavalaria',price:75000,notes:'CA 15+DEX (máx 2). Desv. furtividade.'},
-{cat:'Armaduras Médias',name:'Brigantina de prata (Anjos)',price:60000,notes:'CA 14+DEX (máx 2). Resistência 25% a Trevas (multiplicativa). Só nos Picos Celestes.'},
+{cat:'Armaduras Médias',name:'Brigantina de prata (Anjos)',price:60000,notes:'CA 14+DEX (máx 2). Resistência 25% a Trevas (multiplicativa). Só no Planalto Celeste.'},
 {cat:'Armaduras Pesadas',name:'Cota de anéis',price:3000,notes:'CA 14. Desv. furt. FOR 13. −1 m de movimento (P-073).'},
 {cat:'Armaduras Pesadas',name:'Cota de talas',price:20000,notes:'CA 15. Desv. furt. FOR 13. −1 m de movimento (P-073).'},
 {cat:'Armaduras Pesadas',name:'Placas completas',price:150000,notes:'CA 18. Desv. furt. FOR 15. −2 m de movimento (P-073). Encomenda.'},
@@ -195,14 +199,14 @@ var ITEMS=[
 {cat:'Comida & Bebida',name:'Garrafa de vinho',price:20,notes:'Tinto/branco regional.'},
 {cat:'Comida & Bebida',name:'Vinho élfico (Eryn)',price:1000,notes:'Raro fora do Bosque de Eryn.'},
 {cat:'Comida & Bebida',name:'Rum da Costa',price:30,notes:'Forte, apimentado.'},
-{cat:'Comida & Bebida',name:'Cerveja anã (As Forjas)',price:15,notes:'Escura. Humanos: cuidado.'},
+{cat:'Comida & Bebida',name:'Cerveja anã (Montes de Durn)',price:15,notes:'Escura. Humanos: cuidado.'},
 {cat:'Comida & Bebida',name:'Rações de viagem (1 dia)',price:50,notes:'Carne seca, biscoitos, frutas.'},
 {cat:'Comida & Bebida',name:'Peixe fresco',price:5,notes:'Abundante na costa. ×3 interior.'},
 {cat:'Comida & Bebida',name:'Água purificada',price:2,notes:'Grátis em rios, 2 FC em cidades.'},
 {cat:'Serviços',name:'Curandeiro (leve)',price:100,notes:'Herbalismo. Cura 1d6 HP.'},
 {cat:'Serviços',name:'Curandeiro (grave)',price:500,notes:'Cirurgia/ervas raras. 2d8 HP.'},
 {cat:'Serviços',name:'Cura mágica',price:2000,notes:'Raro. Templos/Anjos. Cura total leve.'},
-{cat:'Serviços',name:'Remoção de maldição',price:10000,notes:'Raríssimo. Nytheri ou Picos Celestes.'},
+{cat:'Serviços',name:'Remoção de maldição',price:10000,notes:'Raríssimo. Nytheri ou Planalto Celeste.'},
 {cat:'Serviços',name:'Ferreiro (reparo simples)',price:50,notes:'Amolar, consertar. 1 dia.'},
 {cat:'Serviços',name:'Ferreiro (reparo complexo)',price:500,notes:'Armadura/arma quebrada. 3-5 dias.'},
 {cat:'Serviços',name:'Ferreiro (encomenda)',price:5000,notes:'Peça sob medida. 1 a 4 semanas. Qualidade +1 (a critério do Mestre, E15-03).'},
@@ -214,7 +218,7 @@ var ITEMS=[
 {cat:'Serviços',name:'Guia local (por dia)',price:200,notes:'Caminhos, perigos, contatos.'},
 {cat:'Serviços',name:'Mercenário (por dia)',price:300,notes:'Leal enquanto for pago.'},
 {cat:'Serviços',name:'Identificar item de Arka',price:2000,notes:'1 dia. Estudiosos e Nytheri.'},
-{cat:'Serviços',name:'Banho público',price:5,notes:'Água quente (fria nos Picos Celestes).'},
+{cat:'Serviços',name:'Banho público',price:5,notes:'Água quente (fria no Planalto Celeste).'},
 {cat:'Equipamento',name:'Mochila',price:200,notes:'30 itens de carga.'},
 {cat:'Equipamento',name:'Corda cânhamo (15m)',price:100,notes:'Suporta 150kg.'},
 {cat:'Equipamento',name:'Corda de seda (15m)',price:1000,notes:'200kg. Leve. Élfica.'},
@@ -235,7 +239,7 @@ var ITEMS=[
 {cat:'Montarias',name:'Pônei / Mula',price:3000,notes:'40m. Carga pesada.'},
 {cat:'Montarias',name:'Camelo',price:5000,notes:'50m. Comum em Khartheon.'},
 {cat:'Montarias',name:'Sela de montaria',price:1000,notes:'Sela de guerra: 2000 FC.'},
-{cat:'Montarias',name:'Besta exótica',price:20000,notes:'Lagarto de Khartheon / Bode dos Picos.'},
+{cat:'Montarias',name:'Besta exótica',price:20000,notes:'Lagarto de Khartheon / Bode do Planalto.'},
 {cat:'Itens Mágicos',name:'Poção de cura (1d8+2)',price:5000,notes:'Beber custa uma Ação. Comum.'},
 {cat:'Itens Mágicos',name:'Poção cura maior (2d8+4)',price:15000,notes:'Rara.'},
 {cat:'Itens Mágicos',name:'Poção recuperação MP (2d6)',price:8000,notes:'Rara. Cristais de Arka.'},
@@ -243,9 +247,9 @@ var ITEMS=[
 {cat:'Itens Mágicos',name:'Pergaminho (Intermediária)',price:30000,notes:'INT CD 14 ou falha (a critério do Mestre, E15-03).'},
 {cat:'Itens Mágicos',name:'Cristal de Arka',price:20000,notes:'Consumível Mágico: Fortalecimento de +30% numa técnica (cap. 8). 1 uso. Vem de Vestigar.'},
 {cat:'Itens Mágicos',name:'Amuleto de proteção (+1 CA)',price:50000,notes:'Sintonização. Raro (a critério do Mestre, E15-03).'},
-{cat:'Itens Mágicos',name:'Arma forjada em Arka +1',price:100000,notes:'+1 no acerto e no dano. Encomenda nas Forjas ou com os Nytheri. Meses. Mestre controla a disponibilidade.'},
-{cat:'Itens Mágicos',name:'Arma forjada em Arka +2',price:400000,notes:'+2 no acerto e no dano. Encomenda nas Forjas ou com os Nytheri. Meses.'},
-{cat:'Itens Mágicos',name:'Arma forjada em Arka +3',price:1200000,notes:'+3 no acerto e no dano. Encomenda nas Forjas ou com os Nytheri. Meses.'},
+{cat:'Itens Mágicos',name:'Arma forjada em Arka +1',price:100000,notes:'+1 no acerto e no dano. Encomenda nos Montes de Durn ou com os Nytheri. Meses. Mestre controla a disponibilidade.'},
+{cat:'Itens Mágicos',name:'Arma forjada em Arka +2',price:400000,notes:'+2 no acerto e no dano. Encomenda nos Montes de Durn ou com os Nytheri. Meses.'},
+{cat:'Itens Mágicos',name:'Arma forjada em Arka +3',price:1200000,notes:'+3 no acerto e no dano. Encomenda nos Montes de Durn ou com os Nytheri. Meses.'},
 {cat:'Itens Mágicos',name:'Pedra de comunicação (par)',price:25000,notes:'Fala entre as duas pedras até 100 km. Feita pelos Nytheri.'},
 {cat:'Itens Mágicos',name:'Tônico de Arka',price:25000,notes:'Raro. Remove 1 nível de Exaustão de Arka; no máximo 1 por descanso longo (E15-02).'},
 {cat:'Itens Mágicos',name:'Antídoto',price:5000,notes:'Neutraliza um veneno comum. 1 uso.'},
@@ -261,7 +265,7 @@ function priceChange(b,a){if(b===a||!b)return '';var p=Math.round(((a-b)/b)*100)
 
 function bEcon(){
   var h='<div class="st">Economia de Velarion</div>';
-  h+='<div class="econ-note"><b>Moeda:</b> 1 <span class="coin">Coroa de Ouro (CO)</span> = 10 <span class="coin-s">Lâminas de Prata (LP)</span> = 100 <span class="coin-c">Fagulhas de Cobre (FC)</span>. Reinos tribais usam escambo. Cada região tem a sua moeda (P-042): preço local = preço base × multiplicador ÷ cotação; pagar em Coroas onde manda a moeda local custa o ágio da região (Capitólio 0%, resto do Império 5%, Khartheon e Ruínas 10%, Vestigar 20%). <b>Preços de tabela</b> não incluem a taxa imperial: no Capitólio, soma-se +10% à parte (D-86). Um só multiplicador por região, sem ajuste por categoria (P-096); as notas de cada região são sabor. Itens marcados <b>(a critério do Mestre)</b> trazem regra que não está no livro (E15-03).</div>';
+  h+='<div class="econ-note"><b>Moeda:</b> 1 <span class="coin">Coroa de Ouro (CO)</span> = 10 <span class="coin-s">Lâminas de Prata (LP)</span> = 100 <span class="coin-c">Fagulhas de Cobre (FC)</span>. Reinos tribais usam escambo. Cada região tem a sua moeda (P-042): preço local = preço base × multiplicador ÷ cotação; pagar em Coroas onde manda a moeda local custa o ágio da região (Império 0%, outros países de Aldwynn 5%, Khartheon e Pharos 10%, Vestigar 20%). <b>Preços de tabela</b> não incluem a taxa imperial: no Império, soma-se +10% à parte (D-86). Um só multiplicador por região, sem ajuste por categoria (P-096); as notas de cada região são sabor. Itens marcados <b>(a critério do Mestre)</b> trazem regra que não está no livro (E15-03).</div>';
   h+='<div class="econ-note"><b>Armas de fogo:</b> não somam atributo ao dano (ataque = DEX + proficiência); emperram no 1 natural (1 ação para desemperrar); <b>perfuram armadura N</b>: contra armadura média ou pesada, a CA do alvo conta N a menos (DEX, escudo e CA natural não são afetados). Porte exige licença (civil: pistola, bacamarte, mosquete; militar: carabina, canhão).</div>';
   h+='<div class="sub-label">Região</div><div class="f fw g4" style="margin-bottom:8px" id="regBtns"></div><div id="regInfo"></div>';
   h+='<div class="search-box"><input type="text" id="itemSearch" placeholder="     Buscar item..." oninput="searchTerm=this.value.toLowerCase();rET()"></div>';
@@ -322,10 +326,10 @@ var TPLS_BASE=[
 {name:"Cavaleiro de Elite",lv:7,cat:"elite",aura:"Fogo",role:"elite",org:"Capitólio Imperial",notes:"Elite imperial. Espada larga; Projetar de Fogo (Queimadura acima de 18 MP)."},
 {name:"Explorador de Eryn",lv:3,cat:"padrao",aura:"Naturae",role:"dps",org:"Bosque de Eryn",notes:"Arco longo (50 m), camuflagem na mata."},
 {name:"Mago Nytheri",lv:5,cat:"padrao",aura:"Ilusão",role:"caster",org:"Bosque de Eryn",notes:"Prefere Projetar e técnicas de Ilusão (teste de SAB) ao corpo a corpo."},
-{name:"Mestre das Forjas",lv:4,cat:"padrao",aura:"Terra",role:"tank",org:"As Forjas",notes:"Martelo de guerra. Clã do Gelo. Projetar de Terra (Derrubado acima de 18 MP)."},
-{name:"Artilheiro do Magma",lv:4,cat:"padrao",aura:"Fogo",role:"dps",org:"As Forjas",notes:"Mosquete (40/120 m) e granada incendiária. Clã do Magma."},
-{name:"Sentinela Celeste",lv:8,cat:"elite",aura:"Luz",role:"elite",org:"Picos Celestes",notes:"Montada em wyvern. Patrulha dos Picos Celestes; técnicas de Luz."},
-{name:"Guardião Celeste",lv:5,cat:"padrao",aura:"Luz",role:"support",org:"Picos Celestes",notes:"Escudo de prata (+2 no Proteger). Usa Proteger pelos aliados."},
+{name:"Mestre forjador de Durn",lv:4,cat:"padrao",aura:"Terra",role:"tank",org:"Montes de Durn",notes:"Martelo de guerra. Clã do Gelo. Projetar de Terra (Derrubado acima de 18 MP)."},
+{name:"Artilheiro do Magma",lv:4,cat:"padrao",aura:"Fogo",role:"dps",org:"Montes de Durn",notes:"Mosquete (40/120 m) e granada incendiária. Clã do Magma."},
+{name:"Sentinela Celeste",lv:8,cat:"elite",aura:"Luz",role:"elite",org:"Planalto Celeste",notes:"Montada em wyvern. Patrulha do Planalto Celeste; técnicas de Luz."},
+{name:"Guardião Celeste",lv:5,cat:"padrao",aura:"Luz",role:"support",org:"Planalto Celeste",notes:"Escudo de prata (+2 no Proteger). Usa Proteger pelos aliados."},
 {name:"Berserker das Cinzas",lv:5,cat:"padrao",aura:"Fogo",role:"dps",org:"Planícies de Cinza",notes:"Machado duplo. Fúria tribal: não recua."},
 {name:"Senhor da Guerra",lv:9,cat:"elite",aura:"Fogo/Trevas",role:"boss",org:"Planícies de Cinza",notes:"Líder tribal. Para chefe, gere pela tabela com a categoria Chefe."},
 {name:"Druida de Eryn",lv:4,cat:"padrao",aura:"Naturae",role:"caster",org:"Bosque de Eryn",notes:"Eryndori. Técnicas de Naturae (raízes: Enraizado)."},
@@ -390,7 +394,7 @@ function bRef(){
   // Rodada 8: reações gerais (R10-3), Ação Lendária (R10-3, D-68, R11-2), cobertura (D-78)
   h+='<div class="exp-head" onclick="toggle(\'reac\')"><span class="title">Reações, Cobertura e Ação Lendária</span><span class="arrow" id="arrow-reac">▸</span></div><div class="exp-body" id="body-reac"><table class="ref-table"><tr><th>Regra</th><th>Detalhe</th></tr><tr><td>Reação</td><td>1 por rodada: Proteger, ataque de oportunidade, Esquiva, Aparar e Contra-Ataque disputam a mesma. Esquiva, Aparar e Contra-Ataque só contra armas</td></tr><tr><td>Esquiva</td><td>Contra ataque com arma que acertou, antes do dano: 1d20 + DEX ≥ total do ataque → sem dano</td></tr><tr><td>Aparar</td><td>Só corpo a corpo, empunhando arma corpo a corpo: 1d20 + FOR ≥ total do ataque → sem dano; 20 natural = vantagem no próximo ataque contra o atacante</td></tr><tr><td>Contra-Ataque</td><td>Recebe o dano inteiro e faz 1 ataque com arma contra o atacante, com desvantagem</td></tr><tr><td>Ataque de oportunidade</td><td>Reação: quando uma criatura hostil que o personagem vê sai do alcance corpo a corpo dele sem Desengajar, 1 ataque com arma corpo a corpo (P-067)</td></tr><tr><td>Desengajar</td><td>Ação: o movimento do turno não provoca ataque de oportunidade</td></tr><tr><td>Agarrar</td><td>Ação: Atletismo contra Atletismo ou Acrobacia do alvo; sucesso = Agarrado (movimento 0). Escapar gasta a Ação e repete o teste (P-074)</td></tr><tr><td>Desarmado</td><td>1 + mod FOR de concussão; todos proficientes (P-075)</td></tr><tr><td>Meditação</td><td>Ação + Ação Bônus (pode mover): 2d8 + mod DOM de MP; 1 turno sem receber dano (P-071)</td></tr><tr><td>Armas</td><td>Acuidade (FOR ou DEX) · Versátil (dado maior a duas mãos) · Arremesso · Pesado (FOR 13, abaixo desvantagem) · Duas mãos · Alcance 3 m · Recarga (1 disparo por Ação) · Leve (duas armas: 2º ataque como Ação Bônus, sem o mod no dano) (P-069). Alcance com dois números (12/36 m): até o 1º normal, entre os dois desvantagem, além do 2º impossível (E15-01)</td></tr><tr><td>Armadura pesada</td><td>Anéis e talas −1 m; placas e a vapor −2 m de movimento (P-073)</td></tr><tr><td>Flanquear</td><td>Vantagem no corpo a corpo com aliado do lado oposto, a até 1,5 m do alvo</td></tr><tr><td>Cobertura</td><td>Meia +2 CA · três quartos +5 · total: não pode ser alvo direto. Olho de Falcão (Explorador) ignora meia</td></tr><tr><td>Ação Lendária (chefes)</td><td>Padrão 1 por rodada; 2 no chefe de fim de arco; máx. 3. Cada uma = 1 ataque com arma ou 1 técnica Básica (até 12 MP, paga), no fim do turno de um jogador, nunca duas depois do mesmo turno. Cada uma pesa ≈ +1 no multiplicador de HP do chefe</td></tr><tr><td>Ação Lendária (jogador)</td><td>Quem fez o Despertar Divino ou o Ápice Titânico (D-135): 1 por rodada, máx. 2 por combate; 1 ataque ou 1 Projetar Básico (até 12 MP, pago); não gasta a reação</td></tr><tr><td>Rodada</td><td>6 segundos (10 rodadas = 1 minuto)</td></tr></table></div>';
   // Rodada 8: economia do livro (R9-1, D-65, R10-6, P-051)
-  h+='<div class="exp-head" onclick="toggle(\'econ\')"><span class="title">Riqueza e Licenças</span><span class="arrow" id="arrow-econ">▸</span></div><div class="exp-body" id="body-econ"><table class="ref-table"><tr><th>Profissão</th><th>Riqueza inicial</th></tr><tr><td>Diplomata</td><td>140 CO</td></tr><tr><td>Estudioso</td><td>120 CO</td></tr><tr><td>Curandeiro</td><td>110 CO</td></tr><tr><td>Guerreiro</td><td>100 CO</td></tr><tr><td>Explorador</td><td>95 CO</td></tr><tr><td>Canalizador</td><td>90 CO</td></tr><tr><td>Guardião</td><td>80 CO</td></tr><tr><td>Profissão montada</td><td>definida pelo Mestre (D-85)</td></tr></table><div style="font-size:10px;color:var(--td);margin:4px 0 8px">Mais o kit básico de viagem (roupas, mochila, cantil, rações de 3 dias), grátis.</div><table class="ref-table"><tr><th>Nível</th><th>Riqueza esperada</th><th>Nível</th><th>Riqueza esperada</th></tr><tr><td>3</td><td>100</td><td>10</td><td>2.000</td></tr><tr><td>4</td><td>150</td><td>11</td><td>2.750</td></tr><tr><td>5</td><td>200</td><td>12</td><td>3.750</td></tr><tr><td>6</td><td>350</td><td>13</td><td>5.250</td></tr><tr><td>7</td><td>500</td><td>14</td><td>7.250</td></tr><tr><td>8</td><td>800</td><td>15</td><td>10.000</td></tr><tr><td>9</td><td>1.250</td><td></td><td></td></tr></table><div style="font-size:10px;color:var(--td);margin:4px 0 8px">Valor total por personagem (equipamento + dinheiro), em CO. A arma forjada +3 fica acima da curva: só como tesouro ou recompensa.</div><table class="ref-table"><tr><th>Licença</th><th>Preço</th><th>Cobre</th></tr><tr><td>Básica</td><td>Livre</td><td>Aura nv 1, técnicas Básicas, genéricas até o Básico (Projetar até 12 MP, Manifestar simples); Proteger sempre livre</td></tr><tr><td>Intermediária</td><td>30 CO</td><td>Técnicas Intermediárias e aura nv 2; porte civil de arma de fogo</td></tr><tr><td>Avançada</td><td>250 CO</td><td>Técnicas Avançadas e Máximas e aura nv 3; exige a Intermediária</td></tr></table><div style="font-size:10px;color:var(--td);margin-top:4px">Emitidas pela Chancelaria Arkana. <b>Território imperial</b> (P-088): Capitólio e planícies centrais, lei plena; Costa de Marés e Forjas reconhecem as licenças, com leis próprias; Picos Celestes, Bosque de Eryn e fora de Aldwynn, sem valor legal. Cada uma exige uma prova narrativa (exame, demonstração, padrinho), sem teste obrigatório. Expansão de Domínio e licença militar: arma de guerra.</div></div>';
+  h+='<div class="exp-head" onclick="toggle(\'econ\')"><span class="title">Riqueza e Licenças</span><span class="arrow" id="arrow-econ">▸</span></div><div class="exp-body" id="body-econ"><table class="ref-table"><tr><th>Profissão</th><th>Riqueza inicial</th></tr><tr><td>Diplomata</td><td>140 CO</td></tr><tr><td>Estudioso</td><td>120 CO</td></tr><tr><td>Curandeiro</td><td>110 CO</td></tr><tr><td>Guerreiro</td><td>100 CO</td></tr><tr><td>Explorador</td><td>95 CO</td></tr><tr><td>Canalizador</td><td>90 CO</td></tr><tr><td>Guardião</td><td>80 CO</td></tr><tr><td>Profissão montada</td><td>definida pelo Mestre (D-85)</td></tr></table><div style="font-size:10px;color:var(--td);margin:4px 0 8px">Mais o kit básico de viagem (roupas, mochila, cantil, rações de 3 dias), grátis.</div><table class="ref-table"><tr><th>Nível</th><th>Riqueza esperada</th><th>Nível</th><th>Riqueza esperada</th></tr><tr><td>3</td><td>100</td><td>10</td><td>2.000</td></tr><tr><td>4</td><td>150</td><td>11</td><td>2.750</td></tr><tr><td>5</td><td>200</td><td>12</td><td>3.750</td></tr><tr><td>6</td><td>350</td><td>13</td><td>5.250</td></tr><tr><td>7</td><td>500</td><td>14</td><td>7.250</td></tr><tr><td>8</td><td>800</td><td>15</td><td>10.000</td></tr><tr><td>9</td><td>1.250</td><td></td><td></td></tr></table><div style="font-size:10px;color:var(--td);margin:4px 0 8px">Valor total por personagem (equipamento + dinheiro), em CO. A arma forjada +3 fica acima da curva: só como tesouro ou recompensa.</div><table class="ref-table"><tr><th>Licença</th><th>Preço</th><th>Cobre</th></tr><tr><td>Básica</td><td>Livre</td><td>Aura nv 1, técnicas Básicas, genéricas até o Básico (Projetar até 12 MP, Manifestar simples); Proteger sempre livre</td></tr><tr><td>Intermediária</td><td>30 CO</td><td>Técnicas Intermediárias e aura nv 2; porte civil de arma de fogo</td></tr><tr><td>Avançada</td><td>250 CO</td><td>Técnicas Avançadas e Máximas e aura nv 3; exige a Intermediária</td></tr></table><div style="font-size:10px;color:var(--td);margin-top:4px">Emitidas pela Chancelaria Arkana, no Capitólio, em Valdrecht, e nas cidades com Selo. <b>Território imperial</b> (P-088): no Império de Aldwynn, lei plena; a Costa de Marés (tributária) e os Montes de Durn (parceiro) reconhecem a licença imperial, com leis próprias; no Planalto Celeste, nos Reinos do Norte (em guerra; vale só nas terras já anexadas), em Khartheon, em Pharos e em Vestigar, sem valor legal. Cada uma exige uma prova narrativa (exame, demonstração, padrinho), sem teste obrigatório. Expansão de Domínio e licença militar: arma de guerra.</div></div>';
   // Rodada 8: apêndice Mecânicas Extras (D-92; P-034, R10-7, D-76, D-79)
   h+='<div class="exp-head" onclick="toggle(\'opc\')"><span class="title">Mecânicas Extras (Apêndice)</span><span class="arrow" id="arrow-opc">▸</span></div><div class="exp-body" id="body-opc"><table class="ref-table"><tr><th>Regra</th><th>Detalhe</th></tr><tr><td>Ventos da Magia</td><td>No início do combate, um jogador sorteado escolhe par ou ímpar e rola 1d100. Acertou: cada personagem soma 10% do MP máximo (arred. para cima) ao MP atual e ao máximo; errou: tira 10%. Vale até o fim do combate</td></tr><tr><td>Espólios em Coroas</td><td>Após o combate, um jogador rola 3d6: 3–8 menor qualidade, 2d12 CO · 9–14 mediana, 4d8 CO · 15–18 melhor qualidade, 5d10 CO</td></tr><tr><td>Durabilidade</td><td>Tudo começa com 10. Arma: −0,25 por ataque; −1 por Aparar. Armadura: −1 por acerto crítico sofrido. Escudo: −1 por Aparar com escudo (a arma também perde 1) e −1 por todo Proteger de quem o carrega. Com 0, a arma causa 1 + mod; armadura/escudo se perde. Ferreiros reparam</td></tr></table><div class="f g6 fw jc" style="margin-top:8px"><button class="bt bo bsm" onclick="rVentos()">🌬 Ventos da Magia</button><button class="bt bo bsm" onclick="rEsp()">💰 Espólios (3d6)</button></div></div>';
   // Rodada 5 (canon D-21…D-48, PG): hexagrama da imagem, progressão por PP, perícias, Quedas
@@ -413,24 +417,24 @@ function rEsp(){var r=rD('3d6').t,d=r<=8?'2d12':r<=14?'4d8':'5d10',q=r<=8?'menor
 function qR(n){var r=rD(n),mod=+$('dM').value||0,t=r.t+mod,cr=n==='1d20'&&r.t===20,fl=n==='1d20'&&r.t===1,c=cr?'var(--warn)':fl?'var(--dn)':'var(--ac)';$('dR').innerHTML='<span style="color:'+c+'">'+t+'</span> <span style="font-size:11px;color:var(--td)">['+r.r+']'+(mod?(mod>0?'+':'')+mod:'')+'</span>'+(cr?' <span style="color:var(--warn);font-size:11px">CRIT!</span>':'')+(fl?' <span style="color:var(--dn);font-size:11px">FALHA!</span>':'')}
 
 // ═══ ARKA ═══
-var arkaData={'Capitólio Imperial':{cap:5,cur:5,color:'#ffd54f',desc:'Selo central. Estável e regulamentado.'},'Costa de Marés':{cap:4,cur:4,color:'#4fc3f7',desc:'Moderada. Bônus água perto do mar.'},'Picos Celestes':{cap:4,cur:4,color:'#e0e0ff',desc:'Pura mas escassa. Anjos monopolizam.'},'As Forjas':{cap:3,cur:3,color:'#90a4ae',desc:'Terrestre. Terra e Fogo favorecidos.'},'Bosque de Eryn':{cap:6,cur:6,color:'#66bb6a',desc:'Natural e estável. Melhor para treino.'},'Planícies de Cinza':{cap:6,cur:6,color:'#e53935',desc:'Forte e bruta. Fogo e Trevas.'},'Ruínas da Passagem':{cap:5,cur:5,color:'#8d6e63',desc:'Instável. Interferência de Vestigar.'},'Selva Profunda':{cap:7,cur:7,color:'#2e5a2e',desc:'Alta e perigosa. 10% Surto.'},'As Fissuras':{cap:8,cur:8,color:'#ff7043',desc:'Altíssima. 15% Surto. Sagrada.'},Vestigar:{cap:9,cur:9,color:'#a855f7',desc:'Caótica. 15% Surto. Regras especiais.'}};
+var arkaData={'Império de Aldwynn':{cap:5,cur:5,color:'#ffd54f',desc:'O maior Selo do mundo, em Valdrecht. Estável e regulamentado.'},'Costa de Marés':{cap:4,cur:4,color:'#4fc3f7',desc:'Moderada. Bônus para Água perto do mar e no Lago da Dama.'},'Montes de Durn':{cap:3,cur:3,color:'#90a4ae',desc:'Pouca Arka, por isso o vapor. Terra e Fogo favorecidos.'},'Planalto Celeste':{cap:4,cur:4,color:'#e0e0ff',desc:'Pura mas escassa. Anjos monopolizam.'},'Reinos do Norte':{cap:5,cur:5,color:'#66bb6a',desc:'Florestas antigas (Bosque de Eryn): melhor local para treino.'},'Khartheon, cidades-estado':{cap:6,cur:6,color:'#ffb74d',desc:'Rica em Arka, por isso cobiçada.'},'Khartheon, interior':{cap:6,cur:6,color:'#e53935',desc:'Forte e bruta. Fogo e Trevas favorecidos.'},'As Fissuras':{cap:8,cur:8,color:'#ff7043',desc:'Altíssima. 15% Surto (CD 14). Sagrada.'},'Pharos':{cap:5,cur:5,color:'#8d6e63',desc:'Instável (perto do Mar Aberto).'},Vestigar:{cap:9,cur:9,color:'#a855f7',desc:'Caótica. 15% Surto. Regras especiais.'}};
 function bArka(){
-  var h='<div class="st">Arka dos Continentes</div><div style="font-size:11px;color:var(--td);margin-bottom:10px">1 sessão de treino (sucesso ou falha) = 1 de Capacidade. 0 = esgotada; recompõe-se em ciclos definidos pelo Mestre (D-22).</div><div id="aL"></div>';
-  h+='<div class="sub-label">Regras</div><table class="ref-table"><tr><th>Continente</th><th>Arka</th><th>Especial</th></tr>';
-  h+='<tr><td>Capitólio Imperial</td><td>4-5</td><td>Selo central. Estável e regulamentado.</td></tr>';
-  h+='<tr><td>Costa de Marés</td><td>3-5</td><td>Moderada. Bônus água.</td></tr>';
-  h+='<tr><td>Picos Celestes</td><td>3-4</td><td>Pura. Anjos monopolizam os picos.</td></tr>';
-  h+='<tr><td>As Forjas</td><td>3</td><td>Terrestre. Terra e Fogo favorecidos.</td></tr>';
-  h+='<tr><td>Bosque de Eryn</td><td>4-6</td><td>Natural. Melhor para treino.</td></tr>';
-  h+='<tr><td>Planícies de Cinza</td><td>5-7</td><td>Forte. Fogo e Trevas. Tribo livre.</td></tr>';
-  h+='<tr><td>Ruínas da Passagem</td><td>4-6</td><td>Instável. Interferência de Vestigar.</td></tr>';
-  h+='<tr><td>Selva Profunda</td><td>6-8</td><td>Perigosa. 10% Surto/técnica (CD 12), substitui a de fora do Selo. Tempestade de Arka 1d4×/semana: todos os expostos rolam Surto.</td></tr>';
+  var h='<div class="st">Arka das Regiões</div><div style="font-size:11px;color:var(--td);margin-bottom:10px">1 sessão de treino (sucesso ou falha) = 1 de Capacidade. 0 = esgotada; recompõe-se em ciclos definidos pelo Mestre (D-22).</div><div id="aL"></div>';
+  h+='<div class="sub-label">Regras</div><table class="ref-table"><tr><th>Região</th><th>Arka</th><th>Especial</th></tr>';
+  h+='<tr><td>Império de Aldwynn</td><td>4-5</td><td>O maior Selo do mundo, em Valdrecht. Estável e regulamentado.</td></tr>';
+  h+='<tr><td>Costa de Marés</td><td>3-5</td><td>Moderada. Bônus para Água perto do mar e no Lago da Dama.</td></tr>';
+  h+='<tr><td>Montes de Durn</td><td>3</td><td>Pouca Arka, por isso o vapor. Terra e Fogo favorecidos; armas forjadas em Arka.</td></tr>';
+  h+='<tr><td>Planalto Celeste</td><td>3-4</td><td>Arka pura e escassa. Anjos monopolizam; itens de prata.</td></tr>';
+  h+='<tr><td>Reinos do Norte</td><td>4-6</td><td>Florestas antigas (Bosque de Eryn): melhor local para treino.</td></tr>';
+  h+='<tr><td>Khartheon, cidades-estado</td><td>5-6</td><td>Rica em Arka, por isso cobiçada.</td></tr>';
+  h+='<tr><td>Khartheon, interior</td><td>5-7</td><td>Escambo. Fogo e Trevas favorecidos.</td></tr>';
   h+='<tr><td>As Fissuras</td><td>7-9</td><td>Altíssima. 15% Surto/técnica (CD 14), substitui a de fora do Selo. Sagrada.</td></tr>';
+  h+='<tr><td>Pharos</td><td>4-6</td><td>Instável (perto do Mar Aberto).</td></tr>';
   h+='<tr><td style="color:#a855f7;font-weight:700">Vestigar</td><td style="color:#a855f7;font-weight:700">8-10</td><td style="color:#a855f7">Testes de Arka +2; 15% Surto/técnica (CD 14). Descansos a 75% de HP e MP (P-089). Vale só o Surto e as regras da região (P-037).</td></tr></table>';
   // Surto de Arka — tabela revisada (PR-8 / D-11; texto da §3.3 do relatório de balanceamento da rodada 2)
-  h+='<div class="sub-label">Surto de Arka</div><div style="font-size:11px;color:var(--td);margin-bottom:6px"><b>Testes de Arka</b> (D-80: ataques de técnica, treino e testes de aura, tudo que rola DOM): borda −1, fora do Selo com desvantagem, Vestigar +2. Chance por técnica: borda do Selo 5%, fora do Selo 10%, Vestigar 15%. A técnica é resolvida normalmente, salvo se o resultado disser o contrário; depois role 1d6. <b>CD do Surto:</b> borda 10, fora do Selo 12, Vestigar 14. Treino fora do Selo: um 1 natural num teste de treino também provoca Surto (além da Exaustão).</div>';
+  h+='<div class="sub-label">Surto de Arka</div><div style="font-size:11px;color:var(--td);margin-bottom:6px"><b>Testes de Arka</b> (D-80: ataques de técnica, treino e testes de aura, tudo que rola DOM): borda −1, fora do Selo com desvantagem, Vestigar +2. Chance por técnica: borda do Selo 5%, fora do Selo 10%, As Fissuras e Vestigar 15%. A técnica é resolvida normalmente, salvo se o resultado disser o contrário; depois role 1d6. <b>CD do Surto:</b> borda 10, fora do Selo 12, As Fissuras e Vestigar 14. Treino fora do Selo: um 1 natural num teste de treino também provoca Surto (além da Exaustão). <b>Estação de Surto</b> (D-150): cada país tem a sua e, nela, a chance de Surto fora do Selo dobra. Império, outono das névoas; Costa de Marés, tempestades de inverno do mar; Montes de Durn, degelo da primavera (avalanches de Arka); Planalto Celeste, monções de verão; Reinos do Norte, o inverno longo; Khartheon, a estação das chuvas; Pharos, instável o ano inteiro. <b>Grandes Selos:</b> toda capital nasceu sobre um Selo (o de Valdrecht é o maior) e há grandes Selos selvagens em lugares sagrados (Lago da Dama, Sereth, florestas élficas).</div>';
   h+='<table class="ref-table"><tr><th>1d6</th><th>Surto</th><th>Efeito</th></tr>'+SURTO.map((s,i)=>'<tr><td>'+(i+1)+'</td><td><b>'+s[0]+'</b></td><td>'+s[1]+'</td></tr>').join('')+'</table>';
-  h+='<div class="f g6 fw jc" style="margin-top:8px"><button class="bt bsm bwn" onclick="rS(10)">⚡ Surto: borda (CD 10)</button><button class="bt bsm bwn" onclick="rS(12)">⚡ Surto: fora do Selo (CD 12)</button><button class="bt bsm bwn" onclick="rS(12)">⚡ Selva Profunda (CD 12)</button><button class="bt bsm bwn" onclick="rS(14)">⚡ Fissuras (CD 14)</button><button class="bt bsm bwn" onclick="rS(14)">⚡ Surto: Vestigar (CD 14)</button></div><div style="font-size:10px;color:var(--td);margin-top:6px;text-align:center">Tempestade de Arka (Selva Profunda): cada personagem exposto rola na tabela de Surto.</div>';
+  h+='<div class="f g6 fw jc" style="margin-top:8px"><button class="bt bsm bwn" onclick="rS(10)">⚡ Surto: borda (CD 10)</button><button class="bt bsm bwn" onclick="rS(12)">⚡ Surto: fora do Selo (CD 12)</button><button class="bt bsm bwn" onclick="rS(14)">⚡ Fissuras (CD 14)</button><button class="bt bsm bwn" onclick="rS(14)">⚡ Surto: Vestigar (CD 14)</button></div><div style="font-size:10px;color:var(--td);margin-top:6px;text-align:center">Tempestade de Arka (regiões selvagens): cada personagem exposto rola na tabela de Surto.</div>';
   $('t-arka').innerHTML=h;rA();
 }
 function rA(){var el=$('aL');if(!el)return;var h='';Object.keys(arkaData).forEach(k=>{var c=arkaData[k],pct=Math.round(c.cur/c.cap*100),sc=c.cur===0?'var(--dn)':c.cur<=Math.floor(c.cap*.3)?'var(--warn)':'var(--sc)',st=c.cur===0?'ESGOTADO':c.cur<=Math.floor(c.cap*.3)?'Baixo':'OK';h+='<div class="cont-card" style="border-left-color:'+c.color+'"><div class="f ai jsb"><div class="cont-name" style="color:'+c.color+'">'+k+'</div><span style="font-size:10px;color:'+sc+';font-weight:700;font-family:Cinzel,serif">'+st+'</span></div><div class="cont-desc">'+c.desc+'</div><div class="f ai g8"><div class="nc"><button class="nb" onclick="adjAr(\''+k+'\',-1)">−</button><span class="nv" style="color:'+c.color+'">'+c.cur+'</span><button class="nb" onclick="adjAr(\''+k+'\',1)">+</button></div><span style="font-size:10px;color:var(--tm)">/ '+c.cap+'</span><div class="arka-bar" style="flex:1"><div class="arka-fill" style="width:'+pct+'%;background:'+c.color+'"></div></div><div class="f g4"><button class="bt bo bsm" onclick="adjAC(\''+k+'\',-1)">Cap−</button><button class="bt bo bsm" onclick="adjAC(\''+k+'\',1)">Cap+</button></div></div>';if(k==='Vestigar')h+='<div style="margin-top:6px"><button class="bt bsm bwn" onclick="rS(14)">⚡ Surto (CD 14)</button></div>';h+='</div>'});el.innerHTML=h}
@@ -452,7 +456,9 @@ function rS(cd){cd=cd||14;var r=rD('1d6'),s=SURTO[r.t-1],x='';
 
 // ═══ SAVE/LOAD ═══
 function saveGM(){var d={encounter,arkaData,nxId,curRegion,grupoLv};var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='mestre-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Salvo!')}
-function loadGM(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=ev=>{try{var d=JSON.parse(ev.target.result);encounter=d.encounter||[];arkaData=d.arkaData||arkaData;nxId=d.nxId||1;if(d.grupoLv)grupoLv=d.grupoLv;if(d.curRegion){curRegion=d.curRegion;rRB();rET()}rE();rA();toast('OK!')}catch(x){toast('Erro!')}};r.readAsText(f)}
+// Mundo novo: arquivo salvo com regiões antigas → leva Capacidade atual e cheia para a região nova (a primeira que chegar vence)
+function migArka(a){var o=JSON.parse(JSON.stringify(arkaData)),feito={};Object.keys(a).forEach(function(k){var n=regNova(k);if(o[n]&&!feito[n]&&a[k]){if(typeof a[k].cap==='number')o[n].cap=a[k].cap;if(typeof a[k].cur==='number')o[n].cur=Math.min(a[k].cur,o[n].cap);feito[n]=1}});return o}
+function loadGM(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=ev=>{try{var d=JSON.parse(ev.target.result);encounter=d.encounter||[];arkaData=d.arkaData?migArka(d.arkaData):arkaData;nxId=d.nxId||1;if(d.grupoLv)grupoLv=d.grupoLv;if(d.curRegion){curRegion=regNova(d.curRegion);if(!REGIONS[curRegion])curRegion='Padrão';rRB();rET()}rE();rA();toast('OK!')}catch(x){toast('Erro!')}};r.readAsText(f)}
 
 bEcon();bEnc();bRef();bArka();
 document.querySelector('.hdr').innerHTML+='<div style="margin-top:6px;display:flex;gap:8px;justify-content:center"><button class="bt bo bsm" onclick="saveGM()">💾 Salvar</button><label class="bt bo bsm" style="cursor:pointer">📂 Carregar<input type="file" accept=".json" onchange="loadGM(event)" style="display:none"></label></div>';

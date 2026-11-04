@@ -127,6 +127,8 @@ Canalizador:{m:{DOM:3,INT:2,FOR:-3,CON:-1,DEX:-1},hp:"1d6",mp:"1d12",per:["Teori
 "Guardião":{m:{CON:2,SAB:2,FOR:1,DEX:-3,INT:-1,CAR:-1},hp:"1d12",mp:"1d4",per:["Atletismo","Vigor Bruto","Fôlego","Vontade","Percepção","Intuição","Intimidação","Sentir Arka"],arm:["L","M","P"],esc:true,armas:"Simples, marciais e de fogo",res:["FOR","CON"],co:80},
 Curandeiro:{m:{SAB:3,CAR:2,FOR:-2,DEX:-2,DOM:-1},hp:"1d8",mp:"1d10",per:["Medicina","Alquimia","Intuição","Persuasão","Trato Animal","Sentir Arka","Concentração","Sobrevivência"],arm:["L","M"],esc:true,armas:"Simples e pistola",res:["SAB","CAR"],co:110}};
 var PROF_MIGRA={Arkano:"Canalizador"}; // P-040
+// Mundo novo (D-138 a D-154): região de origem salva com o nome antigo vira a região nova (só quando o campo é exatamente o nome antigo)
+var REG_MIGRA={"Capitólio Imperial":"Império de Aldwynn","As Forjas":"Montes de Durn","Picos Celestes":"Planalto Celeste","Bosque de Eryn":"Reinos do Norte (Bosque de Eryn)","Planícies de Cinza":"Khartheon, interior","Ruínas da Passagem":"Pharos","Selva Profunda":"Khartheon, interior"};
 var ARM_NOME={L:"leves",M:"médias",P:"pesadas"};
 // Perícias (D-19, D-23, D-46): 31 perícias próprias do mundo, agrupadas por atributo.
 // Na criação: 4 da lista da profissão (PP[p].per, P-060) + 2 livres, de qualquer atributo; + 2 proficiências livres de arma ou ferramenta, nunca categoria de armadura (D-45, P-049).
@@ -343,7 +345,7 @@ $('ct').innerHTML=TABS.map(function(t){return '<div class="tp'+(t.id==='profile'
 // ═══ PROFILE ═══
 function bPf(){
   var h='<div class="st">Identidade</div><div class="pg" style="margin-bottom:12px">';
-  [['pName','Nome','Nome do personagem...'],['pPlayer','Jogador','Seu nome...'],['pAge','Idade','Ex: 25'],['pGender','Gênero',''],['pOrigin','Região','Ex: Aldwynn'],['pAlignment','Alinhamento','Ex: Neutro Bom']].forEach(function(f){h+='<div class="fd"><label class="fl">'+f[1]+'</label><input type="text" id="'+f[0]+'" placeholder="'+f[2]+'" oninput="sync()"></div>'});
+  [['pName','Nome','Nome do personagem...'],['pPlayer','Jogador','Seu nome...'],['pAge','Idade','Ex: 25'],['pGender','Gênero',''],['pOrigin','Região','Ex: Império de Aldwynn'],['pAlignment','Alinhamento','Ex: Neutro Bom']].forEach(function(f){h+='<div class="fd"><label class="fl">'+f[1]+'</label><input type="text" id="'+f[0]+'" placeholder="'+f[2]+'" oninput="sync()"></div>'});
   h+='</div><div class="st">Raça</div><div class="f fw g6" id="rBtn" style="margin-bottom:6px"></div><div id="rAb" class="crd" style="font-size:12px;color:var(--td);font-style:italic;border-left:3px solid var(--ac);margin-bottom:14px"></div>';
   h+='<div class="st">Profissão</div><div class="f fw g6" id="pBtn" style="margin-bottom:6px"></div><div id="pNfo" class="crd" style="font-size:11px;color:var(--td);margin-bottom:6px"></div><div id="pEd"></div>';
   h+='<div class="st" style="margin-top:14px">Aparência & Personalidade</div>';
@@ -946,7 +948,7 @@ function bTc(){
   h+='<div class="tmc"><b>Capacidades de aura:</b> as que causam dano, curam, negam ação ou dão ação extra são técnicas: custam 6 MP por d8 e usam ataque de Arka ou teste do alvo (CD 10 + mod DOM + proficiência). Resistências, sentidos e utilidade são passivos (PA-9).</div>';
   h+='<div class="tmc"><b>Controle (P-065):</b> negar ação (Atordoado, Enraizado, Silenciar…) custa 12 MP por turno de ação negada (como 2d8); conceder ação extra custa 18 MP por ação (como 3d8). Se o alvo repete o teste a cada turno, paga-se só o 1º turno (12 MP para aplicar). Nas tiers Avançada e Máxima, o custo acima do dano vem desses efeitos (P-066).</div>';
   h+='<div class="tmc"><b>Skill (P-061):</b> uso ativo de utilidade, sem MP. Custa 1 ação (ação bônus, se simples); livre fora de combate, 1×/turno em combate. <b>Passiva:</b> efeito permanente, sem ação nem MP. Skills e passivas treinam como técnica Básica (aura nv 1) ou Intermediária (aura nv 2+).</div>';
-  h+='<div class="tmc"><b>Licenças (território imperial, R10-6):</b> Básica livre (aura nv 1, técnicas Básicas, Projetar até 12 MP, Manifestar simples; Proteger sempre livre) · Intermediária 30 CO (técnicas Intermediárias, aura nv 2, porte civil de arma de fogo) · Avançada 250 CO, exige a Intermediária (técnicas Avançadas e Máximas, aura nv 3). Expansão de Domínio = arma de guerra. <b>Território imperial</b> (P-088): Capitólio e planícies centrais, lei plena; Costa de Marés e Forjas reconhecem as licenças, com leis próprias; Picos Celestes, Bosque de Eryn e fora de Aldwynn, sem valor legal.</div>';
+  h+='<div class="tmc"><b>Licenças (território imperial, R10-6):</b> Básica livre (aura nv 1, técnicas Básicas, Projetar até 12 MP, Manifestar simples; Proteger sempre livre) · Intermediária 30 CO (técnicas Intermediárias, aura nv 2, porte civil de arma de fogo) · Avançada 250 CO, exige a Intermediária (técnicas Avançadas e Máximas, aura nv 3). Expansão de Domínio = arma de guerra. <b>Território imperial</b> (P-088): no Império de Aldwynn, lei plena; a Costa de Marés (tributária) e os Montes de Durn (parceiro) reconhecem a licença imperial, com leis próprias; no Planalto Celeste, nos Reinos do Norte (em guerra; vale só nas terras já anexadas), em Khartheon, em Pharos e em Vestigar, sem valor legal.</div>';
   h+='</div></div>';
 
   // ─── SEÇÃO 3: Elementos de Fortalecimento ───
@@ -1380,6 +1382,7 @@ function lS(d){
   if(!Array.isArray(d.emprest))S.emprest=[];if(d.empLivre===undefined)S.empLivre=true;if(d.empTiradas===undefined)S.empTiradas=0;if(!Array.isArray(d.vistas))S.vistas=[]; // D-135, D-136: emprestadas e auras já vistas (campos novos)
   // Rodada 8: Arkano → Canalizador (P-040); dados de vida, Especialista e Ação Lendária (campos novos)
   if(PROF_MIGRA[S.prof])S.prof=PROF_MIGRA[S.prof];
+  var orT=(S.origin||'').trim();if(REG_MIGRA.hasOwnProperty(orT))S.origin=REG_MIGRA[orT];
   if(d.hdUsed===undefined)S.hdUsed=0;if(d.especialista===undefined)S.especialista='';if(d.acaoLend===undefined)S.acaoLend=0;
   S.level=Math.max(LV_MIN,Math.min(LV_MAX,S.level||LV_MIN));
   // Rodada 9: profissão montada (P-094) e campos novos

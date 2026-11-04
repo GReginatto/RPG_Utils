@@ -9,7 +9,7 @@ import {
   ppAtLevel, PP_AURA_UP, PP_NEW_AURA, PP_NEW_AURA_TITANIC, ATTR_CAP, ppAttrCost, ppEarned, areaDistance, auraArea,
   hereditaryAura, titanicBorn, rareHereditary, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
   ppConfirmState, attrConfirmed, auraConfirmed, ppPending, awakenedAura, techDiceCap,
-  SKILLS_FROM_PROF, PROF_RENAMES, ARMOR_RENAMES, ARMOR_CAT, skillProficient, skillProfMult, saveProficient, saveBonus, armorWithoutProf,
+  SKILLS_FROM_PROF, PROF_RENAMES, ARMOR_RENAMES, regionRename, ARMOR_CAT, skillProficient, skillProfMult, saveProficient, saveBonus, armorWithoutProf,
   hitDiceLeft, hitDicePerRest, corpoRenovado, LEGENDARY_MAX, XP_SESSION, auraLicense,
   TOOLS, hitDieHeal, restGain, raceBonus, PROF_DICE, profRuler, heritageLocked, SIGNATURE_MAX, convertOldPP,
   sheetReminders, scalesAvailable, hachimanBonus,
@@ -141,7 +141,7 @@ function PerfilTab({ sheet, onUpdate, isReadOnly }) {
     <div>
       <St>Identidade</St>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 6 }}>
-        {[['Nome','name','Nome do personagem...'],['Jogador','player','Seu nome...'],['Idade','age','Ex: 25'],['Gênero','gender',''],['Região','origin','Ex: Aldwynn'],['Alinhamento','alignment','Ex: Neutro Bom']].map(([lbl, f, ph]) => (
+        {[['Nome','name','Nome do personagem...'],['Jogador','player','Seu nome...'],['Idade','age','Ex: 25'],['Gênero','gender',''],['Região','origin','Ex: Império de Aldwynn'],['Alinhamento','alignment','Ex: Neutro Bom']].map(([lbl, f, ph]) => (
           <div key={f}><Lb>{lbl}</Lb><input className="vtt-input" placeholder={ph} value={sheet[f]||''} readOnly={isReadOnly} onChange={e => u({[f]:e.target.value})} /></div>
         ))}
       </div>
@@ -1773,6 +1773,8 @@ export default function CharacterSheet({
     if(!isReadOnly && PROF_RENAMES[sheet.prof]) onUpdate({ prof: PROF_RENAMES[sheet.prof] });
     // D-113: armaduras renomeadas
     if(!isReadOnly && ARMOR_RENAMES[sheet.armor]) onUpdate({ armor: ARMOR_RENAMES[sheet.armor] });
+    // Mundo novo (D-138 a D-154): região de origem com nome antigo
+    if(!isReadOnly && regionRename(sheet.origin)) onUpdate({ origin: regionRename(sheet.origin) });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[sheet.id]);
 

@@ -458,6 +458,9 @@ export const ARMOR_RENAMES = {
   'Meia-placa': 'Couraça de cavalaria',
 };
 export function armorName(n) { return ARMOR_RENAMES[n] || n; }
+// Mundo novo (D-138 a D-154): região de origem salva com o nome antigo vira a região nova (só quando o campo é exatamente o nome antigo)
+export const REGION_RENAMES = { 'Capitólio Imperial': 'Império de Aldwynn', 'As Forjas': 'Montes de Durn', 'Picos Celestes': 'Planalto Celeste', 'Bosque de Eryn': 'Reinos do Norte (Bosque de Eryn)', 'Planícies de Cinza': 'Khartheon, interior', 'Ruínas da Passagem': 'Pharos', 'Selva Profunda': 'Khartheon, interior' };
+export function regionRename(o) { const k = String(o || '').trim(); return Object.prototype.hasOwnProperty.call(REGION_RENAMES, k) ? REGION_RENAMES[k] : null; }
 export const FREE_TOOL_PROFS = 2;
 export const SKILL_RENAMES = {
   "Adestrar Animais": "Trato Animal",
