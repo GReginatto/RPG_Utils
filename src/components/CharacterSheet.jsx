@@ -13,7 +13,7 @@ import {
   hitDiceLeft, hitDicePerRest, corpoRenovado, LEGENDARY_MAX, XP_SESSION, auraLicense,
   TOOLS, hitDieHeal, restGain, raceBonus, PROF_DICE, profRuler, heritageLocked, SIGNATURE_MAX, convertOldPP,
   sheetReminders, scalesAvailable, hachimanBonus,
-  titanicLevel, titanicApex, titanicSlots, borrowedLevel, titanicBody, activeAuras, borrowedSpent, borrowOptions, convertToTitanic, seenOptions, withSeen,
+  titanicLevel, titanicApex, titanicSlots, borrowedLevel, titanicBody, activeAuras, borrowedSpent, borrowOptions, convertToTitanic, hasIchor, seenOptions, withSeen,
 } from '../utils/rpgData';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -512,6 +512,7 @@ function AtributosTab({ sheet, onUpdate, isReadOnly, addLog, playSfx, targetToke
         <div><b style={{color:'var(--text)'}}>Ataque de oportunidade</b> (reação, P-067): quando uma criatura hostil que você vê sai do seu alcance corpo a corpo sem Desengajar, 1 ataque com arma corpo a corpo contra ela.</div>
         <div><b style={{color:'var(--text)'}}>Desengajar</b> (ação): afasta-se sem provocar ataque de oportunidade. <b style={{color:'var(--text)'}}>Flanquear</b>: vantagem no corpo a corpo com aliado do lado oposto do alvo, a até 1,5 m.</div>
         <div><b style={{color:'var(--text)'}}>Agarrar</b> (ação, P-074): Atletismo contra Atletismo ou Acrobacia do alvo; com sucesso, ele fica Agarrado (movimento 0). Termina se você ficar Incapacitado ou se o alvo for afastado do seu alcance; para escapar, o agarrado gasta a Ação e repete o teste.</div>
+        <div><b style={{color:'var(--text)'}}>Concentração</b> (D-161): ao sofrer dano, teste de resistência de CON contra CD 10 ou metade do dano (o maior); se falhar, perde a concentração. Também acaba ao ficar Incapacitado ou inconsciente, com Exaustão de Arka 3+ ou ao começar outra concentração (só uma por vez). O teste fica na aba de perícias.</div>
         <div><b style={{color:'var(--text)'}}>Ataque desarmado</b> (P-075): {1+amod(finalAttr(sheet,'FOR'))} (1 {amod(finalAttr(sheet,'FOR'))>=0?'+':'−'} {Math.abs(amod(finalAttr(sheet,'FOR')))} FOR) de concussão; todos são proficientes.</div>
         <div><b style={{color:'var(--text)'}}>Meditação</b> (P-071): custa a Ação e a Ação Bônus do turno (pode se mover); recupera 2d8 + mod DOM de MP; requer 1 turno sem receber dano. {!isReadOnly&&<RBtn onClick={()=>{const r=rollDice(2,8,domMod),g=Math.max(0,r.total),nm=Math.min(maxMP,curMP+g);u({curMP:nm});emit(`🧘 ${sheet.name||'Personagem'} medita: [${r.rolls.join('+')}]${domMod>=0?'+':''}${domMod} DOM = +${g} MP (Ação + Ação Bônus)`);}}>Meditar</RBtn>} <b style={{color:'var(--text)'}}>Regeneração passiva:</b> no início de cada turno, mod INT de MP (mínimo 1).</div>
         <div style={{marginTop:4}}><b style={{color:'var(--text)'}}>Armas</b> (P-069): <b>Acuidade</b> FOR ou DEX no ataque e no dano · <b>Versátil</b> dado entre parênteses com as duas mãos · <b>Arremesso</b> ataque à distância com o atributo do corpo a corpo · <b>Pesado</b> exige FOR 13 (abaixo, desvantagem) · <b>Duas mãos</b> · <b>Alcance 3 m</b> corpo a corpo até 3 m · <b>Recarga</b> 1 disparo por Ação · <b>Leve</b> com uma leve em cada mão, depois de atacar com a Ação, ataca com a outra como Ação Bônus, sem somar o modificador ao dano. <b style={{color:'var(--text)'}}>Alcance com dois números</b> (ex.: 12/36 m, E15-01): até o 1º, normal; entre os dois, desvantagem; além do 2º, impossível.</div>
@@ -555,6 +556,13 @@ function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
   }
   // Testes de resistência (P-030, R10-5): d20 + mod + prof se proficiente; Anão +2 em CON
   function saveVal(a) { return saveBonus(P, sheet.race, a, amod(finalAttr(sheet,a)), pb) + titanicBody(sheet.auras); } // Corpo Titânico (D-135)
+  // Concentração (D-161): TR de CON contra CD 10 ou metade do dano (o maior)
+  function rollConc() {
+    const v=window.prompt('Concentração (D-161): dano sofrido?',''); if(v===null) return;
+    const dn=Math.max(0,parseInt(v,10)||0), cd=Math.max(10,Math.floor(dn/2)), m=saveVal('CON'), r=rollDice(1,20,m);
+    addLog?.(`🛡 ${sheet.name||'Personagem'}, concentração (CON): [${r.rolls[0]}]${m>=0?'+':''}${m} = ${r.total} contra CD ${cd}${r.total>=cd?' · mantém':' · perde a concentração'}`,'dice');
+    playSfx?.('dice');
+  }
   function rollSave(a) {
     const m=saveVal(a), r=rollDice(1,20,m);
     addLog?.(`🛡 ${sheet.name||'Personagem'} — resistência de ${a}: [${r.rolls[0]}]${m>=0?'+':''}${m} = ${r.total}`,'dice');
@@ -580,7 +588,7 @@ function PericiasTab({ sheet, onUpdate, isReadOnly, addLog, playSfx }) {
   return (
     <div>
       <St>Testes de Resistência</St>
-      <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>1d20 + mod do atributo + proficiência, se proficiente. Cada profissão é proficiente em 2 (R10-5); Anão: +2 em CON; Titânico: +1 em todos (+2 com a Titânica no nível 3), Corpo Titânico (D-135). Veneno e doença: CON; explosões e armadilhas: DEX; empurrões e agarrões: FOR; medo e efeitos mentais: SAB (Vontade fica para fora de combate, D-83).{profKey(sheet)==='custom'&&' Profissão montada: clique para marcar.'}</div>
+      <div style={{fontSize:11,color:'var(--sub)',marginBottom:6}}>1d20 + mod do atributo + proficiência, se proficiente. Cada profissão é proficiente em 2 (R10-5); Anão: +2 em CON; Titânico: +1 em todos (+2 com a Titânica no nível 3), Corpo Titânico (D-135). Veneno e doença: CON; explosões e armadilhas: DEX; empurrões: FOR; medo e efeitos mentais: SAB (Vontade fica para fora de combate, D-83). <b style={{color:'var(--text)'}}>Concentração</b> (D-161): ao sofrer dano, teste de CON contra CD 10 ou metade do dano (o maior). {!isReadOnly&&<RBtn onClick={rollConc}>🎲 Concentração</RBtn>}{profKey(sheet)==='custom'&&' Profissão montada: clique para marcar.'}</div>
       <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:4}}>
         {ATTRS.map(a=>{ const on=saveProficient(P,a), v=saveVal(a); return (
           <div key={a} onClick={()=>toggleCustomSave(a)} style={{background:'var(--card)',border:`1px solid ${on?'var(--gold-dim)':'var(--border)'}`,borderRadius:5,padding:'4px 8px',textAlign:'center',minWidth:58,cursor:profKey(sheet)==='custom'&&!isReadOnly?'pointer':'default'}}>
@@ -851,6 +859,7 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
   }
   function convertTitanic() {
     if (!her || her.n === 'Titânica') return;
+    if (hasIchor(auras)) { window.alert('Quem tem Ícor (Aura Própria) nunca vira Titânico (D-161).'); return; }
     if (!window.confirm(`Titânico convertido (D-134): ${her.n} vira emprestada fixa (sempre carregada, não ocupa vaga, fica no nível ${her.lv}, não sobe mais com PP e não desperta; os PP gastos nela não se perdem) e a Titânica entra no nível 1. Só com o Mestre (Titânico latente ou Marca do Surto). Confirmar?`)) return;
     const ch = convertToTitanic({ ...sheet, auras }); if (ch) u(ch);
   }
@@ -979,7 +988,9 @@ function AurasTab({ sheet, onUpdate, isReadOnly }) {
         {!herLock&&sheet.herLivre&&her&&<div style={{fontSize:10,color:'var(--gold)',marginBottom:3}}>🔓 destravada pelo Mestre</div>}
         {!isReadOnly&&(!herLock||(her&&her.n!=='Titânica'))&&<div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:3}}>
           {!herLock&&<button className="tbtn" style={{fontSize:9,padding:'0 5px'}} title="D-134: cada jogador rola 1d20 na criação; 20 natural = nasce Titânico" onClick={titanicDraw}>🎲 sorteio Titânico (1d20)</button>}
-          {her&&her.n!=='Titânica'&&<button className="tbtn" style={{fontSize:9,padding:'0 5px'}} title="Titânico latente ou Marca do Surto (D-134)" onClick={convertTitanic}>tornar Titânico (Mestre)</button>}
+          {her&&her.n!=='Titânica'&&(hasIchor(auras)
+            ?<button className="tbtn" style={{fontSize:9,padding:'0 5px',opacity:.45,cursor:'not-allowed'}} title="Quem tem Ícor nunca vira Titânico (D-161)" onClick={convertTitanic}>🔒 tornar Titânico (Ícor: bloqueado)</button>
+            :<button className="tbtn" style={{fontSize:9,padding:'0 5px'}} title="Titânico latente ou Marca do Surto (D-134)" onClick={convertTitanic}>tornar Titânico (Mestre)</button>)}
         </div>}
         <select className="vtt-select" value={her?.n||''} disabled={isReadOnly||herLock} onChange={e=>setHer(e.target.value)}>
           <option value="">— Selecione —</option>

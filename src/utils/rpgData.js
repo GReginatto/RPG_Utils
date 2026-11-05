@@ -1246,9 +1246,11 @@ export function seenOptions(sheet) {
 }
 export function withSeen(vistas, n) { const v = vistas || []; return !n || v.includes(n) || auraArea(n) === 'Ícor' ? v : [...v, n]; }
 // Titânico convertido (D-134): a aura de nascença vira emprestada fixa (nível e PP preservados) e a Titânica entra no nv 1
+// D-161: quem tem Ícor (Aura Própria) nunca vira Titânico
+export function hasIchor(auras) { return (auras || []).some(x => auraArea(x.n) === 'Ícor'); }
 export function convertToTitanic(sheet) {
   const au = sheet.auras || [], h = hereditaryAura(au);
-  if (!h || h.n === 'Titânica') return null;
+  if (!h || h.n === 'Titânica' || hasIchor(au)) return null;
   const fixa = { n: h.n, lv: h.lv, fixa: true, pp: auraSpent(h), ...(h.deus ? { deus: h.deus } : {}) };
   const ppConf = sheet.ppConf ? { ...sheet.ppConf, auras: { ...(sheet.ppConf.auras || {}), 'Titânica': 1 } } : { attrUps: {}, auras: { 'Titânica': 1 } };
   // D-136: as compradas ficam como estão; a fixa entra na lista de vistas

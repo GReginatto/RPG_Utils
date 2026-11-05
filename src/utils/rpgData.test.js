@@ -2,7 +2,7 @@ import {
   SKILLS, AURA_GROUPS, AURA_DETAILS, RACES_DATA, XP_TABLE, ppAtLevel, profRuler, convertOldPP, heritageLocked, hitDieHeal, restGain, raceBonus, sheetReminders, scalesAvailable, hachimanBonus, TOOLS, ARMORS,
   pointBuyCost, profBonus, ppAttrCost, ppEarned, areaDistance, newAuraCost, auraSpent, attrUpsSpent, fortTotal,
   PANTHEON, GENERIC_TECHS, PROFESSIONS_DATA, skillProfMult, saveBonus, armorWithoutProf, armorName, hitDiceLeft, hitDicePerRest, corpoRenovado, XP_SESSION, auraLicense, ATTR_FULL, ppConfirmState, ppPending, attrConfirmed, auraConfirmed, awakenedAura, techDiceCap, titanicBorn, rareHereditary,
-  titanicLevel, titanicApex, titanicSlots, borrowedLevel, titanicBody, activeAuras, borrowedSpent, borrowOptions, convertToTitanic, blankSheet, seenOptions, withSeen,
+  titanicLevel, titanicApex, titanicSlots, borrowedLevel, titanicBody, activeAuras, borrowedSpent, borrowOptions, convertToTitanic, hasIchor, blankSheet, seenOptions, withSeen,
   regionRename,
 } from './rpgData';
 
@@ -143,6 +143,12 @@ describe('regras do canon', () => {
     expect(ch.ppConf.auras).toEqual({ Fogo: 3, Terra: 1, 'Titânica': 1 }); // a Titânica já entra travada
     expect(titanicSlots(ch.auras)).toBe(2); // a fixa não ocupa vaga
     expect(convertToTitanic({ auras: [{ n: 'Titânica', lv: 1, her: true }] })).toBeNull();
+  });
+
+  test('quem tem Ícor nunca vira Titânico (D-161)', () => {
+    expect(hasIchor([{ n: 'Aura Própria', lv: 2, her: true }])).toBe(true);
+    expect(hasIchor([{ n: 'Fogo', lv: 2, her: true }])).toBe(false);
+    expect(convertToTitanic({ auras: [{ n: 'Aura Própria', lv: 2, her: true }] })).toBeNull();
   });
 
   test('compras definitivas (D-53)', () => {
